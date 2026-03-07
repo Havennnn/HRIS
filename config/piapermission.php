@@ -51,4 +51,36 @@ return [
             AdminRole::SUPER_ADMIN,
         ],
     ],
+
+    // Department Management Permissions
+    'can-list-departments' => [
+        'label' => 'List Departments',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-create-department' => [
+        'label' => 'Create Department',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-update-department' => [
+        'label' => 'Update Department',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-archive-department' => [
+        'label' => 'Archive Department',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-restore-department' => [
+        'label' => 'Restore Department',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
 ];

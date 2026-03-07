@@ -7,10 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use PiaCore\Models\Concerns\HasActivityLogs;
+use PiaCore\Models\Concerns\HasArchives;
 
 class Position extends Model
 {
     use HasFactory;
+    use HasArchives;
     use HasActivityLogs;
 
     /**

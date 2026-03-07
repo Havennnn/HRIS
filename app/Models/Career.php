@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use PiaCore\Models\Concerns\HasActivityLogs;
 use PiaCore\Models\Concerns\HasArchives;
 
-class Job extends Model
+class Career extends Model
 {
     use HasFactory;
     use HasArchives;
@@ -36,7 +36,7 @@ class Job extends Model
     ];
 
     /**
-     * Get the position that owns the job.
+     * Get the position that owns the career.
      */
     public function position(): BelongsTo
     {
@@ -44,7 +44,7 @@ class Job extends Model
     }
 
     /**
-     * Get the applications for this job.
+     * Get the applications for this career.
      */
     public function applications(): HasMany
     {

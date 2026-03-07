@@ -1,10 +1,85 @@
-<script  setup  lang="ts">
+<script setup lang="ts">
+import admins from '@/routes/admins/index';
+import departments from '@/routes/departments/index';
+import { dashboard } from '@/routes/index';
+import {
+    Briefcase,
+    Building2,
+    CalendarDays,
+    ClipboardList,
+    Clock,
+    DollarSign,
+    LayoutGrid,
+    Shield,
+    TrendingUp,
+    UserPlus,
+    Users
+} from 'lucide-vue-next';
 import AppSidebarDefault from 'piacore/components/AppSidebarDefault.vue';
+
+const sectionItems = [
+    {
+        label: 'Overview',
+        items: [
+            { title: 'Dashboard', href: dashboard(), icon: LayoutGrid },
+        ],
+    },
+    {
+        label: 'Human Resources',
+        items: [
+            { title: 'Departments', href: departments.index(), icon: Building2 },
+            { title: 'Positions', href: '/positions', icon: Briefcase },
+            { title: 'Employees', href: '/employees', icon: Users },
+        ],
+    },
+    {
+        label: 'Attendance',
+        items: [
+            { title: 'Shifts', href: '/shifts', icon: Clock },
+            { title: 'Attendance Logs', href: '/attendance-logs', icon: CalendarDays },
+            { title: 'Attendance', href: '/attendances', icon: ClipboardList },
+        ],
+    },
+    {
+        label: 'Leave Management',
+        items: [
+            { title: 'Leave Requests', href: '/leave-requests', icon: CalendarDays },
+        ],
+    },
+    {
+        label: 'Payroll',
+        items: [
+            { title: 'Payroll', href: '/payrolls', icon: DollarSign },
+        ],
+    },
+    {
+        label: 'Recruitment',
+        items: [
+            { title: 'Jobs', href: '/jobs', icon: Briefcase },
+            { title: 'Applications', href: '/applications', icon: UserPlus },
+        ],
+    },
+    {
+        label: 'Performance',
+        items: [
+            { title: 'Performance Reviews', href: '/performance-reviews', icon: TrendingUp },
+            { title: 'KPIs', href: '/kpis', icon: ClipboardList },
+        ],
+    },
+];
+
+const settingsItem = {
+    title: 'Admin',
+    href: admins.index(),
+    icon: Shield,
+};
 </script>
 
 <template>
-    <!-- Add props to AppSidebarDefault to pass section-items and settings-tem -->
-    <AppSidebarDefault>
-    <slot  />
+    <AppSidebarDefault 
+        :section-items="sectionItems" 
+        :settings-item="settingsItem"
+    >
+        <slot />
     </AppSidebarDefault>
 </template>

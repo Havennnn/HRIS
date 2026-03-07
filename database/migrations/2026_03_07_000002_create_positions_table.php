@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignIdFor(Department::class)->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->timestamps();
+            $table->archives();
 
             $table->index('department_id');
         });

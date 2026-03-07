@@ -11,9 +11,11 @@ import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { edit, index, update } from '@/routes/departments';
 import type { BreadcrumbItem } from '@/types';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { ArrowLeft, Save } from 'lucide-vue-next';
+import ActivityLogTable from 'piacore/components/ActivityLogTable.vue';
 import DataHeader from 'piacore/components/DataHeader.vue';
+import DataTableControls from 'piacore/components/DataTableControls.vue';
 import { computed } from 'vue';
 import type { DepartmentResource } from './Departments';
 
@@ -21,6 +23,7 @@ const props = defineProps<{
     data: DepartmentResource;
 }>();
 
+const page = usePage();
 const pageTitle = 'Edit Department';
 
 const departmentData = computed(() => props.data?.data);
@@ -36,12 +39,28 @@ const form = useForm({
 
 const headerActions = computed(() => [
     {
-        label: 'Back to Departments',
+        label: 'Back',
         href: index().url,
         icon: ArrowLeft,
         variant: 'outline' as const,
         size: 'sm' as const,
     }
+]);
+
+const activeTab = computed<string>(() => {
+    const url = new URL(page.url, window.location.origin);
+    return url.searchParams.get('tab') ?? 'default';
+});
+
+const tabs = computed(() => [
+    {
+        key: 'default',
+        label: 'Information',
+    },
+    {
+        key: 'activity_logs',
+        label: 'Activity Log'
+    },
 ]);
 
 function submit(): void {
@@ -53,7 +72,7 @@ function submit(): void {
     <Head :title="pageTitle" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full border-b flex-1 flex-col gap-6 p-4 md:p-6">
+        <div class="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
             <!-- Data Header -->
             <DataHeader
                 variant="profile"
@@ -63,8 +82,22 @@ function submit(): void {
                 :actions="headerActions"
             />
 
-            <!-- Form Container -->
-            <div class="mx-auto w-full max-w-4xl">
+            <!-- Data Controller -->
+            <DataTableControls
+                :tabs="tabs"
+                :active-tab="activeTab"
+                show-tabs
+                :show-date-range="false"
+                :show-search="false"
+            />
+
+            <!-- Activity Logs Tab -->
+            <div v-if="activeTab === 'activity_logs'" class="mx-auto w-full">
+                <ActivityLogTable />
+            </div>
+
+            <!-- Information/Edit Tab -->
+            <div v-else class="mx-auto w-full max-w-4xl space-y-6">
                 <Card class="border-dashed">
                     <CardHeader>
                         <CardTitle class="flex items-center gap-2 text-lg">

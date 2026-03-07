@@ -134,7 +134,7 @@ function handlePageChange(url: string | null): void {
                     <DataTableControls
                         :tabs="tabs"
                         :active-tab="activeTab"
-                        :activity-log="false"
+                        :activity-log="true"
                         :search-query="search"
                         :filters="filters"
                         :sorts="sorts"

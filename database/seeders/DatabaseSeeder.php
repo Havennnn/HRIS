@@ -14,9 +14,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Call individual seeders in order
+        $this->call([
+            DepartmentSeeder::class,
+            PositionSeeder::class,
+            EmployeeSeeder::class,
+            AttendanceSeeder::class,
+            AttendanceLogSeeder::class,
+        ]);
+
         // User::factory(10)->create();
 
-                // Super Admin
+        // Super Admin
         Admin::query()->updateOrCreate([
             'email' => 'latsmarbls@piacore.com',
         ], [

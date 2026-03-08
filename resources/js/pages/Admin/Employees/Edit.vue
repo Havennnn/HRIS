@@ -11,19 +11,21 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { edit, index, update } from '@/routes/employees';
+import * as attendanceRoutes from '@/routes/employees/attendance';
 import type { BreadcrumbItem } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { ArrowLeft, Pencil, Save } from 'lucide-vue-next';
 import ActivityLogTable from 'piacore/components/ActivityLogTable.vue';
+import DataBadge from 'piacore/components/DataBadge.vue';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import DataSelector from 'piacore/components/DataSelector.vue';
 import DataTableControls from 'piacore/components/DataTableControls.vue';
 import type { Option } from 'piacore/Interface/Selector';
 import { computed, ref } from 'vue';
-import type { EmployeeResource } from './index';
+import EmployeeEditResource from './index';
 
 const props = defineProps<{
-    data: EmployeeResource;
+    data: EmployeeEditResource;
     positions?: Option[];
     types?: Option[];
 }>();
@@ -86,7 +88,7 @@ const tabs = computed(() => [
     { 
         key: 'attendance', 
         label: 'Attendance',
-        route: '#',
+        route: attendanceRoutes.index({ employee: employeeData.value?.id as number }).url,
     },
     { 
         key: 'activity_logs', 
@@ -110,12 +112,16 @@ function submit(): void {
         <div class="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
             <!-- Header -->
             <DataHeader
-                variant="profile"
+                variant="form"
                 :title="employeeData?.full_name"
                 subtitle="Employee Profile"
                 :use-avatar="false"
                 :actions="headerActions"
-            />
+            >
+                <template #badge>
+                    <DataBadge :badge="employeeData?.status" />
+                </template>
+            </DataHeader>
 
             <!-- Tabs -->
             <DataTableControls

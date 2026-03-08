@@ -2,6 +2,19 @@ import type { Badge } from "piacore/Interface/Badge";
 
 export interface EmployeeIndexResource {
     id: number;
+    position: string;
+    department: string;
+    full_name: string;
+    birthdate: string;
+    mobile_number: string;
+    email: string;
+    status: Badge;
+    type: string;
+    created_at: string;
+}
+
+export interface EmployeeEditResource {
+    id: number;
     position_id: number;
     position_name: string;
     department_id: number;
@@ -33,4 +46,10 @@ export interface Form {
     email: string;
     status: string;
     type: string;
+}
+
+export interface EmployeeData {
+    id: number;
+    full_name: string;
+    status: Badge;
 }

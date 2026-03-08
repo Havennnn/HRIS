@@ -34,11 +34,12 @@ const columns: DataTableColumn[] = [
     {
         key: 'full_name',
         label: 'Name',
-        headerClass: 'min-w-[240px]',
+        headerClass: 'min-w-70',
         cell: ({ row }) => {
             const employee = row as EmployeeIndexResource;
             return h('div', { class: 'flex flex-col' }, [
                 h('span', { class: 'font-medium capitalize' }, employee.full_name),
+                h('span', { class: 'text-muted-foreground' }, employee.email),
             ]);
         },
     },
@@ -53,12 +54,6 @@ const columns: DataTableColumn[] = [
         label: 'Department',
         cellClass: 'text-muted-foreground',
         cell: ({ row }) => (row as EmployeeIndexResource).department,
-    },
-    {
-        key: 'email',
-        label: 'Email',
-        cellClass: 'text-muted-foreground',
-        cell: ({ row }) => (row as EmployeeIndexResource).email,
     },
     {
         key: 'mobile_number',
@@ -76,8 +71,8 @@ const columns: DataTableColumn[] = [
         key: 'status',
         label: 'Status',
         cellClass: 'text-muted-foreground',
-        cell: ({ row }) => h(DataBadge, { 
-            badge: (row as EmployeeIndexResource).status 
+        cell: ({ row }) => h(DataBadge, {
+            badge: (row as EmployeeIndexResource).status
         }),
     },
     {
@@ -112,6 +107,10 @@ const tabs = computed(() => [
         key: 'archived',
         label: 'Archived',
         count: props.data.count?.archivedCount ?? 0,
+    },
+    {
+        key: 'activity_logs',
+        label: 'Activity Log',
     },
 ]);
 
@@ -191,7 +190,7 @@ function handlePageChange(url: string | null): void {
                         :search-query="search"
                         :filters="filters"
                         :sorts="sorts"
-                        :show-date-range="false"
+                        :show-date-range="true"
                         :search-placeholder="searchPlaceholder"
                     />
 

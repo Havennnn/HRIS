@@ -6,10 +6,12 @@ use App\Enums\Status\AttendanceStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use PiaCore\Search\SearchConfig;
 
 class Attendance extends Model
 {
     use HasFactory;
+    use SearchConfig;
 
     /**
      * --------------------------------------------------------------------------
@@ -32,6 +34,15 @@ class Attendance extends Model
         'time_out' => 'datetime:H:i',
         'status' => AttendanceStatus::class,
         'date' => 'date',
+    ];
+
+    protected array $searchable = [
+        'date',
+        'status',
+        'time_in',
+        'time_out',
+        'late_minutes',
+        'overtime_minutes',
     ];
 
     /**

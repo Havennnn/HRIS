@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\Admin\AttendanceLog\AttendanceLogController;
 use App\Http\Controllers\Admin\Department\DepartmentController;
-use App\Http\Controllers\Admin\Employee\EmployeeController;
 use App\Http\Controllers\Admin\Department\PositionController;
+use App\Http\Controllers\Admin\Employee\AttendanceController;
+use App\Http\Controllers\Admin\Employee\EmployeeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,9 +18,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Department Management Routes (requires admin auth)
-Route::middleware(['auth:admin'])
-    ->prefix('departments')
+Route::middleware(['auth:admin'])->group(function (): void {
+
+    // Department Management Routes
+    Route::prefix('departments')
     ->name('departments.')
     ->controller(DepartmentController::class)
     ->group(function (): void {
@@ -31,9 +34,8 @@ Route::middleware(['auth:admin'])
         Route::patch('/{department}/restore', 'restore')->middleware('can-restore-department')->name('restore')->withTrashed();
     });
 
-// Position Management Routes (requires admin auth)
-Route::middleware(['auth:admin'])
-    ->prefix('positions')
+    // Position Management Routes
+    Route::prefix('positions')
     ->name('positions.')
     ->controller(PositionController::class)
     ->group(function (): void {
@@ -46,17 +48,28 @@ Route::middleware(['auth:admin'])
         Route::patch('/{position}/restore', 'restore')->middleware('can-restore-position')->name('restore')->withTrashed();
     });
 
-// Employee Management Routes (requires admin auth)
-Route::middleware(['auth:admin'])
-    ->prefix('employees')
-    ->name('employees.')
-    ->controller(EmployeeController::class)
-    ->group(function (): void {
-        Route::get('/', 'index')->middleware('can-list-employees')->name('index');
-        Route::get('/create', 'create')->middleware('can-create-employee')->name('create');
-        Route::post('/', 'store')->middleware('can-create-employee')->name('store');
-        Route::get('/{employee}/edit', 'edit')->middleware('can-update-employee')->name('edit');
-        Route::patch('/{employee}', 'update')->middleware('can-update-employee')->name('update');
-        Route::delete('/{employee}', 'destroy')->middleware('can-archive-employee')->name('destroy');
-        Route::patch('/{employee}/restore', 'restore')->middleware('can-restore-employee')->name('restore')->withTrashed();
-    });
+    // Employee Management Routes
+    Route::prefix('employees')
+        ->name('employees.')
+        ->controller(EmployeeController::class)
+        ->group(function (): void {
+            Route::get('/', 'index')->middleware('can-list-employees')->name('index');
+            Route::get('/create', 'create')->middleware('can-create-employee')->name('create');
+            Route::post('/', 'store')->middleware('can-create-employee')->name('store');
+            Route::get('/{employee}/edit', 'edit')->middleware('can-update-employee')->name('edit');
+            Route::patch('/{employee}', 'update')->middleware('can-update-employee')->name('update');
+            Route::delete('/{employee}', 'destroy')->middleware('can-archive-employee')->name('destroy');
+            Route::patch('/{employee}/restore', 'restore')->middleware('can-restore-employee')->name('restore')->withTrashed();
+
+            // Attendance Routes
+            Route::get('/{employee}/attendance', [AttendanceController::class, 'index'])->middleware('can-list-attendances')->name('attendance.index');
+        });
+    
+    // Attendance Log Management Routes
+    Route::prefix('attendance-logs')
+        ->name('attendance-logs.')
+        ->controller(AttendanceLogController::class)
+        ->group(function (): void {
+            Route::get('/', 'index')->middleware('can-list-attendance-logs')->name('index');
+        });
+});

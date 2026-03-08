@@ -147,4 +147,20 @@ return [
             AdminRole::SUPER_ADMIN,
         ],
     ],
+
+    // Employee Attendance Permissions
+    'can-list-attendances' => [
+        'label' => 'List Attendances',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+
+    // Employees Attendance Logs Permission
+    'can-list-attendance-logs' => [
+        'label' => 'List Attendances Logs',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ]
 ];

@@ -1,0 +1,38 @@
+<?php
+
+namespace App\Http\Resources\Admin\Employee;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+class EmployeeEditResource extends JsonResource
+{
+    /**
+     * Transform the resource into an array.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
+    {
+        return [
+            'id' => $this->id,
+            'position_id' => $this->position?->id,
+            'position' => $this->position?->name,
+            'department_id' => $this->position?->department?->id,
+            'department' => $this->position?->department?->name,
+            'first_name' => $this->first_name,
+            'middle_name' => $this->middle_name,
+            'last_name' => $this->last_name,
+            'full_name' => $this->full_name,
+            'birthdate' => $this->birthdate?->toDateString(),
+            'mobile_number' => $this->mobile_number,
+            'email' => $this->email,
+            'status_value' => $this->status?->value,
+            'status' => $this->status?->badge(),
+            'type_value' => $this->type,
+            'type' => $this->type?->label(),
+            'hired_date' => $this->hired_date?->format('M d, Y'),
+            'created_at' => $this->created_at?->format('M d, Y'),
+        ];
+    }
+}

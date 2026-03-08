@@ -83,4 +83,68 @@ return [
             AdminRole::SUPER_ADMIN,
         ],
     ],
+
+    // Position Management Permissions
+    'can-list-positions' => [
+        'label' => 'List Positions',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-create-position' => [
+        'label' => 'Create Position',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-update-position' => [
+        'label' => 'Update Position',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-archive-position' => [
+        'label' => 'Archive Position',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-restore-position' => [
+        'label' => 'Restore Position',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+
+    // Employee Management Permissions
+    'can-list-employees' => [
+        'label' => 'List Employees',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-create-employee' => [
+        'label' => 'Create Employee',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-update-employee' => [
+        'label' => 'Update Employee',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-archive-employee' => [
+        'label' => 'Archive Employee',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-restore-employee' => [
+        'label' => 'Restore Employee',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
 ];

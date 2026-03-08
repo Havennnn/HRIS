@@ -12,10 +12,11 @@ class Attendance extends Model
     use HasFactory;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * --------------------------------------------------------------------------
+     * Attributes
+     * --------------------------------------------------------------------------
      */
+    
     protected $fillable = [
         'employee_id',
         'time_in',
@@ -26,11 +27,6 @@ class Attendance extends Model
         'date',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'time_in' => 'datetime:H:i',
         'time_out' => 'datetime:H:i',
@@ -39,8 +35,11 @@ class Attendance extends Model
     ];
 
     /**
-     * Get the employee that owns the attendance.
+     * --------------------------------------------------------------------------
+     * Relationships
+     * --------------------------------------------------------------------------
      */
+
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);

@@ -12,10 +12,11 @@ class EmployeeContact extends Model
     use HasFactory;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * --------------------------------------------------------------------------
+     * Attributes
+     * --------------------------------------------------------------------------
      */
+    
     protected $fillable = [
         'employee_id',
         'name',
@@ -23,18 +24,16 @@ class EmployeeContact extends Model
         'mobile_number',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'type' => EmployeeContactType::class,
     ];
 
     /**
-     * Get the employee that owns the contact.
+     * --------------------------------------------------------------------------
+     * Relationships
+     * --------------------------------------------------------------------------
      */
+
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);

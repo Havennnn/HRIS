@@ -18,26 +18,27 @@ class Position extends Model
     use HasOptions;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * --------------------------------------------------------------------------
+     * Attributes
+     * --------------------------------------------------------------------------
      */
+    
     protected $fillable = [
         'department_id',
         'name',
     ];
 
     /**
-     * Get the department that owns the position.
+     * --------------------------------------------------------------------------
+     * Relationships
+     * --------------------------------------------------------------------------
      */
+
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);
     }
 
-    /**
-     * Get the employees for this position.
-     */
     public function employees(): HasMany
     {
         return $this->hasMany(Employee::class);

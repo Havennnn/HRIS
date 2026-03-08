@@ -11,10 +11,11 @@ class ReviewScore extends Model
     use HasFactory;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * --------------------------------------------------------------------------
+     * Attributes
+     * --------------------------------------------------------------------------
      */
+    
     protected $fillable = [
         'performance_review_id',
         'kpi_id',
@@ -22,16 +23,16 @@ class ReviewScore extends Model
     ];
 
     /**
-     * Get the performance review that owns the score.
+     * --------------------------------------------------------------------------
+     * Relationships
+     * --------------------------------------------------------------------------
      */
+
     public function performanceReview(): BelongsTo
     {
         return $this->belongsTo(PerformanceReview::class);
     }
 
-    /**
-     * Get the KPI that owns the score.
-     */
     public function kpi(): BelongsTo
     {
         return $this->belongsTo(Kpi::class);

@@ -11,10 +11,11 @@ class EmployeeDevice extends Model
     use HasFactory;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * --------------------------------------------------------------------------
+     * Attributes
+     * --------------------------------------------------------------------------
      */
+    
     protected $fillable = [
         'employee_id',
         'desktop',
@@ -22,8 +23,11 @@ class EmployeeDevice extends Model
     ];
 
     /**
-     * Get the employee that owns the devices.
+     * --------------------------------------------------------------------------
+     * Relationships
+     * --------------------------------------------------------------------------
      */
+
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);

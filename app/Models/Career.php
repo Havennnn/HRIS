@@ -16,36 +16,32 @@ class Career extends Model
     use HasActivityLogs;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * --------------------------------------------------------------------------
+     * Attributes
+     * --------------------------------------------------------------------------
      */
+    
     protected $fillable = [
         'position_id',
         'description',
         'is_active',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'is_active' => 'boolean',
     ];
 
     /**
-     * Get the position that owns the career.
+     * --------------------------------------------------------------------------
+     * Relationships
+     * --------------------------------------------------------------------------
      */
+
     public function position(): BelongsTo
     {
         return $this->belongsTo(Position::class);
     }
 
-    /**
-     * Get the applications for this career.
-     */
     public function applications(): HasMany
     {
         return $this->hasMany(Application::class);

@@ -12,10 +12,11 @@ class PayrollAdjustment extends Model
     use HasFactory;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * --------------------------------------------------------------------------
+     * Attributes
+     * --------------------------------------------------------------------------
      */
+    
     protected $fillable = [
         'payroll_id',
         'type',
@@ -23,19 +24,17 @@ class PayrollAdjustment extends Model
         'amount',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'type' => PayrollAdjustmentType::class,
         'amount' => 'decimal:2',
     ];
 
     /**
-     * Get the payroll that owns the adjustment.
+     * --------------------------------------------------------------------------
+     * Relationships
+     * --------------------------------------------------------------------------
      */
+
     public function payroll(): BelongsTo
     {
         return $this->belongsTo(Payroll::class);

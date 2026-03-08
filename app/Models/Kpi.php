@@ -11,18 +11,22 @@ class Kpi extends Model
     use HasFactory;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * --------------------------------------------------------------------------
+     * Attributes
+     * --------------------------------------------------------------------------
      */
+    
     protected $fillable = [
         'name',
         'description',
     ];
 
     /**
-     * Get the review scores for this KPI.
+     * --------------------------------------------------------------------------
+     * Relationships
+     * --------------------------------------------------------------------------
      */
+
     public function reviewScores(): HasMany
     {
         return $this->hasMany(ReviewScore::class);

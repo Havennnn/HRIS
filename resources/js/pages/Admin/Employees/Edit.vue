@@ -84,11 +84,6 @@ const tabs = computed(() => [
         label: 'Information' 
     },
     { 
-        key: 'shift', 
-        label: 'Shift',
-        route: '#',
-    },
-    { 
         key: 'attendance', 
         label: 'Attendance',
         route: '#',

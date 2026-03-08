@@ -14,10 +14,11 @@ class ApplicationDetail extends Model
     use HasUploadedFiles;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * --------------------------------------------------------------------------
+     * Attributes
+     * --------------------------------------------------------------------------
      */
+    
     protected $fillable = [
         'application_id',
         'resume_id',
@@ -25,24 +26,21 @@ class ApplicationDetail extends Model
     ];
 
     /**
-     * Get the application that owns the details.
+     * --------------------------------------------------------------------------
+     * Relationships
+     * --------------------------------------------------------------------------
      */
+
     public function application(): BelongsTo
     {
         return $this->belongsTo(Application::class);
     }
 
-    /**
-     * Get the resume file.
-     */
     public function resume(): BelongsTo
     {
         return $this->belongsTo(UploadedFile::class, 'resume_id');
     }
 
-    /**
-     * Get the portfolio file.
-     */
     public function portfolio(): BelongsTo
     {
         return $this->belongsTo(UploadedFile::class, 'portfolio_id');

@@ -12,28 +12,27 @@ class ReviewFeedback extends Model
     use HasFactory;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * --------------------------------------------------------------------------
+     * Attributes
+     * --------------------------------------------------------------------------
      */
+    
     protected $fillable = [
         'performance_review_id',
         'feedback',
         'type',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'type' => ReviewFeedbackType::class,
     ];
 
     /**
-     * Get the performance review that owns the feedback.
+     * --------------------------------------------------------------------------
+     * Relationships
+     * --------------------------------------------------------------------------
      */
+
     public function performanceReview(): BelongsTo
     {
         return $this->belongsTo(PerformanceReview::class);

@@ -14,10 +14,11 @@ class Shift extends Model
     use HasActivityLogs;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * --------------------------------------------------------------------------
+     * Attributes
+     * --------------------------------------------------------------------------
      */
+    
     protected $fillable = [
         'employee_id',
         'type',
@@ -25,11 +26,6 @@ class Shift extends Model
         'end',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'type' => ShiftType::class,
         'start' => 'datetime:H:i',
@@ -37,8 +33,11 @@ class Shift extends Model
     ];
 
     /**
-     * Get the employee that owns the shift.
+     * --------------------------------------------------------------------------
+     * Relationships
+     * --------------------------------------------------------------------------
      */
+
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);

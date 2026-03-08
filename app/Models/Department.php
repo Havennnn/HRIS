@@ -17,17 +17,21 @@ class Department extends Model
     use HasOptions;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * --------------------------------------------------------------------------
+     * Attributes
+     * --------------------------------------------------------------------------
      */
+    
     protected $fillable = [
         'name',
     ];
 
     /**
-     * Get the positions for this department.
+     * --------------------------------------------------------------------------
+     * Relationships
+     * --------------------------------------------------------------------------
      */
+
     public function positions(): HasMany
     {
         return $this->hasMany(Position::class);

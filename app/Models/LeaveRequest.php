@@ -12,10 +12,11 @@ class LeaveRequest extends Model
     use HasFactory;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * --------------------------------------------------------------------------
+     * Attributes
+     * --------------------------------------------------------------------------
      */
+    
     protected $fillable = [
         'employee_id',
         'message',
@@ -25,11 +26,6 @@ class LeaveRequest extends Model
         'status',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'requested_date' => 'date',
         'end_date' => 'date',
@@ -37,8 +33,11 @@ class LeaveRequest extends Model
     ];
 
     /**
-     * Get the employee that owns the leave request.
+     * --------------------------------------------------------------------------
+     * Relationships
+     * --------------------------------------------------------------------------
      */
+
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);

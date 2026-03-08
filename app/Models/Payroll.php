@@ -14,9 +14,9 @@ class Payroll extends Model
     use HasActivityLogs;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * --------------------------------------------------------------------------
+     * Attributes
+     * --------------------------------------------------------------------------
      */
     protected $fillable = [
         'employee_id',
@@ -29,11 +29,6 @@ class Payroll extends Model
         'pay_period_end',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'basic_salary' => 'decimal:2',
         'tax' => 'decimal:2',
@@ -45,16 +40,16 @@ class Payroll extends Model
     ];
 
     /**
-     * Get the employee that owns the payroll.
+     * --------------------------------------------------------------------------
+     * Relationships
+     * --------------------------------------------------------------------------
      */
+
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
     }
 
-    /**
-     * Get the payroll adjustments for this payroll.
-     */
     public function adjustments(): HasMany
     {
         return $this->hasMany(PayrollAdjustment::class);

@@ -17,10 +17,11 @@ class Application extends Model
     use HasActivityLogs;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * --------------------------------------------------------------------------
+     * Attributes
+     * --------------------------------------------------------------------------
      */
+    
     protected $fillable = [
         'job_id',
         'first_name',
@@ -32,27 +33,22 @@ class Application extends Model
         'status',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'birthdate' => 'date',
         'status' => ApplicationStatus::class,
     ];
 
     /**
-     * Get the job that owns the application.
+     * --------------------------------------------------------------------------
+     * Relationships
+     * --------------------------------------------------------------------------
      */
+
     public function job(): BelongsTo
     {
         return $this->belongsTo(Career::class);
     }
 
-    /**
-     * Get the application details for this application.
-     */
     public function details(): HasOne
     {
         return $this->hasOne(ApplicationDetail::class);

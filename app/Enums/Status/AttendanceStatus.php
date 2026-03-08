@@ -2,11 +2,13 @@
 
 namespace App\Enums\Status;
 
+use PiaCore\Concerns\HasOptions;
 use PiaCore\Enums\Concerns\HasMeta;
 
 enum AttendanceStatus: int
 {
     use HasMeta;
+    use HasOptions;
 
     case PRESENT = 1;
     case ABSENT = 2;
@@ -20,25 +22,25 @@ enum AttendanceStatus: int
     protected static function metaMap(): array
     {
         return [
-            self::PRESENT->name => [
+            self::PRESENT->value => [
                 'label' => 'Present',
-                'variant' => 'badge-success',
+                'variant' => 'badge-present',
             ],
-            self::ABSENT->name => [
+            self::ABSENT->value => [
                 'label' => 'Absent',
-                'variant' => 'badge-danger',
+                'variant' => 'badge-absent',
             ],
-            self::LATE->name => [
+            self::LATE->value => [
                 'label' => 'Late',
-                'variant' => 'badge-warning',
+                'variant' => 'badge-late',
             ],
-            self::ON_TIME->name => [
+            self::ON_TIME->value => [
                 'label' => 'On Time',
-                'variant' => 'badge-info',
+                'variant' => 'badge-on-time',
             ],
-            self::OVERTIME->name => [
+            self::OVERTIME->value => [
                 'label' => 'Overtime',
-                'variant' => 'badge-primary',
+                'variant' => 'badge-overtime',
             ],
         ];
     }

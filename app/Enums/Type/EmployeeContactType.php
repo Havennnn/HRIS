@@ -20,13 +20,13 @@ enum EmployeeContactType: int
     protected static function metaMap(): array
     {
         return [
-            self::RELATIVE->name => [
+            self::RELATIVE->value => [
                 'label' => 'Relative',
             ],
-            self::PARENT->name => [
+            self::PARENT->value => [
                 'label' => 'Parent',
             ],
-            self::OTHERS->name => [
+            self::OTHERS->value => [
                 'label' => 'Others',
             ],
         ];

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin\Department;
 
-use App\Http\Requests\Admin\DepartmentRequest;
-use App\Http\Resources\Admin\DepartmentResource;
+use App\Http\Requests\Admin\Department\DepartmentRequest;
+use App\Http\Resources\Admin\Department\DepartmentResource;
 use App\Models\Department;
-use App\Services\DepartmentService;
+use App\Services\Admin\Department\DepartmentService;
 use Illuminate\Http\Request;
 use PiaCore\Actions\Resource\CreateAction;
 use PiaCore\Actions\Resource\DeleteAction;

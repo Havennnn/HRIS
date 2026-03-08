@@ -7,7 +7,6 @@ import {
     Building2,
     CalendarDays,
     ClipboardList,
-    Clock,
     DollarSign,
     LayoutGrid,
     Shield,
@@ -30,25 +29,13 @@ const sectionItems = [
             { title: 'Departments', href: departments.index(), icon: Building2 },
             { title: 'Positions', href: '/positions', icon: Briefcase },
             { title: 'Employees', href: '/employees', icon: Users },
-        ],
-    },
-    {
-        label: 'Attendance',
-        items: [
-            { title: 'Shifts', href: '/shifts', icon: Clock },
             { title: 'Attendance Logs', href: '/attendance-logs', icon: CalendarDays },
-            { title: 'Attendance', href: '/attendances', icon: ClipboardList },
         ],
     },
     {
-        label: 'Leave Management',
+        label: 'Compensation & Benefits',
         items: [
             { title: 'Leave Requests', href: '/leave-requests', icon: CalendarDays },
-        ],
-    },
-    {
-        label: 'Payroll',
-        items: [
             { title: 'Payroll', href: '/payrolls', icon: DollarSign },
         ],
     },

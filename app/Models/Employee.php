@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Notifications\Notifiable;
+use PiaCore\Concerns\HasOptions;
 use PiaCore\Models\Concerns\HasActivityLogs;
 use PiaCore\Models\Concerns\HasArchives;
 
@@ -19,112 +20,102 @@ class Employee extends Model
     use HasActivityLogs;
     use HasArchives;
     use Notifiable;
+    use HasOptions;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * --------------------------------------------------------------------------
+     * Attributes
+     * --------------------------------------------------------------------------
      */
+
     protected $fillable = [
         'position_id',
         'first_name',
         'last_name',
         'middle_name',
         'birthdate',
+        'hired_date',
         'mobile_number',
         'email',
         'status',
         'type',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'birthdate' => 'date',
+        'hired_date' => 'date',
         'status' => EmployeeStatus::class,
         'type' => EmployeeType::class,
     ];
 
     /**
-     * Get the position that owns the employee.
+     * --------------------------------------------------------------------------
+     * Relationships
+     * --------------------------------------------------------------------------
      */
+
     public function position(): BelongsTo
     {
         return $this->belongsTo(Position::class);
     }
 
-    /**
-     * Get the employee's documents.
-     */
     public function documents(): HasMany
     {
         return $this->hasMany(EmployeeDocument::class);
     }
 
-    /**
-     * Get the employee's contacts.
-     */
     public function contacts(): HasMany
     {
         return $this->hasMany(EmployeeContact::class);
     }
 
-    /**
-     * Get the employee's tools.
-     */
     public function tools(): HasOne
     {
         return $this->hasOne(EmployeeTool::class);
     }
 
-    /**
-     * Get the employee's devices.
-     */
     public function devices(): HasOne
     {
         return $this->hasOne(EmployeeDevice::class);
     }
 
-    /**
-     * Get the employee's shift.
-     */
     public function shift(): HasOne
     {
         return $this->hasOne(Shift::class);
     }
 
-    /**
-     * Get the employee's attendance logs.
-     */
     public function attendanceLogs(): HasMany
     {
         return $this->hasMany(AttendanceLog::class);
     }
 
-    /**
-     * Get the employee's attendances.
-     */
     public function attendances(): HasMany
     {
         return $this->hasMany(Attendance::class);
     }
 
-    /**
-     * Get the employee's leave requests.
-     */
     public function leaveRequests(): HasMany
     {
         return $this->hasMany(LeaveRequest::class);
     }
 
-    /**
-     * Get the employee's payroll records.
-     */
     public function payrolls(): HasMany
     {
         return $this->hasMany(Payroll::class);
+    }
+
+    /**
+     * --------------------------------------------------------------------------
+     * Accessors
+     * --------------------------------------------------------------------------
+     */
+
+    public function getFullNameAttribute(): string
+    {
+        $middleInitial = $this->middle_name
+            ? strtoupper(substr($this->middle_name, 0, 1)) . '.'
+            : null;
+
+        return trim("{$this->first_name} {$middleInitial} {$this->last_name}");
     }
 }

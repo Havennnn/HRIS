@@ -5,7 +5,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { create, destroy, edit, index, restore } from '@/routes/departments';
 import type { BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { Building2 } from 'lucide-vue-next';
+import { ArrowUpDown } from 'lucide-vue-next';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import type { DataTableActionsConfig, DataTableColumn } from 'piacore/components/DataTable.vue';
 import DataTable from 'piacore/components/DataTable.vue';
@@ -47,7 +47,7 @@ const columns: DataTableColumn[] = [
     },
     {
         key: 'created_at',
-        label: 'Created At',
+        label: 'Created Date',
         cellClass: 'text-muted-foreground',
         cell: ({ row }) => (row as DepartmentResource).created_at,
     },
@@ -86,7 +86,7 @@ const sorts = [
     {
         key: 'name',
         label: 'Sort',
-        icon: Building2,
+        icon: ArrowUpDown,
         menuLabel: 'Sort Departments',
         widthClass: 'w-44',
         options: [

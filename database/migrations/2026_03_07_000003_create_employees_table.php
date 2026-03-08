@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Status\EmployeeStatus;
 use App\Models\Position;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -21,8 +22,8 @@ return new class extends Migration
             $table->date('birthdate');
             $table->string('mobile_number');
             $table->string('email');
-            $table->date('hired_date');
-            $table->unsignedTinyInteger('status');
+            $table->date('hired_date')->nullable();
+            $table->unsignedTinyInteger('status')->default(EmployeeStatus::ACTIVE);
             $table->unsignedTinyInteger('type');
             $table->timestamps();
             $table->archives();

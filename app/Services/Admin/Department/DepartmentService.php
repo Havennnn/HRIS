@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Admin\Department;
 
-use App\Models\Department;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;

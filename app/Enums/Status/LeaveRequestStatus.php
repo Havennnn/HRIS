@@ -2,11 +2,13 @@
 
 namespace App\Enums\Status;
 
+use PiaCore\Concerns\HasOptions;
 use PiaCore\Enums\Concerns\HasMeta;
 
 enum LeaveRequestStatus: int
 {
     use HasMeta;
+    use HasOptions;
 
     case PENDING = 1;
     case APPROVED = 2;
@@ -19,21 +21,21 @@ enum LeaveRequestStatus: int
     protected static function metaMap(): array
     {
         return [
-            self::PENDING->name => [
+            self::PENDING->value => [
                 'label' => 'Pending',
-                'variant' => 'badge-warning',
+                'variant' => 'badge-pending',
             ],
-            self::APPROVED->name => [
+            self::APPROVED->value => [
                 'label' => 'Approved',
-                'variant' => 'badge-success',
+                'variant' => 'badge-approved',
             ],
-            self::REJECTED->name => [
+            self::REJECTED->value => [
                 'label' => 'Rejected',
-                'variant' => 'badge-danger',
+                'variant' => 'badge-rejected',
             ],
-            self::CANCELLED->name => [
+            self::CANCELLED->value => [
                 'label' => 'Cancelled',
-                'variant' => 'badge-secondary',
+                'variant' => 'badge-cancelled',
             ],
         ];
     }

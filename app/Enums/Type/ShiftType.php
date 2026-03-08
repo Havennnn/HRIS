@@ -21,21 +21,17 @@ enum ShiftType: int
     protected static function metaMap(): array
     {
         return [
-            self::MORNING->name => [
+            self::MORNING->value => [
                 'label' => 'Morning',
-                'variant' => 'badge-info',
             ],
-            self::AFTERNOON->name => [
+            self::AFTERNOON->value => [
                 'label' => 'Afternoon',
-                'variant' => 'badge-warning',
             ],
-            self::NIGHT->name => [
+            self::NIGHT->value => [
                 'label' => 'Night',
-                'variant' => 'badge-secondary',
             ],
-            self::FLEXIBLE->name => [
+            self::FLEXIBLE->value => [
                 'label' => 'Flexible',
-                'variant' => 'badge-primary',
             ],
         ];
     }

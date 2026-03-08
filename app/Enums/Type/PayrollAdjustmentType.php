@@ -19,13 +19,11 @@ enum PayrollAdjustmentType: int
     protected static function metaMap(): array
     {
         return [
-            self::BONUS->name => [
+            self::BONUS->value => [
                 'label' => 'Bonus',
-                'variant' => 'badge-success',
             ],
-            self::DEDUCTION->name => [
+            self::DEDUCTION->value => [
                 'label' => 'Deduction',
-                'variant' => 'badge-danger',
             ],
         ];
     }

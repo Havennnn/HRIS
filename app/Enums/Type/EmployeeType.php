@@ -20,13 +20,13 @@ enum EmployeeType: int
     protected static function metaMap(): array
     {
         return [
-            self::TRAINEE->name => [
+            self::TRAINEE->value => [
                 'label' => 'Trainee',
             ],
-            self::REGULAR->name => [
+            self::REGULAR->value => [
                 'label' => 'Regular',
             ],
-            self::PROBATIONARY->name => [
+            self::PROBATIONARY->value => [
                 'label' => 'Probationary',
             ],
         ];

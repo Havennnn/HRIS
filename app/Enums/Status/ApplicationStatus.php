@@ -2,11 +2,13 @@
 
 namespace App\Enums\Status;
 
+use PiaCore\Concerns\HasOptions;
 use PiaCore\Enums\Concerns\HasMeta;
 
 enum ApplicationStatus: int
 {
     use HasMeta;
+    use HasOptions;
 
     case PENDING = 1;
     case REVIEWING = 2;
@@ -20,25 +22,25 @@ enum ApplicationStatus: int
     protected static function metaMap(): array
     {
         return [
-            self::PENDING->name => [
+            self::PENDING->value => [
                 'label' => 'Pending',
-                'variant' => 'badge-warning',
+                'variant' => 'badge-pending',
             ],
-            self::REVIEWING->name => [
+            self::REVIEWING->value => [
                 'label' => 'Reviewing',
-                'variant' => 'badge-info',
+                'variant' => 'badge-reviewing',
             ],
-            self::INTERVIEW->name => [
+            self::INTERVIEW->value => [
                 'label' => 'Interview',
-                'variant' => 'badge-primary',
+                'variant' => 'badge-interview',
             ],
-            self::REJECTED->name => [
+            self::REJECTED->value => [
                 'label' => 'Rejected',
-                'variant' => 'badge-danger',
+                'variant' => 'badge-rejected',
             ],
-            self::HIRED->name => [
+            self::HIRED->value => [
                 'label' => 'Hired',
-                'variant' => 'badge-success',
+                'variant' => 'badge-hired',
             ],
         ];
     }

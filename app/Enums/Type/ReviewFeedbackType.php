@@ -20,17 +20,14 @@ enum ReviewFeedbackType: int
     protected static function metaMap(): array
     {
         return [
-            self::STRENGTH->name => [
+            self::STRENGTH->value => [
                 'label' => 'Strength',
-                'variant' => 'badge-success',
             ],
-            self::IMPROVEMENT->name => [
+            self::IMPROVEMENT->value => [
                 'label' => 'Improvement',
-                'variant' => 'badge-warning',
             ],
-            self::GENERAL->name => [
+            self::GENERAL->value => [
                 'label' => 'General',
-                'variant' => 'badge-info',
             ],
         ];
     }

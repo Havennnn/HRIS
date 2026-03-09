@@ -18,7 +18,7 @@ class AttendanceLog extends Model
      * Attributes
      * --------------------------------------------------------------------------
      */
-    
+
     protected $fillable = [
         'employee_id',
         'type',
@@ -31,8 +31,8 @@ class AttendanceLog extends Model
     ];
 
     protected array $searchable = [
-        'type',
-        'timestamp',
+         'employee.first_name',
+         'employee.last_name',
     ];
 
     /**

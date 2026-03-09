@@ -21,9 +21,9 @@ class Application extends Model
      * Attributes
      * --------------------------------------------------------------------------
      */
-    
+
     protected $fillable = [
-        'job_id',
+        'career_id',
         'first_name',
         'last_name',
         'middle_name',
@@ -44,7 +44,7 @@ class Application extends Model
      * --------------------------------------------------------------------------
      */
 
-    public function job(): BelongsTo
+    public function career(): BelongsTo
     {
         return $this->belongsTo(Career::class);
     }
@@ -52,5 +52,10 @@ class Application extends Model
     public function details(): HasOne
     {
         return $this->hasOne(ApplicationDetail::class);
+    }
+
+    public function interview(): HasOne
+    {
+        return $this->hasOne(ApplicationInterview::class);
     }
 }

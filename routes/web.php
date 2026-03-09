@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\Department\PositionController;
 use App\Http\Controllers\Admin\Employee\AttendanceController;
 use App\Http\Controllers\Admin\Employee\EmployeeController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,12 +65,38 @@ Route::middleware(['auth:admin'])->group(function (): void {
             // Attendance Routes
             Route::get('/{employee}/attendance', [AttendanceController::class, 'index'])->middleware('can-list-attendances')->name('attendance.index');
         });
-    
+
     // Attendance Log Management Routes
     Route::prefix('attendance-logs')
         ->name('attendance-logs.')
         ->controller(AttendanceLogController::class)
         ->group(function (): void {
             Route::get('/', 'index')->middleware('can-list-attendance-logs')->name('index');
+        });
+
+    // Career Management Routes
+    Route::prefix('careers')
+        ->name('careers.')
+        ->group(function (): void {
+            Route::get('/', fn () => Inertia::render('Admin/Careers/Index'))->name('index');
+            Route::get('/create', fn () => Inertia::render('Admin/Careers/Create'))->name('create');
+            Route::post('/', fn () => redirect()->route('careers.index'))->name('store');
+            Route::get('/{career}/edit', fn () => Inertia::render('Admin/Careers/Edit'))->name('edit');
+            Route::patch('/{career}', fn () => redirect()->route('careers.index'))->name('update');
+            Route::delete('/{career}', fn () => redirect()->route('careers.index'))->name('destroy');
+            Route::patch('/{career}/restore', fn () => redirect()->route('careers.index'))->name('restore')->withTrashed();
+        });
+
+    // Application Management Routes
+    Route::prefix('applications')
+        ->name('applications.')
+        ->group(function (): void {
+            Route::get('/', fn () => Inertia::render('Admin/Applications/Index'))->name('index');
+            Route::get('/create', fn () => Inertia::render('Admin/Applications/Create'))->name('create');
+            Route::post('/', fn () => redirect()->route('applications.index'))->name('store');
+            Route::get('/{application}/show', fn () => Inertia::render('Admin/Applications/Show'))->name('show');
+            Route::patch('/{application}', fn () => redirect()->route('applications.index'))->name('update');
+            Route::delete('/{application}', fn () => redirect()->route('applications.index'))->name('destroy');
+            Route::patch('/{application}/restore', fn () => redirect()->route('applications.index'))->name('restore')->withTrashed();
         });
 });

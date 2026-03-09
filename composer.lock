@@ -1763,16 +1763,16 @@
         },
         {
             "name": "latsmarbls/piacore",
-            "version": "v1.0.23",
+            "version": "v1.0.24",
             "source": {
                 "type": "git",
                 "url": "git@github.com:Havennnn/piacore.git",
-                "reference": "eec6106c86d95d08b77568f8353aac43e34c30b6"
+                "reference": "5e11ef5f31803c22efae862375abec2e838d3afa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Havennnn/piacore/zipball/eec6106c86d95d08b77568f8353aac43e34c30b6",
-                "reference": "eec6106c86d95d08b77568f8353aac43e34c30b6",
+                "url": "https://api.github.com/repos/Havennnn/piacore/zipball/5e11ef5f31803c22efae862375abec2e838d3afa",
+                "reference": "5e11ef5f31803c22efae862375abec2e838d3afa",
                 "shasum": ""
             },
             "require": {
@@ -1825,10 +1825,10 @@
             ],
             "description": "Reusable CRUD action core for Laravel + Inertia admin panels.",
             "support": {
-                "source": "https://github.com/Havennnn/piacore/tree/v1.0.23",
+                "source": "https://github.com/Havennnn/piacore/tree/v1.0.24",
                 "issues": "https://github.com/Havennnn/piacore/issues"
             },
-            "time": "2026-03-09T12:09:56+00:00"
+            "time": "2026-03-09T19:48:48+00:00"
         },
         {
             "name": "league/commonmark",

@@ -189,13 +189,11 @@ function handlePageChange(url: string | null): void {
                         :tabs="tabs"
                         :active-tab="activeTab"
                         :activity-log="true"
+                        :search-placeholder="searchPlaceholder"
                         :search-query="search"
                         :filters="filters"
                         :sorts="sorts"
-                        :show-date-range="true"
-                        :date-range="dateRange"
-                        :search-placeholder="searchPlaceholder"
-                        @update:date-range="updateDateRange"
+                        :show-date-range='false'
                     />
 
                     <DataTable

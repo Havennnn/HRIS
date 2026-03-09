@@ -4,6 +4,7 @@
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
+@source '../../vendor/latsmarbls/piacore/resources/js/**/*.{vue,js,ts}';
 
 @custom-variant dark (&:is(.dark *));
 

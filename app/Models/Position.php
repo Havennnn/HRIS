@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use PiaCore\Concerns\HasOptions;
 use PiaCore\Models\Concerns\HasActivityLogs;
 use PiaCore\Models\Concerns\HasArchives;
+use PiaCore\Search\SearchConfig;
 
 class Position extends Model
 {
@@ -16,16 +17,28 @@ class Position extends Model
     use HasArchives;
     use HasActivityLogs;
     use HasOptions;
+    use SearchConfig;
 
     /**
      * --------------------------------------------------------------------------
      * Attributes
      * --------------------------------------------------------------------------
      */
-    
+
     protected $fillable = [
         'department_id',
         'name',
+    ];
+
+    /**
+     * --------------------------------------------------------------------------
+     * Search Configuration
+     * --------------------------------------------------------------------------
+     */
+
+    protected array $searchable = [
+        'name',
+        'department.name',
     ];
 
     /**

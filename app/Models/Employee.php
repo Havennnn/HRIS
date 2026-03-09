@@ -13,6 +13,7 @@ use Illuminate\Notifications\Notifiable;
 use PiaCore\Concerns\HasOptions;
 use PiaCore\Models\Concerns\HasActivityLogs;
 use PiaCore\Models\Concerns\HasArchives;
+use PiaCore\Search\SearchConfig;
 
 class Employee extends Model
 {
@@ -21,6 +22,7 @@ class Employee extends Model
     use HasArchives;
     use Notifiable;
     use HasOptions;
+    use SearchConfig;
 
     /**
      * --------------------------------------------------------------------------
@@ -46,6 +48,22 @@ class Employee extends Model
         'hired_date' => 'date',
         'status' => EmployeeStatus::class,
         'type' => EmployeeType::class,
+    ];
+
+    /**
+     * --------------------------------------------------------------------------
+     * Search Configuration
+     * --------------------------------------------------------------------------
+     */
+
+    protected array $searchable = [
+        'first_name',
+        'last_name',
+        'middle_name',
+        'email',
+        'mobile_number',
+        'position.name',
+        'position.department.name',
     ];
 
     /**

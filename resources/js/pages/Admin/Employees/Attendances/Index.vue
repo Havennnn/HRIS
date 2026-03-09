@@ -167,11 +167,10 @@ function handlePageChange(url: string | null): void {
                 :tabs="tabs"
                 :active-tab="activeTab"
                 :activity-log="true"
-                :search-query="search"
                 :filters="filters"
                 :sorts="sorts"
+                :show-search="false"
                 :show-date-range="true"
-                :search-placeholder="searchPlaceholder"
             />
 
             <!-- Data Table -->

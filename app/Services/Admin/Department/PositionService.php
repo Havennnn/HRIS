@@ -21,6 +21,9 @@ class PositionService implements ListsRecords
     public function list(Model|string|Relation $model, Request $request): array
     {
         return [
+            'baseQuery' => function (Builder $query): Builder {
+                return $query->with('department');
+            },
             'tabs' => [
                 'default' => [
                     'countKey' => 'defaultCount',
@@ -36,7 +39,6 @@ class PositionService implements ListsRecords
             ],
             'sorts' => [
                 'name' => 'name',
-                'department' => 'department_id',
                 'created' => 'created_at',
             ],
         ];

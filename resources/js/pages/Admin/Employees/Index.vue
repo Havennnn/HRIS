@@ -137,14 +137,15 @@ const filters = [
 
 const sorts = [
     {
-        key: 'name',
         label: 'Sort',
         icon: ArrowUpDown,
         menuLabel: 'Sort Employees',
         widthClass: 'w-44',
         options: [
-            { value: 'asc', label: 'Name (A-Z)' },
-            { value: 'desc', label: 'Name (Z-A)' },
+            { value: 'asc', key: 'name', label: 'Name (A-Z)' },
+            { value: 'desc', key: 'name', label: 'Name (Z-A)' },
+            { value: 'asc', key: 'created', label: 'Created Date (Oldest)' },
+            { value: 'desc', key: 'created', label: 'Created Date (Newest)' },
         ],
     },
 ];
@@ -163,6 +164,7 @@ function handlePageChange(url: string | null): void {
         router.visit(url, { preserveState: true });
     }
 }
+
 </script>
 
 <template>
@@ -191,7 +193,9 @@ function handlePageChange(url: string | null): void {
                         :filters="filters"
                         :sorts="sorts"
                         :show-date-range="true"
+                        :date-range="dateRange"
                         :search-placeholder="searchPlaceholder"
+                        @update:date-range="updateDateRange"
                     />
 
                     <DataTable

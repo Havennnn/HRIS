@@ -91,14 +91,15 @@ const filters = [
 
 const sorts = [
     {
-        key: 'name',
         label: 'Sort',
         icon: ArrowUpDown,
         menuLabel: 'Sort Positions',
-        widthClass: 'w-44',
+        widthClass: 'w-64',
         options: [
-            { value: 'asc', label: 'Name (A-Z)' },
-            { value: 'desc', label: 'Name (Z-A)' },
+            { value: 'asc', key:'name', label: 'Name (A-Z)' },
+            { value: 'desc', key:'name', label: 'Name (Z-A)' },
+            { value: 'asc', key:'created', label: 'Created Date (Oldest)' },
+            { value: 'desc', key:'created', label: 'Created Date (Newest)' },
         ],
     },
 ];

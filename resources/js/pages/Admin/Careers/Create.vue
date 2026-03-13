@@ -8,7 +8,6 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { create, index, store } from '@/routes/careers';
 import type { BreadcrumbItem } from '@/types';
@@ -120,11 +119,6 @@ function submit(): void {
                             </div>
 
                             <div class="flex items-center gap-4">
-                                <Switch
-                                    id="is_active"
-                                    v-model="form.is_active"
-                                    :checked="form.is_active"
-                                />
                                 <Label for="is_active">
                                     Active Status
                                 </Label>

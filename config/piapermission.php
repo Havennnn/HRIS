@@ -239,4 +239,36 @@ return [
             AdminRole::SUPER_ADMIN,
         ],
     ],
+
+    // Holiday Management Permissions
+    'can-list-holidays' => [
+        'label' => 'List Holidays',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-create-holiday' => [
+        'label' => 'Create Holiday',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-update-holiday' => [
+        'label' => 'Update Holiday',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-archive-holiday' => [
+        'label' => 'Archive Holiday',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-restore-holiday' => [
+        'label' => 'Restore Holiday',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
 ];

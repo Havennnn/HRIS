@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             AttendanceSeeder::class,
             AttendanceLogSeeder::class,
             RequestSeeder::class,
+            HolidaySeeder::class,
         ]);
 
         // User::factory(10)->create();

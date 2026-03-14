@@ -110,7 +110,7 @@ const tabs = computed(() => [
     {
         key: 'activity_logs',
         label: 'Activity Log',
-        route: edit({ employee: employeeData.value?.id as number }).url + '?tab=activity-logs',
+        route: edit({ employee: employeeData.value?.id as number }).url + '?tab=activity_logs',
     },
 ]);
 

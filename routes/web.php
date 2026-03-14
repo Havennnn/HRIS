@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\Admin\AttendanceLog\AttendanceLogController;
+use App\Http\Controllers\Admin\Calendar\CalendarController;
 use App\Http\Controllers\Admin\Department\DepartmentController;
 use App\Http\Controllers\Admin\Department\PositionController;
 use App\Http\Controllers\Admin\Employee\AttendanceController;
 use App\Http\Controllers\Admin\Employee\EmployeeController;
+use App\Http\Controllers\Admin\Holiday\HolidayController;
 use App\Http\Controllers\Admin\Payroll\PayrollController;
 use App\Http\Controllers\Admin\Request\RequestController;
 use Illuminate\Support\Facades\Route;
@@ -124,5 +126,27 @@ Route::middleware(['auth:admin'])->group(function (): void {
         ->group(function (): void {
             Route::get('/', 'index')->middleware('can-list-payrolls')->name('index');
             Route::get('/{payroll}', 'show')->middleware('can-list-payrolls')->name('show');
+        });
+
+    // Calendar Management Routes
+    Route::prefix('calendar')
+        ->name('calendar.')
+        ->controller(CalendarController::class)
+        ->group(function (): void {
+            Route::get('/', 'index')->name('index');
+        });
+
+    // Holiday Management Routes
+    Route::prefix('holidays')
+        ->name('holidays.')
+        ->controller(HolidayController::class)
+        ->group(function (): void {
+            Route::get('/', 'index')->middleware('can-list-holidays')->name('index');
+            Route::get('/create', 'create')->middleware('can-create-holiday')->name('create');
+            Route::post('/', 'store')->middleware('can-create-holiday')->name('store');
+            Route::get('/{holiday}/edit', 'edit')->middleware('can-update-holiday')->name('edit');
+            Route::patch('/{holiday}', 'update')->middleware('can-update-holiday')->name('update');
+            Route::delete('/{holiday}', 'destroy')->middleware('can-archive-holiday')->name('destroy');
+            Route::patch('/{holiday}/restore', 'restore')->middleware('can-restore-holiday')->name('restore')->withTrashed();
         });
 });

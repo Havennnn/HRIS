@@ -8,6 +8,7 @@ import requests from '@/routes/requests/index';
 import {
     Building2,
     CalendarDays,
+    CalendarHeart,
     CalendarX,
     ClipboardList,
     DollarSign,
@@ -40,6 +41,7 @@ const sectionItems = [
     {
         label: 'Compensation & Benefits',
         items: [
+            { title: 'Holiday Calendar', href: '/holidays', icon: CalendarHeart },
             { title: 'Requests', href: requests.index().url, icon: CalendarX },
             { title: 'Payroll', href: '/payrolls', icon: DollarSign },
         ],

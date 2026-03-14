@@ -39,6 +39,9 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
 const form = useForm({
     department_id: positionData.value?.department_id ?? '',
     name: positionData.value?.name ?? '',
+    salary: positionData.value?.salary?.toString() ?? '',
+    allowance: positionData.value?.allowance?.toString() ?? '',
+    level: positionData.value?.level ?? '',
 });
 
 const headerActions = computed(() => [
@@ -151,6 +154,77 @@ function submit(): void {
                                 >
                                     {{ form.errors.name }}
                                 </p>
+                            </div>
+
+                            <div class="grid gap-6 md:grid-cols-3">
+                                <div class="space-y-2">
+                                    <Label for="level">
+                                        Level
+                                    </Label>
+
+                                    <Input
+                                        id="level"
+                                        v-model="form.level"
+                                        placeholder="e.g., Junior, Senior, Lead"
+                                        :disabled="form.processing"
+                                        :aria-invalid="form.errors.level ? 'true' : undefined"
+                                    />
+
+                                    <p
+                                        v-if="form.errors.level"
+                                        class="text-destructive text-xs font-medium"
+                                    >
+                                        {{ form.errors.level }}
+                                    </p>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <Label for="salary">
+                                        Salary
+                                    </Label>
+
+                                    <Input
+                                        id="salary"
+                                        v-model="form.salary"
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        placeholder="0.00"
+                                        :disabled="form.processing"
+                                        :aria-invalid="form.errors.salary ? 'true' : undefined"
+                                    />
+
+                                    <p
+                                        v-if="form.errors.salary"
+                                        class="text-destructive text-xs font-medium"
+                                    >
+                                        {{ form.errors.salary }}
+                                    </p>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <Label for="allowance">
+                                        Allowance
+                                    </Label>
+
+                                    <Input
+                                        id="allowance"
+                                        v-model="form.allowance"
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        placeholder="0.00"
+                                        :disabled="form.processing"
+                                        :aria-invalid="form.errors.allowance ? 'true' : undefined"
+                                    />
+
+                                    <p
+                                        v-if="form.errors.allowance"
+                                        class="text-destructive text-xs font-medium"
+                                    >
+                                        {{ form.errors.allowance }}
+                                    </p>
+                                </div>
                             </div>
 
                             <div class="flex justify-end gap-3">

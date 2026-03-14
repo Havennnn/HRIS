@@ -112,9 +112,9 @@ class Employee extends Model
         return $this->hasMany(Attendance::class);
     }
 
-    public function leaveRequests(): HasMany
+    public function requests(): HasMany
     {
-        return $this->hasMany(LeaveRequest::class);
+        return $this->hasMany(Request::class);
     }
 
     public function payrolls(): HasMany
@@ -135,5 +135,13 @@ class Employee extends Model
             : null;
 
         return trim("{$this->first_name} {$middleInitial} {$this->last_name}");
+    }
+
+    /**
+     * Get the column name to use for the option label.
+     */
+    protected static function optionLabelColumn(): string
+    {
+        return 'first_name';
     }
 }

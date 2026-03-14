@@ -16,6 +16,9 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(Department::class)->constrained()->cascadeOnDelete();
             $table->string('name');
+            $table->string('level')->nullable();
+            $table->decimal('salary', 10, 2)->nullable();
+            $table->decimal('allowance', 10, 2)->nullable();
             $table->timestamps();
             $table->archives();
 

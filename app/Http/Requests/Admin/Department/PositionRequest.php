@@ -48,6 +48,9 @@ class PositionRequest extends FormRequest
         return [
             'department_id' => ['required', 'exists:departments,id'],
             'name' => ['required', 'string', 'max:255', Rule::unique(Position::class)->ignore($id)],
+            'salary' => ['nullable', 'numeric', 'min:0'],
+            'allowance' => ['nullable', 'numeric', 'min:0'],
+            'level' => ['nullable', 'string', 'max:100'],
         ];
     }
 }

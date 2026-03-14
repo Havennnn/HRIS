@@ -162,5 +162,55 @@ return [
         'roles' => [
             AdminRole::SUPER_ADMIN,
         ],
-    ]
+    ],
+
+    // Request Management Permissions
+    'can-list-requests' => [
+        'label' => 'List Requests',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-view-request' => [
+        'label' => 'View Request',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-approve-request' => [
+        'label' => 'Approve Request',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-reject-request' => [
+        'label' => 'Reject Request',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-cancel-request' => [
+        'label' => 'Cancel Request',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-complete-request' => [
+        'label' => 'Complete Request',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-archive-request' => [
+        'label' => 'Archive Request',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-restore-request' => [
+        'label' => 'Restore Request',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
 ];

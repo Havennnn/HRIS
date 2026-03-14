@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\Department\DepartmentController;
 use App\Http\Controllers\Admin\Department\PositionController;
 use App\Http\Controllers\Admin\Employee\AttendanceController;
 use App\Http\Controllers\Admin\Employee\EmployeeController;
+use App\Http\Controllers\Admin\Request\RequestController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -98,5 +99,20 @@ Route::middleware(['auth:admin'])->group(function (): void {
             Route::patch('/{application}', fn () => redirect()->route('applications.index'))->name('update');
             Route::delete('/{application}', fn () => redirect()->route('applications.index'))->name('destroy');
             Route::patch('/{application}/restore', fn () => redirect()->route('applications.index'))->name('restore')->withTrashed();
+        });
+
+    // Request Management Routes
+    Route::prefix('requests')
+        ->name('requests.')
+        ->controller(RequestController::class)
+        ->group(function (): void {
+            Route::get('/', 'index')->middleware('can-list-requests')->name('index');
+            Route::get('/{request}', 'show')->middleware('can-view-request')->name('show');
+            Route::post('/{request}/approve', 'approve')->middleware('can-approve-request')->name('approve');
+            Route::post('/{request}/reject', 'reject')->middleware('can-reject-request')->name('reject');
+            Route::post('/{request}/cancel', 'cancel')->middleware('can-cancel-request')->name('cancel');
+            Route::post('/{request}/complete', 'complete')->middleware('can-complete-request')->name('complete');
+            Route::delete('/{request}', 'destroy')->middleware('can-archive-request')->name('destroy');
+            Route::patch('/{request}/restore', 'restore')->middleware('can-restore-request')->name('restore')->withTrashed();
         });
 });

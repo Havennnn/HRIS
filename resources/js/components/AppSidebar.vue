@@ -4,6 +4,7 @@ import departments from '@/routes/departments/index';
 import employees from '@/routes/employees/index';
 import { dashboard } from '@/routes/index';
 import positions from '@/routes/positions/index';
+import requests from '@/routes/requests/index';
 import {
     Building2,
     CalendarDays,
@@ -30,16 +31,16 @@ const sectionItems = [
     {
         label: 'Human Resources',
         items: [
-            { title: 'Departments', href: departments.index(), icon: Building2 },
-            { title: 'Positions', href: positions.index(), icon: UserCog },
-            { title: 'Employees', href: employees.index(), icon: Users },
+            { title: 'Departments', href: departments.index().url, icon: Building2 },
+            { title: 'Positions', href: positions.index().url, icon: UserCog },
+            { title: 'Employees', href: employees.index().url, icon: Users },
             { title: 'Attendance Logs', href: '/attendance-logs', icon: CalendarDays },
         ],
     },
     {
         label: 'Compensation & Benefits',
         items: [
-            { title: 'Leave Requests', href: '/leave-requests', icon: CalendarX },
+            { title: 'Requests', href: requests.index().url, icon: CalendarX },
             { title: 'Payroll', href: '/payrolls', icon: DollarSign },
         ],
     },
@@ -67,8 +68,8 @@ const settingsItem = {
 </script>
 
 <template>
-    <AppSidebarDefault 
-        :section-items="sectionItems" 
+    <AppSidebarDefault
+        :section-items="sectionItems"
         :settings-item="settingsItem"
     >
         <slot />

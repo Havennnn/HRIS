@@ -19,7 +19,7 @@ class EmployeeIndexResource extends JsonResource
             'position' => $this->position?->name,
             'department' => $this->position?->department?->name,
             'full_name' => $this->full_name,
-            'birthdate' => $this->birthdate?->toDateString(),
+            'birthdate' => $this->birthdate?->format('M d, Y'),
             'mobile_number' => $this->mobile_number,
             'email' => $this->email,
             'status' => $this->status?->badge(),

@@ -22,7 +22,7 @@ class PositionService implements ListsRecords
     {
         return [
             'baseQuery' => function (Builder $query): Builder {
-                return $query->with('department');
+                return $query->with('department:id,name');
             },
             'tabs' => [
                 'default' => [
@@ -35,10 +35,12 @@ class PositionService implements ListsRecords
             ],
             'filters' => [
                 'department' => fn (Builder $query, $value) => $query->where('department_id', $value),
-                'name' => fn (Builder $query, $value) => $query->where('name', 'like', "%{$value}%"),
+                'level' => fn (Builder $query, $value) => $query->where('level', 'like', "%{$value}%"),
             ],
             'sorts' => [
                 'name' => 'name',
+                'salary' => 'salary',
+                'level' => 'level',
                 'created' => 'created_at',
             ],
         ];

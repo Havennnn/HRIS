@@ -22,6 +22,9 @@ class PositionResource extends JsonResource
             'department_id' => $this->department_id,
             'department' => $this->department?->name,
             'name' => $this->name,
+            'salary' => $this->salary,
+            'allowance' => $this->allowance,
+            'level' => $this->level,
             'created_at' => $this->created_at?->format('M d, Y'),
         ];
     }

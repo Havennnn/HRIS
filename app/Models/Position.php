@@ -28,6 +28,9 @@ class Position extends Model
     protected $fillable = [
         'department_id',
         'name',
+        'salary',
+        'allowance',
+        'level',
     ];
 
     /**
@@ -55,5 +58,27 @@ class Position extends Model
     public function employees(): HasMany
     {
         return $this->hasMany(Employee::class);
+    }
+
+    /**
+     * --------------------------------------------------------------------------
+     * Ovverrides
+     * --------------------------------------------------------------------------
+     */
+    public static function options(?int $limit = null): array
+    {
+        $query = static::query();
+
+        if ($limit !== null) {
+            $query->limit(max(1, $limit));
+        }
+
+        return $query
+            ->get(['id', 'name', 'level'])
+            ->map(fn ($record) => [
+                'value' => $record->id,
+                'label' => "{$record->name} - {$record->level}",
+            ])
+            ->all();
     }
 }

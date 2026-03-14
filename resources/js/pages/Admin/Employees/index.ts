@@ -16,14 +16,16 @@ export interface EmployeeIndexResource {
 export interface EmployeeEditResource {
     id: number;
     position_id: number;
-    position_name: string;
+    position: string;
+    position_level: string;
     department_id: number;
-    department_name: string;
+    department: string;
     first_name: string;
     last_name: string;
     middle_name: string;
     full_name: string;
     birthdate: string;
+    birthdate_formatted: string;
     hired_date: string | null;
     mobile_number: string;
     email: string;

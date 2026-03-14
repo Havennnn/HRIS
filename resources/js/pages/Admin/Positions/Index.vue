@@ -40,6 +40,30 @@ const columns: DataTableColumn[] = [
         },
     },
     {
+        key: 'level',
+        label: 'Level',
+        cellClass: 'text-muted-foreground',
+        cell: ({ row }) => (row as PositionResource).level ?? '-',
+    },
+    {
+        key: 'salary',
+        label: 'Salary',
+        cellClass: 'text-muted-foreground',
+        cell: ({ row }) => {
+            const position = row as PositionResource;
+            return position.salary ? `₱${Number(position.salary).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
+        },
+    },
+    {
+        key: 'allowance',
+        label: 'Allowance',
+        cellClass: 'text-muted-foreground',
+        cell: ({ row }) => {
+            const position = row as PositionResource;
+            return position.allowance ? `₱${Number(position.allowance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
+        },
+    },
+    {
         key: 'department',
         label: 'Department',
         cellClass: 'text-muted-foreground',

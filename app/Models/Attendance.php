@@ -18,7 +18,7 @@ class Attendance extends Model
      * Attributes
      * --------------------------------------------------------------------------
      */
-    
+
     protected $fillable = [
         'employee_id',
         'time_in',
@@ -27,6 +27,7 @@ class Attendance extends Model
         'overtime_minutes',
         'status',
         'date',
+        'request_id',
     ];
 
     protected $casts = [
@@ -54,5 +55,10 @@ class Attendance extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function request(): BelongsTo
+    {
+        return $this->belongsTo(Request::class);
     }
 }

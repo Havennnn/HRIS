@@ -21,32 +21,6 @@ return [
         ],
     ],
 
-    /*
-    |--------------------------------------------------------------------------
-    | UI / Render Configuration
-    |--------------------------------------------------------------------------
-    |
-    | Configure global layout and authentication page components here. These
-    | options are read by the UIManager and are available under the `ui`
-    | key in this file. Set values to `null` to use the package defaults.
-    |
-    */
-    'ui' => [
-        // Global layout component that wraps all admin pages (null = no custom layout)
-        'layout_component' => null,
-
-        // Sidebar/navigation component
-        'sidebar_component' => null,
-
-        // Top navigation bar component
-        'topbar_component' => null,
-
-        // Authentication layout and pages (have sensible defaults)
-        'auth_layout' => 'Auth/AuthLayout',
-        'login' => 'auth/Login',
-        'dashboard' => 'Dashboard',
-    ],
-
     'model_services' => [
         // App\Models\Product::class => App\Services\ProductService::class,
     ],

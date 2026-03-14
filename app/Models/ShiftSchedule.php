@@ -2,17 +2,13 @@
 
 namespace App\Models;
 
-use App\Enums\Type\ShiftType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use PiaCore\Models\Concerns\HasActivityLogs;
 
-class Shift extends Model
+class ShiftSchedule extends Model
 {
     use HasFactory;
-    use HasActivityLogs;
 
     /**
      * --------------------------------------------------------------------------
@@ -21,16 +17,20 @@ class Shift extends Model
      */
 
     protected $fillable = [
-        'employee_id',
-        'type',
-        'start',
-        'end',
+        'shift_id',
+        'weekday',
+        'start_time',
+        'end_time',
+        'effective_from',
+        'effective_to',
     ];
 
     protected $casts = [
-        'type' => ShiftType::class,
-        'start' => 'datetime:H:i',
-        'end' => 'datetime:H:i',
+        'weekday' => 'integer',
+        'start_time' => 'datetime:H:i',
+        'end_time' => 'datetime:H:i',
+        'effective_from' => 'date',
+        'effective_to' => 'date',
     ];
 
     /**
@@ -39,13 +39,8 @@ class Shift extends Model
      * --------------------------------------------------------------------------
      */
 
-    public function employee(): BelongsTo
+    public function shift(): BelongsTo
     {
-        return $this->belongsTo(Employee::class);
-    }
-
-    public function schedules(): HasMany
-    {
-        return $this->hasMany(ShiftSchedule::class);
+        return $this->belongsTo(Shift::class);
     }
 }

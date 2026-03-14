@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Status\PayrollStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,10 +21,14 @@ class Payroll extends Model
      */
     protected $fillable = [
         'employee_id',
+        'status',
         'basic_salary',
         'tax',
         'sss',
+        'pagibig',
+        'philhealth',
         'allowance',
+        'gross_pay',
         'net_pay',
         'pay_period_start',
         'pay_period_end',
@@ -31,9 +36,13 @@ class Payroll extends Model
 
     protected $casts = [
         'basic_salary' => 'decimal:2',
+        'status' => PayrollStatus::class,
         'tax' => 'decimal:2',
         'sss' => 'decimal:2',
+        'pagibig' => 'decimal:2',
+        'philhealth' => 'decimal:2',
         'allowance' => 'decimal:2',
+        'gross_pay' => 'decimal:2',
         'net_pay' => 'decimal:2',
         'pay_period_start' => 'date',
         'pay_period_end' => 'date',

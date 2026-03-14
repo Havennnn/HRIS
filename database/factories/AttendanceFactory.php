@@ -13,33 +13,32 @@ class AttendanceFactory extends Factory
 
     public function definition(): array
     {
-        $date = $this->faker->dateTimeBetween('-30 days', 'now')->format('Y-m-d');
-        $timeIn = sprintf('%02d:%02d', $this->faker->numberBetween(7, 9), $this->faker->numberBetween(0, 59));
-        
-        // Randomly decide if there's a time_out
-        $hasTimeOut = $this->faker->boolean(70);
-        $timeOut = $hasTimeOut 
-            ? sprintf('%02d:%02d', $this->faker->numberBetween(17, 20), $this->faker->numberBetween(0, 59))
-            : null;
-        
-        // Calculate late minutes if time_in is after 8:00 AM
-        $lateMinutes = strcmp($timeIn, '08:00') > 0 
-            ? $this->faker->numberBetween(1, 60) 
-            : 0;
-        
-        // Calculate overtime minutes if time_out is after 6:00 PM
-        $overtimeMinutes = $hasTimeOut && strcmp($timeOut ?? '18:00', '18:00') > 0
-            ? $this->faker->numberBetween(1, 120)
-            : 0;
+        $date = $this->faker->dateTimeBetween('-30 days', 'now');
+        $isAbsent = $this->faker->boolean(8);
+        $isLate = ! $isAbsent && $this->faker->boolean(18);
+
+        $lateMinutes = $isLate ? $this->faker->numberBetween(5, 40) : 0;
+        $timeIn = $isAbsent
+            ? null
+            : (clone $date)->setTime(8, 0)->modify("+{$lateMinutes} minutes");
+
+        $overtimeMinutes = 0;
+
+        $timeOut = $isAbsent
+            ? null
+            : (clone $date)->setTime(17, $this->faker->numberBetween(0, 30))->modify("+{$overtimeMinutes} minutes");
 
         return [
             'employee_id' => Employee::factory(),
-            'date' => $date,
+            'date' => $date->format('Y-m-d'),
             'time_in' => $timeIn,
             'time_out' => $timeOut,
             'late_minutes' => $lateMinutes,
             'overtime_minutes' => $overtimeMinutes,
-            'status' => $hasTimeOut ? AttendanceStatus::PRESENT : AttendanceStatus::ABSENT,
+            'status' => $isAbsent
+                ? AttendanceStatus::ABSENT
+                : ($isLate ? AttendanceStatus::LATE : AttendanceStatus::PRESENT),
+            'request_id' => null,
         ];
     }
 
@@ -67,6 +66,7 @@ class AttendanceFactory extends Factory
             'time_out' => null,
             'late_minutes' => 0,
             'overtime_minutes' => 0,
+            'request_id' => null,
         ]);
     }
 }

@@ -3,102 +3,493 @@
 namespace App\Services\Admin\Payroll;
 
 use App\Enums\Status\AttendanceStatus;
+use App\Enums\Status\EmployeeStatus;
+use App\Enums\Status\PayrollStatus;
 use App\Enums\Status\RequestStatus;
 use App\Enums\Type\PayrollAdjustmentType;
 use App\Enums\Type\RequestType;
 use App\Models\Attendance;
 use App\Models\Employee;
 use App\Models\Payroll;
-use App\Models\PayrollAdjustment;
 use App\Models\Request;
+use App\Models\ShiftSchedule;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class PayrollGenerationService
 {
     /**
-     * Configuration for payroll calculation.
-     * These can be moved to config file or database settings.
-     */
-    protected array $config = [
-        'working_days_per_month' => 22,
-        'hourly_rate_multiplier' => 1.25, // Overtime rate multiplier
-        'late_deduction_per_minute' => 0.50,
-    ];
-
-    /**
      * Generate payroll for an employee for a given period.
+     *
+     * If payroll exists and is already approved/disbursed/rejected,
+     * it will be kept as-is.
      */
     public function generate(Employee $employee, \DateTimeInterface $periodStart, \DateTimeInterface $periodEnd): Payroll
     {
-        return DB::transaction(function () use ($employee, $periodStart, $periodEnd) {
-            // Get attendances for the period
-            $attendances = $this->getAttendancesForPeriod($employee, $periodStart, $periodEnd);
+        $start = CarbonImmutable::parse($periodStart)->startOfDay();
+        $end = CarbonImmutable::parse($periodEnd)->startOfDay();
 
-            // Calculate working days (excluding approved leaves)
-            $workingDays = $this->calculateWorkingDays($attendances, $periodStart, $periodEnd);
+        return DB::transaction(function () use ($employee, $start, $end) {
+            $existing = Payroll::query()
+                ->where('employee_id', $employee->id)
+                ->whereDate('pay_period_start', $start)
+                ->whereDate('pay_period_end', $end)
+                ->first();
 
-            // Get basic salary from employee or use default
-            $basicSalary = $this->getBasicSalary($employee);
+            if ($existing instanceof Payroll && $existing->status !== PayrollStatus::PENDING) {
+                return $existing;
+            }
 
-            // Calculate daily rate
-            $dailyRate = $basicSalary / $this->config['working_days_per_month'];
+            $attendances = $this->getAttendancesForPeriod($employee, $start, $end);
+            $workingDays = $this->calculateWorkingDays($employee, $attendances, $start, $end);
+            $customAdjustments = $existing instanceof Payroll
+                ? $this->getAdminAdjustments($existing)
+                : collect();
 
-            // Calculate earned salary based on working days
-            $earnedSalary = $dailyRate * $workingDays['present_days'];
+            $breakdown = $this->calculatePayrollBreakdown(
+                employee: $employee,
+                attendances: $attendances,
+                recordedDays: $workingDays['present_days'],
+                expectedDays: $workingDays['expected_days'],
+                periodEnd: $end,
+                customAdjustments: $customAdjustments,
+            );
 
-            // Calculate overtime pay
-            $overtimePay = $this->calculateOvertimePay($attendances, $dailyRate);
+            $payroll = $existing ?? new Payroll();
 
-            // Calculate late deduction
-            $lateDeduction = $this->calculateLateDeduction($attendances);
-
-            // Calculate gross pay
-            $grossPay = $earnedSalary + $overtimePay - $lateDeduction;
-
-            // Calculate deductions (tax, SSS)
-            $tax = $this->calculateTax($grossPay);
-            $sss = $this->calculateSSS($basicSalary);
-
-            // Calculate allowances (could be from employee profile or settings)
-            $allowance = $this->getAllowance($employee);
-
-            // Calculate net pay
-            $netPay = $grossPay - $tax - $sss;
-
-            // Create payroll record
-            $payroll = Payroll::create([
+            $payroll->fill([
                 'employee_id' => $employee->id,
-                'basic_salary' => $basicSalary,
-                'tax' => $tax,
-                'sss' => $sss,
-                'allowance' => $allowance,
-                'net_pay' => $netPay,
-                'pay_period_start' => $periodStart,
-                'pay_period_end' => $periodEnd,
+                'status' => PayrollStatus::PENDING,
+                'basic_salary' => $breakdown['basic_salary'],
+                'tax' => $breakdown['tax'],
+                'sss' => $breakdown['sss'],
+                'pagibig' => $breakdown['pagibig'],
+                'philhealth' => $breakdown['philhealth'],
+                'allowance' => $breakdown['allowance'],
+                'gross_pay' => $breakdown['gross_pay'],
+                'net_pay' => $breakdown['net_pay'],
+                'pay_period_start' => $start,
+                'pay_period_end' => $end,
             ]);
 
-            // Create adjustment records for tracking
-            $this->createAdjustments($payroll, [
-                'overtime_pay' => $overtimePay,
-                'late_deduction' => $lateDeduction,
-                'allowance' => $allowance,
-            ]);
+            $payroll->save();
 
-            return $payroll;
+            return $payroll->fresh();
         });
     }
 
     /**
-     * Generate payroll for all employees for a given period.
+     * Generate payroll for all active employees for a given period.
      */
     public function generateForAllEmployees(\DateTimeInterface $periodStart, \DateTimeInterface $periodEnd): Collection
     {
-        $employees = Employee::where('status', \App\Enums\Status\EmployeeStatus::ACTIVE)->get();
+        return Employee::where('status', EmployeeStatus::ACTIVE)
+            ->with(['position:id,salary,allowance'])
+            ->get()
+            ->map(function (Employee $employee) use ($periodStart, $periodEnd) {
+                return $this->generate($employee, $periodStart, $periodEnd);
+            });
+    }
 
-        return $employees->map(function ($employee) use ($periodStart, $periodEnd) {
-            return $this->generate($employee, $periodStart, $periodEnd);
+    /**
+     * Generate pending payrolls on the 10th.
+     *
+     * Period is Mar 1–15 but days 11–15 are ASSUMED present (weekdays only)
+     * because actual attendance hasn't happened yet.
+     * The 15th command will true-up those assumed days with real data.
+     */
+    public function generatePendingPayrollsForCutoff(?\DateTimeInterface $now = null): Collection
+    {
+        $today = CarbonImmutable::parse($now ?? CarbonImmutable::now())->startOfDay();
+
+        if ($today->day !== 10) {
+            return new Collection();
+        }
+
+        $periodStart = $today->startOfMonth();   // Mar 1
+        $periodEnd   = $today->setDay(15);        // Mar 15 (full period)
+        $assumedFrom = $today->setDay(11);        // Mar 11 onwards is assumed
+
+        return $this->generateForAllEmployeesWithAssumedDays($periodStart, $periodEnd, $assumedFrom);
+    }
+
+    /**
+     * On the 15th: true-up actual attendance for days 11–15,
+     * recalculate APPROVED payrolls, and disburse them.
+     */
+    public function trueUpAndDisburse(?\DateTimeInterface $now = null): int
+    {
+        $today = CarbonImmutable::parse($now ?? CarbonImmutable::now())->startOfDay();
+
+        if ($today->day !== 15) {
+            return 0;
+        }
+
+        return $this->trueUpApprovedPayrollsForReleaseDate($today);
+    }
+
+    /**
+     * Re-calculate using full actual Mar 1–15 attendance,
+     * update APPROVED payrolls, and flip them to DISBURSED.
+     */
+    public function trueUpApprovedPayrollsForReleaseDate(\DateTimeInterface $releaseDate): int
+    {
+        $release     = CarbonImmutable::parse($releaseDate)->startOfDay();
+        $periodStart = $release->startOfMonth();
+        $periodEnd   = $release->setDay(15);
+
+        $payrolls = Payroll::query()
+            ->with('employee.position:id,salary,allowance')
+            ->where('status', PayrollStatus::APPROVED)
+            ->whereDate('pay_period_start', $periodStart)
+            ->whereDate('pay_period_end', $periodEnd)
+            ->get();
+
+        $disbursed = 0;
+
+        foreach ($payrolls as $payroll) {
+            DB::transaction(function () use ($payroll, $periodStart, $periodEnd) {
+                $employee = $payroll->employee;
+
+                // Full actual attendance Mar 1–15 is now available
+                $attendances = $this->getAttendancesForPeriod($employee, $periodStart, $periodEnd);
+                $workingDays = $this->calculateWorkingDays($employee, $attendances, $periodStart, $periodEnd);
+                $customAdjustments = $this->getAdminAdjustments($payroll);
+
+                $breakdown = $this->calculatePayrollBreakdown(
+                    employee: $employee,
+                    attendances: $attendances,
+                    recordedDays: $workingDays['present_days'],
+                    expectedDays: $workingDays['expected_days'],
+                    periodEnd: $periodEnd,
+                    customAdjustments: $customAdjustments,
+                );
+
+                $payroll->fill([
+                    'status'       => PayrollStatus::DISBURSED,
+                    'basic_salary' => $breakdown['basic_salary'],
+                    'tax'          => $breakdown['tax'],
+                    'sss'          => $breakdown['sss'],
+                    'pagibig'      => $breakdown['pagibig'],
+                    'philhealth'   => $breakdown['philhealth'],
+                    'allowance'    => $breakdown['allowance'],
+                    'gross_pay'    => $breakdown['gross_pay'],
+                    'net_pay'      => $breakdown['net_pay'],
+                ]);
+
+                $payroll->save();
+            });
+
+            $disbursed++;
+        }
+
+        return $disbursed;
+    }
+
+    /**
+     * Generate payrolls for all active employees using assumed days for the future gap.
+     */
+    public function generateForAllEmployeesWithAssumedDays(
+        \DateTimeInterface $periodStart,
+        \DateTimeInterface $periodEnd,
+        \DateTimeInterface $assumedFrom
+    ): Collection {
+        return Employee::where('status', EmployeeStatus::ACTIVE)
+            ->with(['position:id,salary,allowance', 'shift.schedules'])
+            ->get()
+            ->map(function (Employee $employee) use ($periodStart, $periodEnd, $assumedFrom) {
+                return $this->generateWithAssumedDays($employee, $periodStart, $periodEnd, $assumedFrom);
+            });
+    }
+
+    /**
+     * Generate payroll for a single employee with assumed days for the gap period.
+     *
+     * - Actual attendance:  periodStart → (assumedFrom - 1 day)  [Mar 1–10]
+     * - Assumed attendance: assumedFrom → periodEnd               [Mar 11–15, weekdays only]
+     */
+    public function generateWithAssumedDays(
+        Employee $employee,
+        \DateTimeInterface $periodStart,
+        \DateTimeInterface $periodEnd,
+        \DateTimeInterface $assumedFrom
+    ): Payroll {
+        $start   = CarbonImmutable::parse($periodStart)->startOfDay();
+        $end     = CarbonImmutable::parse($periodEnd)->startOfDay();
+        $assumed = CarbonImmutable::parse($assumedFrom)->startOfDay();
+
+        if (CarbonImmutable::now()->startOfDay()->greaterThanOrEqualTo($end)) {
+            return $this->generate($employee, $start, $end);
+        }
+
+        return DB::transaction(function () use ($employee, $start, $end, $assumed) {
+            $existing = Payroll::query()
+                ->where('employee_id', $employee->id)
+                ->whereDate('pay_period_start', $start)
+                ->whereDate('pay_period_end', $end)
+                ->first();
+
+            if ($existing instanceof Payroll && $existing->status !== PayrollStatus::PENDING) {
+                return $existing;
+            }
+
+            // Only actual data: Mar 1–10
+            $actualEnd   = $assumed->subDay();
+            $attendances = $this->getAttendancesForPeriod($employee, $start, $actualEnd);
+            $workingDays = $this->calculateWorkingDays($employee, $attendances, $start, $actualEnd);
+            $customAdjustments = $existing instanceof Payroll
+                ? $this->getAdminAdjustments($existing)
+                : collect();
+
+            // Assumed days: based on active shift schedules (fallback Mon–Fri)
+            $assumedDays = $this->countAssumedScheduledDays($employee, $assumed, $end);
+            $recordedDays = $workingDays['present_days'] + $assumedDays;
+
+            $breakdown = $this->calculatePayrollBreakdown(
+                employee: $employee,
+                attendances: $attendances,
+                recordedDays: $recordedDays,
+                expectedDays: $workingDays['expected_days'] + $assumedDays,
+                periodEnd: $end,
+                customAdjustments: $customAdjustments,
+            );
+
+            $payroll = $existing ?? new Payroll();
+
+            $payroll->fill([
+                'employee_id'      => $employee->id,
+                'status'           => PayrollStatus::PENDING,
+                'basic_salary'     => $breakdown['basic_salary'],
+                'tax'              => $breakdown['tax'],
+                'sss'              => $breakdown['sss'],
+                'pagibig'          => $breakdown['pagibig'],
+                'philhealth'       => $breakdown['philhealth'],
+                'allowance'        => $breakdown['allowance'],
+                'gross_pay'        => $breakdown['gross_pay'],
+                'net_pay'          => $breakdown['net_pay'],
+                'pay_period_start' => $start,
+                'pay_period_end'   => $end,
+            ]);
+
+            $payroll->save();
+
+            return $payroll->fresh();
         });
+    }
+
+    /**
+     * Count weekdays (Mon–Fri) between two dates, inclusive.
+     */
+    protected function countWeekdays(\DateTimeInterface $from, \DateTimeInterface $to): int
+    {
+        $current = CarbonImmutable::parse($from)->startOfDay();
+        $end     = CarbonImmutable::parse($to)->startOfDay();
+        $count   = 0;
+
+        while ($current->lessThanOrEqualTo($end)) {
+            if (! $current->isWeekend()) {
+                $count++;
+            }
+            $current = $current->addDay();
+        }
+
+        return $count;
+    }
+
+    /**
+     * Count assumed present days based on active shift schedules.
+     *
+     * Falls back to weekday counting (Mon–Fri) when no schedule rules exist.
+     */
+    protected function countAssumedScheduledDays(Employee $employee, \DateTimeInterface $from, \DateTimeInterface $to): int
+    {
+        $start = CarbonImmutable::parse($from)->startOfDay();
+        $end = CarbonImmutable::parse($to)->startOfDay();
+
+        if ($start->greaterThan($end)) {
+            return 0;
+        }
+
+        $employee->loadMissing('shift.schedules');
+
+        $schedules = $employee->shift?->schedules;
+
+        if (! $schedules instanceof Collection || $schedules->isEmpty()) {
+            return $this->countWeekdays($start, $end);
+        }
+
+        $count = 0;
+        $current = $start;
+
+        while ($current->lessThanOrEqualTo($end)) {
+            if ($this->hasActiveScheduleForDate($schedules, $current)) {
+                $count++;
+            }
+
+            $current = $current->addDay();
+        }
+
+        return $count;
+    }
+
+    /**
+     * Determine if a date is covered by at least one active schedule rule.
+     */
+    protected function hasActiveScheduleForDate(Collection $schedules, CarbonImmutable $date): bool
+    {
+        return $schedules->contains(function (ShiftSchedule $schedule) use ($date): bool {
+            if ((int) $schedule->weekday !== $date->dayOfWeekIso) {
+                return false;
+            }
+
+            $from = CarbonImmutable::parse($schedule->effective_from)->startOfDay();
+            $to = $schedule->effective_to
+                ? CarbonImmutable::parse($schedule->effective_to)->startOfDay()
+                : null;
+
+            if ($date->lessThan($from)) {
+                return false;
+            }
+
+            if ($to !== null && $date->greaterThan($to)) {
+                return false;
+            }
+
+            return true;
+        });
+    }
+
+    // =========================================================================
+    // Second Half: Mar 16–EOM  (generate on 25th, disburse on last day)
+    // =========================================================================
+
+    /**
+     * Generate pending payrolls on the 25th.
+     *
+     * Period is Mar 16–EOM but days 26–EOM are ASSUMED present (weekdays only)
+     * because actual attendance hasn't happened yet.
+     * The last-day command will true-up those assumed days with real data.
+     */
+    public function generateSecondHalfPayrollsForCutoff(?\DateTimeInterface $now = null): Collection
+    {
+        $today = CarbonImmutable::parse($now ?? CarbonImmutable::now())->startOfDay();
+
+        if ($today->day !== 25) {
+            return new Collection();
+        }
+
+        $periodStart = $today->setDay(16);           // Mar 16
+        $periodEnd   = $today->endOfMonth()->startOfDay(); // Mar 31
+        $assumedFrom = $today->setDay(26);           // Mar 26 onwards is assumed
+
+        return $this->generateForAllEmployeesWithAssumedDays($periodStart, $periodEnd, $assumedFrom);
+    }
+
+    /**
+     * On the last day of the month: true-up actual attendance for days 26–EOM,
+     * recalculate APPROVED payrolls, and disburse them.
+     */
+    public function trueUpAndDisburseSecondHalf(?\DateTimeInterface $now = null): int
+    {
+        $today = CarbonImmutable::parse($now ?? CarbonImmutable::now())->startOfDay();
+
+        if (! $today->isLastOfMonth()) {
+            return 0;
+        }
+
+        return $this->trueUpApprovedPayrollsForSecondHalf($today);
+    }
+
+    /**
+     * Re-calculate using full actual Mar 16–EOM attendance,
+     * update APPROVED payrolls, and flip them to DISBURSED.
+     */
+    public function trueUpApprovedPayrollsForSecondHalf(\DateTimeInterface $releaseDate): int
+    {
+        $release     = CarbonImmutable::parse($releaseDate)->startOfDay();
+        $periodStart = $release->setDay(16);                  // Mar 16
+        $periodEnd   = $release->endOfMonth()->startOfDay();  // Mar 31
+
+        $payrolls = Payroll::query()
+            ->with('employee.position:id,salary,allowance')
+            ->where('status', PayrollStatus::APPROVED)
+            ->whereDate('pay_period_start', $periodStart)
+            ->whereDate('pay_period_end', $periodEnd)
+            ->get();
+
+        $disbursed = 0;
+
+        foreach ($payrolls as $payroll) {
+            DB::transaction(function () use ($payroll, $periodStart, $periodEnd) {
+                $employee = $payroll->employee;
+
+                // Full actual attendance Mar 16–EOM is now available
+                $attendances = $this->getAttendancesForPeriod($employee, $periodStart, $periodEnd);
+                $workingDays = $this->calculateWorkingDays($employee, $attendances, $periodStart, $periodEnd);
+                $customAdjustments = $this->getAdminAdjustments($payroll);
+
+                $breakdown = $this->calculatePayrollBreakdown(
+                    employee: $employee,
+                    attendances: $attendances,
+                    recordedDays: $workingDays['present_days'],
+                    expectedDays: $workingDays['expected_days'],
+                    periodEnd: $periodEnd,
+                    customAdjustments: $customAdjustments,
+                );
+
+                $payroll->fill([
+                    'status'       => PayrollStatus::DISBURSED,
+                    'basic_salary' => $breakdown['basic_salary'],
+                    'tax'          => $breakdown['tax'],
+                    'sss'          => $breakdown['sss'],
+                    'pagibig'      => $breakdown['pagibig'],
+                    'philhealth'   => $breakdown['philhealth'],
+                    'allowance'    => $breakdown['allowance'],
+                    'gross_pay'    => $breakdown['gross_pay'],
+                    'net_pay'      => $breakdown['net_pay'],
+                ]);
+
+                $payroll->save();
+            });
+
+            $disbursed++;
+        }
+
+        return $disbursed;
+    }
+
+    // =========================================================================
+    // Approve / Reject
+    // =========================================================================
+
+    /**
+     * Approve a pending payroll.
+     */
+    public function approve(Payroll $payroll): Payroll
+    {
+        if ($payroll->status !== PayrollStatus::PENDING) {
+            throw new \InvalidArgumentException('Only pending payrolls can be approved.');
+        }
+
+        $payroll->update(['status' => PayrollStatus::APPROVED]);
+
+        return $payroll->fresh();
+    }
+
+    /**
+     * Reject a pending payroll.
+     */
+    public function reject(Payroll $payroll): Payroll
+    {
+        if ($payroll->status !== PayrollStatus::PENDING) {
+            throw new \InvalidArgumentException('Only pending payrolls can be rejected.');
+        }
+
+        $payroll->update(['status' => PayrollStatus::REJECTED]);
+
+        return $payroll->fresh();
     }
 
     /**
@@ -106,51 +497,159 @@ class PayrollGenerationService
      */
     protected function getAttendancesForPeriod(Employee $employee, \DateTimeInterface $periodStart, \DateTimeInterface $periodEnd): Collection
     {
-        return Attendance::where('employee_id', $employee->id)
+        return Attendance::query()
+            ->with('request:id,type,status')
+            ->where('employee_id', $employee->id)
             ->whereBetween('date', [$periodStart, $periodEnd])
             ->get();
     }
 
     /**
-     * Calculate working days excluding approved leaves.
+     * Calculate working-day summary for reporting and payroll computation.
      */
-    protected function calculateWorkingDays(Collection $attendances, \DateTimeInterface $periodStart, \DateTimeInterface $periodEnd): array
+    protected function calculateWorkingDays(Employee $employee, Collection $attendances, \DateTimeInterface $periodStart, \DateTimeInterface $periodEnd): array
     {
-        $totalDays = $periodEnd->diff($periodStart)->days + 1;
+        $start = CarbonImmutable::parse($periodStart)->startOfDay();
+        $end = CarbonImmutable::parse($periodEnd)->startOfDay();
 
-        // Get approved leave requests for this period
-        $approvedLeaves = Request::where('employee_id', $attendances->first()?->employee_id)
+        $totalDays = $start->diffInDays($end) + 1;
+
+        $approvedLeaves = Request::query()
+            ->where('employee_id', $employee->id)
             ->where('type', RequestType::LEAVE)
             ->where('status', RequestStatus::APPROVED)
-            ->whereBetween('requested_date', [$periodStart, $periodEnd])
+            ->whereDate('requested_date', '<=', $end)
+            ->where(function (Builder $query) use ($start) {
+                $query->whereDate('end_date', '>=', $start)
+                    ->orWhereNull('end_date');
+            })
             ->get();
 
-        // Calculate leave days
         $leaveDays = 0;
+
         foreach ($approvedLeaves as $leave) {
-            $endDate = $leave->end_date ?? $leave->requested_date;
-            $leaveDays += $leave->requested_date->diff($endDate)->days + 1;
+            $leaveStart = CarbonImmutable::parse($leave->requested_date)->startOfDay();
+            $leaveEnd = CarbonImmutable::parse($leave->end_date ?? $leave->requested_date)->startOfDay();
+
+            $overlapStart = $leaveStart->greaterThan($start) ? $leaveStart : $start;
+            $overlapEnd = $leaveEnd->lessThan($end) ? $leaveEnd : $end;
+
+            if ($overlapStart->lessThanOrEqualTo($overlapEnd)) {
+                $leaveDays += $overlapStart->diffInDays($overlapEnd) + 1;
+            }
         }
 
-        // Present days = total days - leave days
-        $presentDays = $totalDays - $leaveDays;
+        $presentDays = $attendances
+            ->filter(function (Attendance $attendance): bool {
+                if ($attendance->status === AttendanceStatus::ABSENT) {
+                    return false;
+                }
+
+                if (in_array($attendance->status, [AttendanceStatus::PRESENT, AttendanceStatus::LATE], true)) {
+                    return true;
+                }
+
+                return $attendance->request?->type === RequestType::OVERTIME
+                    && $attendance->request?->status === RequestStatus::APPROVED;
+            })
+            ->unique(fn (Attendance $attendance) => CarbonImmutable::parse($attendance->date)->toDateString())
+            ->count();
+
+        $expectedDays = $this->countAssumedScheduledDays($employee, $start, $end);
 
         return [
             'total_days' => $totalDays,
-            'leave_days' => $leaveDays,
+            'leave_days' => max(0, $leaveDays),
             'present_days' => max(0, $presentDays),
+            'expected_days' => max(0, $expectedDays),
         ];
     }
 
     /**
+     * Compute attendance-based payroll breakdown.
+     */
+    protected function calculatePayrollBreakdown(
+        Employee $employee,
+        Collection $attendances,
+        int $recordedDays,
+        int $expectedDays,
+        \DateTimeInterface $periodEnd,
+        Collection $customAdjustments
+    ): array {
+        $basicSalary = $this->getBasicSalary($employee);
+        $allowance = $this->getAllowance($employee, $periodEnd);
+        $dailyRate = $basicSalary / max(1, (float) config('payroll.working_days_per_month'));
+        $periodSalary = $basicSalary / max(1, (int) config('payroll.pay_periods_per_month', 2));
+
+        $attendanceRatio = $expectedDays > 0 ? min(1, $recordedDays / $expectedDays) : 0;
+        $attendanceGross = $this->roundMoney($periodSalary * $attendanceRatio);
+        $attendanceProration = max(0, $this->roundMoney($periodSalary - $attendanceGross));
+
+        $overtimePay = $this->calculateOvertimePay($attendances, $dailyRate);
+        $lateDeduction = $this->calculateLateDeduction($attendances);
+
+        $customBonus = $this->roundMoney(
+            (float) $customAdjustments
+                ->where('type', PayrollAdjustmentType::BONUS)
+                ->sum('amount')
+        );
+
+        $customDeduction = $this->roundMoney(
+            (float) $customAdjustments
+                ->where('type', PayrollAdjustmentType::DEDUCTION)
+                ->sum('amount')
+        );
+
+        $grossPay = $this->roundMoney($attendanceGross + $allowance + $overtimePay + $customBonus);
+        $taxableGrossPay = $this->roundMoney(max(0, $grossPay - $lateDeduction - $customDeduction));
+
+        $sss = $this->calculateSSS($basicSalary);
+        $pagibig = $this->calculatePagibig($basicSalary);
+        $philhealth = $this->calculatePhilHealth($basicSalary);
+        $taxableCompensation = max(0, $taxableGrossPay - $sss - $pagibig - $philhealth);
+        $tax = $this->calculateTax($taxableCompensation);
+
+        $totalDeductions = $this->roundMoney(
+            $tax
+            + $sss
+            + $pagibig
+            + $philhealth
+            + $lateDeduction
+            + $customDeduction
+        );
+
+        $netPay = $this->roundMoney($grossPay - $totalDeductions);
+
+        return [
+            'basic_salary' => $this->roundMoney($basicSalary),
+            'allowance' => $this->roundMoney($allowance),
+            'attendance_proration' => $attendanceProration,
+            'overtime_pay' => $overtimePay,
+            'late_deduction' => $lateDeduction,
+            'gross_pay' => max(0, $grossPay),
+            'tax' => $tax,
+            'sss' => $sss,
+            'pagibig' => $pagibig,
+            'philhealth' => $philhealth,
+            'net_pay' => max(0, $netPay),
+        ];
+    }
+
+    /**
+     * Get non-system adjustments to preserve and include in computation.
+     */
+    protected function getAdminAdjustments(Payroll $payroll): Collection
+    {
+        return $payroll->adjustments()
+            ->get(['type', 'reason', 'amount']);
+    }
+
+    /**
      * Get basic salary for the employee.
-     * This could be from employee profile or a salary configuration.
      */
     protected function getBasicSalary(Employee $employee): float
     {
-        // For now, return a default. In production, this should come from
-        // employee profile or a separate salary configuration
-        return $employee->position?->salary ?? 25000.00;
+        return (float) ($employee->position?->salary ?? 25000.00);
     }
 
     /**
@@ -158,13 +657,19 @@ class PayrollGenerationService
      */
     protected function calculateOvertimePay(Collection $attendances, float $dailyRate): float
     {
-        $hourlyRate = $dailyRate / 8; // Assuming 8 hours per day
-        $overtimeRate = $hourlyRate * $this->config['hourly_rate_multiplier'];
+        $workHoursPerDay = max(1, (float) config('payroll.work_hours_per_day', 8));
+        $hourlyRate = $dailyRate / $workHoursPerDay;
+        $overtimeRate = $hourlyRate * config('payroll.hourly_rate_multiplier');
 
-        $totalOvertimeMinutes = $attendances->sum('overtime_minutes');
+        $totalOvertimeMinutes = (int) $attendances
+            ->filter(fn (Attendance $attendance): bool =>
+                $attendance->request?->type === RequestType::OVERTIME
+                && $attendance->request?->status === RequestStatus::APPROVED
+            )
+            ->sum('overtime_minutes');
         $overtimeHours = $totalOvertimeMinutes / 60;
 
-        return $overtimeHours * $overtimeRate;
+        return $this->roundMoney($overtimeHours * $overtimeRate);
     }
 
     /**
@@ -172,33 +677,33 @@ class PayrollGenerationService
      */
     protected function calculateLateDeduction(Collection $attendances): float
     {
-        $totalLateMinutes = $attendances->sum('late_minutes');
+        $totalLateMinutes = (int) $attendances->sum('late_minutes');
 
-        return $totalLateMinutes * $this->config['late_deduction_per_minute'];
+        return $this->roundMoney($totalLateMinutes * config('payroll.late_deduction_per_minute'));
     }
 
     /**
-     * Calculate tax based on gross pay.
-     * This is a simplified tax calculation. In production, use actual tax brackets.
+     * Calculate withholding tax using PH monthly brackets,
+     * normalized back to the current payroll period (e.g. semi-monthly).
      */
-    protected function calculateTax(float $grossPay): float
+    protected function calculateTax(float $taxableCompensation): float
     {
-        // Simplified tax calculation (Philippines-style brackets)
-        if ($grossPay <= 15000) {
-            return 0;
-        } elseif ($grossPay <= 30000) {
-            return ($grossPay - 15000) * 0.05;
-        } elseif ($grossPay <= 70000) {
-            return 750 + ($grossPay - 30000) * 0.10;
-        } elseif ($grossPay <= 140000) {
-            return 4750 + ($grossPay - 70000) * 0.15;
-        } elseif ($grossPay <= 250000) {
-            return 15250 + ($grossPay - 140000) * 0.20;
-        } elseif ($grossPay <= 500000) {
-            return 37250 + ($grossPay - 250000) * 0.25;
-        } else {
-            return 99750 + ($grossPay - 500000) * 0.30;
+        $payPeriodsPerMonth = max(1, (int) config('payroll.pay_periods_per_month', 2));
+        $monthlyTaxable = $taxableCompensation * $payPeriodsPerMonth;
+
+        $brackets = config('payroll.bir_withholding_monthly', []);
+
+        foreach ($brackets as $bracket) {
+            $withinUpper = $bracket['to'] === null || $monthlyTaxable < $bracket['to'];
+
+            if ($monthlyTaxable >= $bracket['from'] && $withinUpper) {
+                $monthlyTax = $bracket['base'] + (($monthlyTaxable - $bracket['from']) * $bracket['rate']);
+
+                return $this->roundMoney(max(0, $monthlyTax / $payPeriodsPerMonth));
+            }
         }
+
+        return 0;
     }
 
     /**
@@ -207,70 +712,97 @@ class PayrollGenerationService
      */
     protected function calculateSSS(float $basicSalary): float
     {
-        // Simplified SSS contribution calculation
-        if ($basicSalary < 5000) {
-            return 200;
-        } elseif ($basicSalary < 7500) {
-            return 350;
-        } elseif ($basicSalary < 10000) {
-            return 500;
-        } elseif ($basicSalary < 12500) {
-            return 650;
-        } elseif ($basicSalary < 15000) {
-            return 800;
-        } elseif ($basicSalary < 17500) {
-            return 950;
-        } elseif ($basicSalary < 20000) {
-            return 1100;
-        } elseif ($basicSalary < 25000) {
-            return 1250;
-        } else {
-            return 1350;
+        $table = config('payroll.sss_table', []);
+        $divisor = $this->getContributionDivisor();
+
+        foreach ($table as $row) {
+            $withinUpper = $row['to'] === null || $basicSalary < $row['to'];
+
+            if ($basicSalary >= $row['from'] && $withinUpper) {
+                $monthlyContribution = (float) $row['contribution'];
+
+                return $this->roundMoney($monthlyContribution / $divisor);
+            }
         }
+
+        return 0;
+    }
+
+    /**
+     * Calculate Pag-IBIG employee contribution.
+     */
+    protected function calculatePagibig(float $basicSalary): float
+    {
+        $thresholdSalary = (float) config('payroll.pagibig.threshold_salary', 1500);
+        $rateBelow = (float) config('payroll.pagibig.rate_below_threshold', 0.01);
+        $rateAtOrAbove = (float) config('payroll.pagibig.rate_at_or_above_threshold', 0.02);
+        $maxSalaryBase = (float) config('payroll.pagibig.max_salary_base', 5000);
+        $divisor = $this->getContributionDivisor();
+
+        $salaryBase = min($basicSalary, $maxSalaryBase);
+        $rate = $basicSalary < $thresholdSalary ? $rateBelow : $rateAtOrAbove;
+
+        $monthlyContribution = $salaryBase * $rate;
+
+        return $this->roundMoney($monthlyContribution / $divisor);
+    }
+
+    /**
+     * Calculate PhilHealth employee contribution.
+     */
+    protected function calculatePhilHealth(float $basicSalary): float
+    {
+        $premiumRate = (float) config('payroll.philhealth.premium_rate', 0.05);
+        $employeeShare = (float) config('payroll.philhealth.employee_share', 0.50);
+        $minSalaryBase = (float) config('payroll.philhealth.min_salary_base', 10000);
+        $maxSalaryBase = (float) config('payroll.philhealth.max_salary_base', 100000);
+        $divisor = $this->getContributionDivisor();
+
+        $salaryBase = min(max($basicSalary, $minSalaryBase), $maxSalaryBase);
+
+        $monthlyContribution = $salaryBase * $premiumRate * $employeeShare;
+
+        return $this->roundMoney($monthlyContribution / $divisor);
+    }
+
+    /**
+     * Determine how monthly contribution amounts are divided per payroll run.
+     */
+    protected function getContributionDivisor(): int
+    {
+        $proratePerPayroll = (bool) config('payroll.contributions.prorate_per_payroll', true);
+
+        if (! $proratePerPayroll) {
+            return 1;
+        }
+
+        return max(1, (int) config('payroll.pay_periods_per_month', 2));
+    }
+
+    /**
+     * Round monetary values consistently based on payroll config precision.
+     */
+    protected function roundMoney(float $amount): float
+    {
+        $precision = max(0, (int) config('payroll.money_precision', 2));
+
+        return round($amount, $precision);
     }
 
     /**
      * Get allowance for the employee.
      */
-    protected function getAllowance(Employee $employee): float
+    protected function getAllowance(Employee $employee, ?\DateTimeInterface $periodEnd = null): float
     {
-        // This could come from employee profile or settings
-        return $employee->position?->allowance ?? 0;
+        if ($periodEnd !== null) {
+            $end = CarbonImmutable::parse($periodEnd)->startOfDay();
+
+            if (! $end->isLastOfMonth()) {
+                return 0.0;
+            }
+        }
+
+        return (float) ($employee->position?->allowance ?? 0);
     }
 
-    /**
-     * Create adjustment records for tracking.
-     */
-    protected function createAdjustments(Payroll $payroll, array $details): void
-    {
-        // Create overtime adjustment if any
-        if ($details['overtime_pay'] > 0) {
-            PayrollAdjustment::create([
-                'payroll_id' => $payroll->id,
-                'type' => PayrollAdjustmentType::BONUS,
-                'reason' => 'Overtime Pay',
-                'amount' => $details['overtime_pay'],
-            ]);
-        }
-
-        // Create late deduction adjustment if any
-        if ($details['late_deduction'] > 0) {
-            PayrollAdjustment::create([
-                'payroll_id' => $payroll->id,
-                'type' => PayrollAdjustmentType::DEDUCTION,
-                'reason' => 'Late Deduction',
-                'amount' => $details['late_deduction'],
-            ]);
-        }
-
-        // Create allowance adjustment if any
-        if ($details['allowance'] > 0) {
-            PayrollAdjustment::create([
-                'payroll_id' => $payroll->id,
-                'type' => PayrollAdjustmentType::BONUS,
-                'reason' => 'Allowance',
-                'amount' => $details['allowance'],
-            ]);
-        }
-    }
 }

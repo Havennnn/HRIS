@@ -3,8 +3,12 @@
 namespace Database\Seeders;
 
 use App\Enums\Status\AttendanceStatus;
+use App\Enums\Status\RequestStatus;
+use App\Enums\Type\RequestType;
 use App\Models\Attendance;
 use App\Models\Employee;
+use App\Models\Request;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Seeder;
 
 class AttendanceSeeder extends Seeder
@@ -12,55 +16,71 @@ class AttendanceSeeder extends Seeder
     public function run(): void
     {
         $employees = Employee::all();
-        
-        foreach ($employees as $employee) {
-            // Create 10 attendance records per employee
-            for ($i = 0; $i < 10; $i++) {
-                $date = now()->subDays(rand(1, 30))->format('Y-m-d');
-                $timeIn = sprintf('%02d:%02d', rand(7, 9), rand(0, 59));
-                
-                // Randomly decide if there's a time_out
-                $hasTimeOut = rand(1, 100) <= 70;
-                $timeOut = $hasTimeOut 
-                    ? sprintf('%02d:%02d', rand(17, 20), rand(0, 59))
-                    : null;
-                
-                // Calculate late minutes if time_in is after 8:00 AM
-                $lateMinutes = strcmp($timeIn, '08:00') > 0 
-                    ? rand(1, 60) 
-                    : 0;
-                
-                // Calculate overtime minutes if time_out is after 6:00 PM
-                $overtimeMinutes = $hasTimeOut && strcmp($timeOut ?? '18:00', '18:00') > 0
-                    ? rand(1, 120)
-                    : 0;
+        $year = (int) now()->format('Y');
+        $start = CarbonImmutable::create($year, 2, 1)->startOfDay();
+        $end = CarbonImmutable::create($year, 2, 28)->startOfDay();
 
-                // Determine status
-                if ($hasTimeOut && $timeOut) {
-                    if ($lateMinutes > 0) {
-                        $status = AttendanceStatus::LATE;
-                    } elseif ($overtimeMinutes > 0) {
-                        $status = AttendanceStatus::OVERTIME;
-                    } else {
-                        $status = AttendanceStatus::PRESENT;
-                    }
-                } else {
-                    $status = AttendanceStatus::ABSENT;
+        $dates = [];
+        $cursor = $start;
+
+        while ($cursor->lessThanOrEqualTo($end)) {
+            if (! $cursor->isWeekend()) {
+                $dates[] = $cursor;
+            }
+
+            $cursor = $cursor->addDay();
+        }
+
+        foreach ($employees as $employee) {
+            foreach ($dates as $date) {
+                $roll = random_int(1, 100);
+
+                $isAbsent = $roll <= 8;
+                $isLate = ! $isAbsent && $roll <= 26;
+
+                $lateMinutes = $isLate ? random_int(5, 40) : 0;
+                $timeIn = $isAbsent
+                    ? null
+                    : $date->setTime(8, 0)->addMinutes($lateMinutes);
+
+                $overtimeMinutes = 0;
+                $requestId = null;
+
+                if (! $isAbsent && random_int(1, 100) <= 10) {
+                    $overtimeMinutes = random_int(30, 120);
+
+                    $request = Request::query()->create([
+                        'employee_id' => $employee->id,
+                        'type' => RequestType::OVERTIME,
+                        'status' => RequestStatus::APPROVED,
+                        'message' => 'Approved overtime for payroll seed data',
+                        'requested_date' => $date->toDateString(),
+                        'overtime_hours' => round($overtimeMinutes / 60, 2),
+                    ]);
+
+                    $requestId = $request->id;
                 }
+
+                $timeOut = $isAbsent
+                    ? null
+                    : $date->setTime(17, random_int(0, 30))->addMinutes($overtimeMinutes);
 
                 Attendance::query()->updateOrCreate(
                     [
                         'employee_id' => $employee->id,
-                        'date' => $date,
+                        'date' => $date->toDateString(),
                     ],
                     [
                         'employee_id' => $employee->id,
-                        'date' => $date,
+                        'date' => $date->toDateString(),
                         'time_in' => $timeIn,
                         'time_out' => $timeOut,
                         'late_minutes' => $lateMinutes,
                         'overtime_minutes' => $overtimeMinutes,
-                        'status' => $status,
+                        'status' => $isAbsent
+                            ? AttendanceStatus::ABSENT
+                            : ($isLate ? AttendanceStatus::LATE : AttendanceStatus::PRESENT),
+                        'request_id' => $requestId,
                     ]
                 );
             }

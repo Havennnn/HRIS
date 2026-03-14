@@ -213,4 +213,30 @@ return [
             AdminRole::SUPER_ADMIN,
         ],
     ],
+
+    // Payroll Management Permissions
+    'can-list-payrolls' => [
+        'label' => 'List Payrolls',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-approve-payroll' => [
+        'label' => 'Approve Payroll',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-reject-payroll' => [
+        'label' => 'Reject Payroll',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-disburse-payroll' => [
+        'label' => 'Disburse Payroll',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
 ];

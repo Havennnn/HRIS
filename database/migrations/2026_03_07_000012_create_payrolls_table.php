@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Status\PayrollStatus;
 use App\Models\Employee;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -15,15 +16,23 @@ return new class extends Migration
         Schema::create('payrolls', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Employee::class)->constrained()->cascadeOnDelete();
+            $table->unsignedTinyInteger('status')->default(PayrollStatus::PENDING->value)->comment(PayrollStatus::class);
             $table->decimal('basic_salary', 10, 2);
             $table->decimal('tax', 10, 2)->default(0);
             $table->decimal('sss', 10, 2)->default(0);
+            $table->decimal('pagibig', 10, 2)->default(0);
+            $table->decimal('philhealth', 10, 2)->default(0);
             $table->decimal('allowance', 10, 2)->default(0);
+            $table->decimal('gross_pay', 10, 2)->default(0);
             $table->decimal('net_pay', 10, 2);
             $table->date('pay_period_start');
             $table->date('pay_period_end');
             $table->timestamps();
 
+            $table->unique(
+                ['employee_id', 'pay_period_start', 'pay_period_end'],
+                'payrolls_employee_period_unique'
+            );
             $table->index('employee_id');
         });
     }

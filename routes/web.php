@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\Department\DepartmentController;
 use App\Http\Controllers\Admin\Department\PositionController;
 use App\Http\Controllers\Admin\Employee\AttendanceController;
 use App\Http\Controllers\Admin\Employee\EmployeeController;
+use App\Http\Controllers\Admin\Payroll\PayrollController;
 use App\Http\Controllers\Admin\Request\RequestController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -114,5 +115,14 @@ Route::middleware(['auth:admin'])->group(function (): void {
             Route::post('/{request}/complete', 'complete')->middleware('can-complete-request')->name('complete');
             Route::delete('/{request}', 'destroy')->middleware('can-archive-request')->name('destroy');
             Route::patch('/{request}/restore', 'restore')->middleware('can-restore-request')->name('restore')->withTrashed();
+        });
+
+    // Payroll Management Routes
+    Route::prefix('payrolls')
+        ->name('payrolls.')
+        ->controller(PayrollController::class)
+        ->group(function (): void {
+            Route::get('/', 'index')->middleware('can-list-payrolls')->name('index');
+            Route::get('/{payroll}', 'show')->middleware('can-list-payrolls')->name('show');
         });
 });

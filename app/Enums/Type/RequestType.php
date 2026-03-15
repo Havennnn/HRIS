@@ -12,6 +12,7 @@ enum RequestType: int
 
     case LEAVE = 1;
     case OVERTIME = 2;
+    case WORK_ON_HOLIDAY = 3;
 
     /**
      * {@inheritdoc}
@@ -24,6 +25,9 @@ enum RequestType: int
             ],
             self::OVERTIME->value => [
                 'label' => 'Overtime',
+            ],
+            self::WORK_ON_HOLIDAY->value => [
+                'label' => 'Work on Holiday',
             ],
         ];
     }

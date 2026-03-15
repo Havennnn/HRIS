@@ -237,5 +237,59 @@ class RequestSeeder extends Seeder
         foreach ($cancelledRequests as $request) {
             Request::query()->create($request);
         }
+
+        // Create work-on-holiday requests for February 2026 holidays
+        $workOnHolidayRequests = [
+            // Approved - Regular Holiday Feb 5
+            [
+                'employee_id' => $employees->random()->id,
+                'type' => RequestType::WORK_ON_HOLIDAY,
+                'status' => RequestStatus::APPROVED,
+                'message' => 'Need to cover urgent warehouse operations on regular holiday',
+                'requested_date' => '2026-02-05',
+            ],
+            [
+                'employee_id' => $employees->random()->id,
+                'type' => RequestType::WORK_ON_HOLIDAY,
+                'status' => RequestStatus::APPROVED,
+                'message' => 'Required to work on holiday for critical shipment',
+                'requested_date' => '2026-02-05',
+            ],
+            // Approved - Special Holiday Feb 28
+            [
+                'employee_id' => $employees->random()->id,
+                'type' => RequestType::WORK_ON_HOLIDAY,
+                'status' => RequestStatus::APPROVED,
+                'message' => 'Inventory count scheduled on special holiday',
+                'requested_date' => '2026-02-28',
+            ],
+            [
+                'employee_id' => $employees->random()->id,
+                'type' => RequestType::WORK_ON_HOLIDAY,
+                'status' => RequestStatus::APPROVED,
+                'message' => 'Client meeting on special holiday',
+                'requested_date' => '2026-02-28',
+            ],
+            // Pending
+            [
+                'employee_id' => $employees->random()->id,
+                'type' => RequestType::WORK_ON_HOLIDAY,
+                'status' => RequestStatus::PENDING,
+                'message' => 'Would like to work on regular holiday Feb 5',
+                'requested_date' => '2026-02-05',
+            ],
+            // Rejected
+            [
+                'employee_id' => $employees->random()->id,
+                'type' => RequestType::WORK_ON_HOLIDAY,
+                'status' => RequestStatus::REJECTED,
+                'message' => 'Not needed - rejected',
+                'requested_date' => '2026-02-28',
+            ],
+        ];
+
+        foreach ($workOnHolidayRequests as $request) {
+            Request::query()->create($request);
+        }
     }
 }

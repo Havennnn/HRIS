@@ -6,6 +6,7 @@ use App\Enums\Status\AttendanceStatus;
 use App\Enums\Status\RequestStatus;
 use App\Enums\Type\RequestType;
 use App\Models\Attendance;
+use App\Models\Holiday;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -27,20 +28,80 @@ class PayrollShowResource extends JsonResource
             ->orderBy('date')
             ->get();
 
+        // Get holidays in the period
+        $holidays = Holiday::query()
+            ->whereBetween('date', [$periodStart, $periodEnd])
+            ->get()
+            ->keyBy(fn ($holiday) => CarbonImmutable::parse($holiday->date)->toDateString());
+
+        // Get all attendances with holiday info (for display)
+        $allAttendancesWithHoliday = $attendances->map(function (Attendance $attendance) use ($holidays) {
+            $date = CarbonImmutable::parse($attendance->date)->toDateString();
+            $holiday = $holidays->get($date);
+
+            return [
+                'id' => $attendance->id,
+                'date' => $attendance->date?->format('M d, Y'),
+                'time_in' => $attendance->time_in?->format('H:i'),
+                'time_out' => $attendance->time_out?->format('H:i'),
+                'late_minutes' => (int) ($attendance->late_minutes ?? 0),
+                'overtime_minutes' => (int) ($attendance->overtime_minutes ?? 0),
+                'ot_approved' => $attendance->request?->type === RequestType::OVERTIME
+                    && $attendance->request?->status === RequestStatus::APPROVED,
+                'ot_approved_label' => $attendance->request?->type === RequestType::OVERTIME
+                    && $attendance->request?->status === RequestStatus::APPROVED ? 'Yes' : 'No',
+                'is_holiday' => $holiday !== null,
+                'holiday_name' => $holiday?->name,
+                'holiday_type' => $holiday?->type?->label(),
+                'holiday_type_value' => $holiday?->type?->value,
+                'has_work_on_holiday_approved' => $holiday !== null && 
+                    $attendance->request?->type === RequestType::WORK_ON_HOLIDAY &&
+                    $attendance->request?->status === RequestStatus::APPROVED,
+            ];
+        });
+
+        // For payable attendances (calculation): exclude holidays without approved WORK_ON_HOLIDAY request
         $payableAttendances = $attendances
-            ->filter(fn (Attendance $attendance) => $attendance->status !== AttendanceStatus::ABSENT)
+            ->filter(function (Attendance $attendance) use ($holidays) {
+                // Skip absent
+                if ($attendance->status === AttendanceStatus::ABSENT) {
+                    return false;
+                }
+
+                // Skip attendance on holidays without approved WORK_ON_HOLIDAY request
+                $date = CarbonImmutable::parse($attendance->date)->toDateString();
+                $holiday = $holidays->get($date);
+
+                if ($holiday !== null) {
+                    $hasApprovedWorkOnHoliday = $attendance->request?->type === RequestType::WORK_ON_HOLIDAY
+                        && $attendance->request?->status === RequestStatus::APPROVED;
+
+                    if (!$hasApprovedWorkOnHoliday) {
+                        return false;
+                    }
+                }
+
+                return true;
+            })
             ->values();
 
         $recordedDays = $payableAttendances
             ->unique(fn (Attendance $attendance) => CarbonImmutable::parse($attendance->date)->toDateString())
             ->count();
 
+        // Calculate expected weekdays and subtract weekday holidays
         $expectedWeekdays = 0;
         $cursor = $periodStart;
 
         while ($cursor->lessThanOrEqualTo($periodEnd)) {
             if (! $cursor->isWeekend()) {
-                $expectedWeekdays++;
+                // Check if this day is a holiday
+                $dateStr = $cursor->toDateString();
+                $isHoliday = $holidays->has($dateStr);
+                
+                if (!$isHoliday) {
+                    $expectedWeekdays++;
+                }
             }
 
             $cursor = $cursor->addDay();
@@ -102,18 +163,7 @@ class PayrollShowResource extends JsonResource
                 'expected_days' => $expectedWeekdays,
                 'ratio' => $expectedWeekdays > 0 ? "{$recordedDays}/{$expectedWeekdays}" : '0/0',
             ],
-            'attendance_logs' => $payableAttendances->map(fn (Attendance $attendance) => [
-                'id' => $attendance->id,
-                'date' => $attendance->date?->format('M d, Y'),
-                'time_in' => $attendance->time_in?->format('H:i'),
-                'time_out' => $attendance->time_out?->format('H:i'),
-                'late_minutes' => (int) ($attendance->late_minutes ?? 0),
-                'overtime_minutes' => (int) ($attendance->overtime_minutes ?? 0),
-                'ot_approved' => $attendance->request?->type === RequestType::OVERTIME
-                    && $attendance->request?->status === RequestStatus::APPROVED,
-                'ot_approved_label' => $attendance->request?->type === RequestType::OVERTIME
-                    && $attendance->request?->status === RequestStatus::APPROVED ? 'Yes' : 'No',
-            ])->values(),
+            'attendance_logs' => $allAttendancesWithHoliday,
             'created_at' => $this->created_at?->format('M d, Y H:i:s'),
             'updated_at' => $this->updated_at?->format('M d, Y H:i:s'),
         ];

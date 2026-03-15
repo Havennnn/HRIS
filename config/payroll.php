@@ -77,6 +77,30 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Holiday Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for handling holidays in payroll calculations.
+    |
+    | 'exclude_holidays_from_expected' - When true, holidays are excluded from
+    |     expected working days calculation (reduces expected attendance).
+    |
+    | 'regular_holiday_multiplier' - Multiplier for daily rate when working on
+    |     regular holidays (e.g., 1.0 = 100% extra, 2.0 = double pay).
+    |
+    | 'special_holiday_multiplier' - Multiplier for daily rate when working on
+    |     special holidays (e.g., 1.0 = 100% extra, 0.5 = 50% extra).
+    |
+    */
+
+    'holidays' => [
+        'exclude_holidays_from_expected' => env('PAYROLL_EXCLUDE_HOLIDAYS_FROM_EXPECTED', true),
+        'regular_holiday_multiplier' => env('PAYROLL_REGULAR_HOLIDAY_MULTIPLIER', 1.5),
+        'special_holiday_multiplier' => env('PAYROLL_SPECIAL_HOLIDAY_MULTIPLIER', 2),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Contribution Proration
     |--------------------------------------------------------------------------
     |

@@ -6,10 +6,12 @@ use App\Enums\Status\AttendanceStatus;
 use App\Enums\Status\EmployeeStatus;
 use App\Enums\Status\PayrollStatus;
 use App\Enums\Status\RequestStatus;
+use App\Enums\Type\HolidayType;
 use App\Enums\Type\PayrollAdjustmentType;
 use App\Enums\Type\RequestType;
 use App\Models\Attendance;
 use App\Models\Employee;
+use App\Models\Holiday;
 use App\Models\Payroll;
 use App\Models\Request;
 use App\Models\ShiftSchedule;
@@ -42,7 +44,7 @@ class PayrollGenerationService
                 return $existing;
             }
 
-            $attendances = $this->getAttendancesForPeriod($employee, $start, $end);
+            $attendances = $this->getAttendancesWithHolidayInfo($employee, $start, $end);
             $workingDays = $this->calculateWorkingDays($employee, $attendances, $start, $end);
             $customAdjustments = $existing instanceof Payroll
                 ? $this->getAdminAdjustments($existing)
@@ -53,6 +55,7 @@ class PayrollGenerationService
                 attendances: $attendances,
                 recordedDays: $workingDays['present_days'],
                 expectedDays: $workingDays['expected_days'],
+                periodStart: $start,
                 periodEnd: $end,
                 customAdjustments: $customAdjustments,
             );
@@ -75,6 +78,9 @@ class PayrollGenerationService
             ]);
 
             $payroll->save();
+
+            // Save holiday bonus adjustments
+            $this->saveHolidayBonusAdjustments($payroll, $breakdown['holiday_bonus_details']);
 
             return $payroll->fresh();
         });
@@ -154,7 +160,7 @@ class PayrollGenerationService
                 $employee = $payroll->employee;
 
                 // Full actual attendance Mar 1–15 is now available
-                $attendances = $this->getAttendancesForPeriod($employee, $periodStart, $periodEnd);
+                $attendances = $this->getAttendancesWithHolidayInfo($employee, $periodStart, $periodEnd);
                 $workingDays = $this->calculateWorkingDays($employee, $attendances, $periodStart, $periodEnd);
                 $customAdjustments = $this->getAdminAdjustments($payroll);
 
@@ -163,6 +169,7 @@ class PayrollGenerationService
                     attendances: $attendances,
                     recordedDays: $workingDays['present_days'],
                     expectedDays: $workingDays['expected_days'],
+                    periodStart: $periodStart,
                     periodEnd: $periodEnd,
                     customAdjustments: $customAdjustments,
                 );
@@ -180,6 +187,9 @@ class PayrollGenerationService
                 ]);
 
                 $payroll->save();
+
+                // Save holiday bonus adjustments
+                $this->saveHolidayBonusAdjustments($payroll, $breakdown['holiday_bonus_details']);
             });
 
             $disbursed++;
@@ -237,7 +247,7 @@ class PayrollGenerationService
 
             // Only actual data: Mar 1–10
             $actualEnd   = $assumed->subDay();
-            $attendances = $this->getAttendancesForPeriod($employee, $start, $actualEnd);
+            $attendances = $this->getAttendancesWithHolidayInfo($employee, $start, $actualEnd);
             $workingDays = $this->calculateWorkingDays($employee, $attendances, $start, $actualEnd);
             $customAdjustments = $existing instanceof Payroll
                 ? $this->getAdminAdjustments($existing)
@@ -252,6 +262,7 @@ class PayrollGenerationService
                 attendances: $attendances,
                 recordedDays: $recordedDays,
                 expectedDays: $workingDays['expected_days'] + $assumedDays,
+                periodStart: $start,
                 periodEnd: $end,
                 customAdjustments: $customAdjustments,
             );
@@ -274,6 +285,9 @@ class PayrollGenerationService
             ]);
 
             $payroll->save();
+
+            // Save holiday bonus adjustments
+            $this->saveHolidayBonusAdjustments($payroll, $breakdown['holiday_bonus_details']);
 
             return $payroll->fresh();
         });
@@ -426,7 +440,7 @@ class PayrollGenerationService
                 $employee = $payroll->employee;
 
                 // Full actual attendance Mar 16–EOM is now available
-                $attendances = $this->getAttendancesForPeriod($employee, $periodStart, $periodEnd);
+                $attendances = $this->getAttendancesWithHolidayInfo($employee, $periodStart, $periodEnd);
                 $workingDays = $this->calculateWorkingDays($employee, $attendances, $periodStart, $periodEnd);
                 $customAdjustments = $this->getAdminAdjustments($payroll);
 
@@ -435,6 +449,7 @@ class PayrollGenerationService
                     attendances: $attendances,
                     recordedDays: $workingDays['present_days'],
                     expectedDays: $workingDays['expected_days'],
+                    periodStart: $periodStart,
                     periodEnd: $periodEnd,
                     customAdjustments: $customAdjustments,
                 );
@@ -452,6 +467,9 @@ class PayrollGenerationService
                 ]);
 
                 $payroll->save();
+
+                // Save holiday bonus adjustments
+                $this->saveHolidayBonusAdjustments($payroll, $breakdown['holiday_bonus_details']);
             });
 
             $disbursed++;
@@ -505,6 +523,34 @@ class PayrollGenerationService
     }
 
     /**
+     * Get attendances for the period with holiday information.
+     */
+    protected function getAttendancesWithHolidayInfo(Employee $employee, \DateTimeInterface $periodStart, \DateTimeInterface $periodEnd): Collection
+    {
+        $start = CarbonImmutable::parse($periodStart)->startOfDay();
+        $end = CarbonImmutable::parse($periodEnd)->startOfDay();
+
+        $attendances = $this->getAttendancesForPeriod($employee, $start, $end);
+
+        // Get holidays in the period
+        $holidays = $this->getHolidaysInRange($start, $end)
+            ->keyBy(fn ($holiday) => CarbonImmutable::parse($holiday->date)->toDateString());
+
+        // Add holiday info to each attendance
+        return $attendances->map(function (Attendance $attendance) use ($holidays) {
+            $date = CarbonImmutable::parse($attendance->date)->toDateString();
+            $holiday = $holidays->get($date);
+
+            $attendance->setAttribute('is_holiday', $holiday !== null);
+            $attendance->setAttribute('holiday_name', $holiday?->name);
+            $attendance->setAttribute('holiday_type', $holiday?->type?->label());
+            $attendance->setAttribute('holiday_type_value', $holiday?->type?->value);
+
+            return $attendance;
+        });
+    }
+
+    /**
      * Calculate working-day summary for reporting and payroll computation.
      */
     protected function calculateWorkingDays(Employee $employee, Collection $attendances, \DateTimeInterface $periodStart, \DateTimeInterface $periodEnd): array
@@ -541,10 +587,22 @@ class PayrollGenerationService
 
         $presentDays = $attendances
             ->filter(function (Attendance $attendance): bool {
+                // Skip absent
                 if ($attendance->status === AttendanceStatus::ABSENT) {
                     return false;
                 }
 
+                // Skip attendance on holidays without approved WORK_ON_HOLIDAY request
+                if ($attendance->is_holiday) {
+                    $hasApprovedWorkOnHoliday = $attendance->request?->type === RequestType::WORK_ON_HOLIDAY
+                        && $attendance->request?->status === RequestStatus::APPROVED;
+
+                    if (!$hasApprovedWorkOnHoliday) {
+                        return false;
+                    }
+                }
+
+                // Count PRESENT, LATE, or approved OVERTIME
                 if (in_array($attendance->status, [AttendanceStatus::PRESENT, AttendanceStatus::LATE], true)) {
                     return true;
                 }
@@ -557,12 +615,59 @@ class PayrollGenerationService
 
         $expectedDays = $this->countAssumedScheduledDays($employee, $start, $end);
 
+        // Exclude holidays from expected days if configured
+        $holidayConfig = config('payroll.holidays', []);
+        $excludeHolidays = $holidayConfig['exclude_holidays_from_expected'] ?? true;
+
+        $holidayCount = 0;
+        if ($excludeHolidays) {
+            $holidayCount = $this->countHolidaysInRange($start, $end);
+            $expectedDays = max(0, $expectedDays - $holidayCount);
+        }
+
         return [
             'total_days' => $totalDays,
             'leave_days' => max(0, $leaveDays),
             'present_days' => max(0, $presentDays),
             'expected_days' => max(0, $expectedDays),
+            'holiday_count' => $holidayCount,
         ];
+    }
+
+    /**
+     * Count holidays within a date range (only non-archived, only weekdays).
+     */
+    protected function countHolidaysInRange(CarbonImmutable $start, CarbonImmutable $end): int
+    {
+        return Holiday::query()
+            ->whereBetween('date', [$start, $end])
+            ->get()
+            ->filter(fn ($holiday) => !CarbonImmutable::parse($holiday->date)->isWeekend())
+            ->count();
+    }
+
+    /**
+     * Get holidays within a date range grouped by type (only non-archived).
+     */
+    protected function getHolidaysInRange(CarbonImmutable $start, CarbonImmutable $end): Collection
+    {
+        return Holiday::query()
+            ->whereBetween('date', [$start, $end])
+            ->get();
+    }
+
+    /**
+     * Get approved work-on-holiday requests within a date range.
+     */
+    protected function getWorkOnHolidayRequests(Employee $employee, CarbonImmutable $start, CarbonImmutable $end): Collection
+    {
+        return Request::query()
+            ->where('employee_id', $employee->id)
+            ->where('type', RequestType::WORK_ON_HOLIDAY)
+            ->where('status', RequestStatus::APPROVED)
+            ->whereDate('requested_date', '>=', $start)
+            ->whereDate('requested_date', '<=', $end)
+            ->get();
     }
 
     /**
@@ -573,6 +678,7 @@ class PayrollGenerationService
         Collection $attendances,
         int $recordedDays,
         int $expectedDays,
+        \DateTimeInterface $periodStart,
         \DateTimeInterface $periodEnd,
         Collection $customAdjustments
     ): array {
@@ -588,6 +694,9 @@ class PayrollGenerationService
         $overtimePay = $this->calculateOvertimePay($attendances, $dailyRate);
         $lateDeduction = $this->calculateLateDeduction($attendances);
 
+        // Calculate work-on-holiday bonus
+        $holidayBonus = $this->calculateWorkOnHolidayBonus($employee, $attendances, $dailyRate, $periodStart, $periodEnd);
+
         $customBonus = $this->roundMoney(
             (float) $customAdjustments
                 ->where('type', PayrollAdjustmentType::BONUS)
@@ -600,7 +709,7 @@ class PayrollGenerationService
                 ->sum('amount')
         );
 
-        $grossPay = $this->roundMoney($attendanceGross + $allowance + $overtimePay + $customBonus);
+        $grossPay = $this->roundMoney($attendanceGross + $allowance + $overtimePay + $holidayBonus['total'] + $customBonus);
         $taxableGrossPay = $this->roundMoney(max(0, $grossPay - $lateDeduction - $customDeduction));
 
         $sss = $this->calculateSSS($basicSalary);
@@ -625,6 +734,8 @@ class PayrollGenerationService
             'allowance' => $this->roundMoney($allowance),
             'attendance_proration' => $attendanceProration,
             'overtime_pay' => $overtimePay,
+            'holiday_bonus' => $holidayBonus['total'],
+            'holiday_bonus_details' => $holidayBonus['details'],
             'late_deduction' => $lateDeduction,
             'gross_pay' => max(0, $grossPay),
             'tax' => $tax,
@@ -632,6 +743,62 @@ class PayrollGenerationService
             'pagibig' => $pagibig,
             'philhealth' => $philhealth,
             'net_pay' => max(0, $netPay),
+        ];
+    }
+
+    /**
+     * Calculate bonus for work-on-holiday requests.
+     */
+    protected function calculateWorkOnHolidayBonus(
+        Employee $employee,
+        Collection $attendances,
+        float $dailyRate,
+        \DateTimeInterface $periodStart,
+        \DateTimeInterface $periodEnd
+    ): array {
+        $start = CarbonImmutable::parse($periodStart)->startOfDay();
+        $end = CarbonImmutable::parse($periodEnd)->startOfDay();
+
+        $holidayConfig = config('payroll.holidays', []);
+        $regularMultiplier = (float) ($holidayConfig['regular_holiday_multiplier'] ?? 1.0);
+        $specialMultiplier = (float) ($holidayConfig['special_holiday_multiplier'] ?? 0.5);
+
+        // Get approved work-on-holiday requests
+        $workOnHolidayRequests = $this->getWorkOnHolidayRequests($employee, $start, $end);
+
+        $totalBonus = 0.0;
+        $holidayBonusDetails = [];
+
+        foreach ($workOnHolidayRequests as $request) {
+            $requestDate = CarbonImmutable::parse($request->requested_date)->startOfDay();
+
+            // Get the holiday for this date
+            $holiday = Holiday::query()
+                ->whereDate('date', $requestDate)
+                ->first();
+
+            if ($holiday) {
+                $multiplier = $holiday->type === HolidayType::REGULAR
+                    ? $regularMultiplier
+                    : $specialMultiplier;
+
+                $bonusAmount = $this->roundMoney($dailyRate * $multiplier);
+                $totalBonus += $bonusAmount;
+
+                $holidayBonusDetails[] = [
+                    'date' => $requestDate->format('Y-m-d'),
+                    'holiday_name' => $holiday->name,
+                    'holiday_type' => $holiday->type->label(),
+                    'multiplier' => $multiplier,
+                    'bonus_amount' => $bonusAmount,
+                    'reason' => "Work on {$holiday->type->label()} Holiday '{$holiday->name}' ({$multiplier}x daily rate)",
+                ];
+            }
+        }
+
+        return [
+            'total' => $this->roundMoney($totalBonus),
+            'details' => $holidayBonusDetails,
         ];
     }
 
@@ -787,6 +954,31 @@ class PayrollGenerationService
         $precision = max(0, (int) config('payroll.money_precision', 2));
 
         return round($amount, $precision);
+    }
+
+    /**
+     * Save holiday bonus as payroll adjustments.
+     */
+    protected function saveHolidayBonusAdjustments(Payroll $payroll, array $holidayBonusDetails): void
+    {
+        if (empty($holidayBonusDetails)) {
+            return;
+        }
+
+        // Remove existing holiday bonus adjustments
+        $payroll->adjustments()
+            ->where('type', PayrollAdjustmentType::BONUS)
+            ->where('reason', 'like', 'Work on%Holiday%')
+            ->delete();
+
+        // Add new holiday bonus adjustments
+        foreach ($holidayBonusDetails as $detail) {
+            $payroll->adjustments()->create([
+                'type' => PayrollAdjustmentType::BONUS,
+                'reason' => $detail['reason'],
+                'amount' => $detail['bonus_amount'],
+            ]);
+        }
     }
 
     /**

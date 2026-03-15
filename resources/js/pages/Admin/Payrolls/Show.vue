@@ -298,16 +298,35 @@ const totalDeductions = computed(() => {
                                         <th class="p-3 text-right font-medium">Late (mins)</th>
                                         <th class="p-3 text-right font-medium">OT (mins)</th>
                                         <th class="p-3 text-center font-medium">OT Approved</th>
+                                        <th class="p-3 text-left font-medium">Holiday</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="attendance in payrollData.attendance_logs" :key="attendance.id" class="border-t">
-                                        <td class="p-3">{{ attendance.date }}</td>
+                                    <tr 
+                                        v-for="attendance in payrollData.attendance_logs" 
+                                        :key="attendance.id" 
+                                        class="border-t"
+                                    >
+                                        <td class="p-3">
+                                            <div class="flex items-center gap-2">
+                                                <span>{{ attendance.date }}</span>
+                                                <DataBadge 
+                                                    v-if="attendance.is_holiday" 
+                                                    :badge="{ label: attendance.holiday_type, variant: attendance.holiday_type_value === 1 ? 'badge-primary' : 'badge-secondary' }" 
+                                                />
+                                            </div>
+                                        </td>
                                         <td class="p-3">{{ attendance.time_in || '-' }}</td>
                                         <td class="p-3">{{ attendance.time_out || '-' }}</td>
                                         <td class="p-3 text-right">{{ attendance.late_minutes }}</td>
                                         <td class="p-3 text-right">{{ attendance.overtime_minutes }}</td>
                                         <td class="p-3 text-center font-medium">{{ attendance.ot_approved_label }}</td>
+                                        <td class="p-3">
+                                            <span v-if="attendance.is_holiday" class="font-medium text-amber-700">
+                                                {{ attendance.holiday_name }}
+                                            </span>
+                                            <span v-else class="text-muted-foreground">-</span>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>

@@ -155,7 +155,6 @@ const sorts = [
 ];
 
 const tableActions = computed<DataTableActionsConfig>(() => ({
-    variant: 'menu',
     showRoute: (row) => show({ payroll: (row as PayrollIndexResource).id }).url,
 }));
 

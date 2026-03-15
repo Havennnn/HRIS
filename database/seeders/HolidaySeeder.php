@@ -27,6 +27,18 @@ class HolidaySeeder extends Seeder
                 'description' => 'First day of the year. Regular holiday under RA 9492.',
             ],
             [
+                'name'        => 'Regular Holiday Feb 5',
+                'date'        => '2026-02-05',
+                'type'        => HolidayType::REGULAR->value,
+                'description' => 'Sample regular holiday for testing.',
+            ],
+            [
+                'name'        => 'Special Holiday Feb 28',
+                'date'        => '2026-02-28',
+                'type'        => HolidayType::SPECIAL->value,
+                'description' => 'Sample special holiday for testing.',
+            ],
+            [
                 'name'        => 'Araw ng Kagitingan (Day of Valor)',
                 'date'        => '2026-04-09',
                 'type'        => HolidayType::REGULAR->value,

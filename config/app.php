@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
+    'name' => env('APP_NAME', 'LatsMarbls'),
 
     /*
     |--------------------------------------------------------------------------
@@ -96,6 +96,8 @@ return [
     */
 
     'cipher' => 'AES-256-CBC',
+
+    'api_key' => env('APP_API_KEY'),
 
     'key' => env('APP_KEY'),
 

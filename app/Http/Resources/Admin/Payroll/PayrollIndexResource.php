@@ -27,7 +27,7 @@ class PayrollIndexResource extends JsonResource
             'net_pay' => (float) $this->net_pay,
             'pay_period_start' => $this->pay_period_start?->format('M d, Y'),
             'pay_period_end' => $this->pay_period_end?->format('M d, Y'),
-            'created_at' => $this->created_at?->format('M d, Y H:i:s'),
+            'created_at' => $this->created_at?->format('M d, Y h:i a'),
         ];
     }
 }

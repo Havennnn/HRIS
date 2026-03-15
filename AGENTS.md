@@ -327,8 +327,14 @@ enum EmployeeStatus: int
     protected static function metaMap(): array
     {
         return [
-            self::ACTIVE->value   => ['label' => 'Active',   'variant' => 'badge-active'],
-            self::INACTIVE->value => ['label' => 'Inactive', 'variant' => 'badge-inactive'],
+            self::ACTIVE->value   => [
+                'label' => 'Active',   
+                'variant' => 'badge-active'
+            ],
+            self::INACTIVE->value => [
+                'label' => 'Inactive', 
+                'variant' => 'badge-inactive'
+            ],
         ];
     }
 }
@@ -356,11 +362,36 @@ PiaCore uses config-based permissions in `config/piapermission.php`. No database
 ```php
 // config/piapermission.php
 return [
-    'can-list-employees'   => ['label' => 'List Employees',   'roles' => [AdminRole::SUPER_ADMIN]],
-    'can-create-employee'  => ['label' => 'Create Employee', 'roles' => [AdminRole::SUPER_ADMIN]],
-    'can-update-employee'  => ['label' => 'Update Employee', 'roles' => [AdminRole::SUPER_ADMIN]],
-    'can-archive-employee' => ['label' => 'Archive Employee', 'roles' => [AdminRole::SUPER_ADMIN]],
-    'can-restore-employee' => ['label' => 'Restore Employee', 'roles' => [AdminRole::SUPER_ADMIN]],
+    'can-list-employees'   => [
+        'label' => 'List Employees',   
+        'roles' => [
+            AdminRole::SUPER_ADMIN
+        ]
+    ],
+    'can-create-employee'  => [
+        'label' => 'Create Employee', 
+        'roles' => [
+            AdminRole::SUPER_ADMIN
+        ]
+    ],
+    'can-update-employee'  => [
+        'label' => 'Update Employee', 
+        'roles' => [
+            AdminRole::SUPER_ADMIN
+        ]
+    ],
+    'can-archive-employee' => [
+        'label' => 'Archive Employee', 
+        'roles' => [
+            AdminRole::SUPER_ADMIN
+        ]
+    ],
+    'can-restore-employee' => [
+        'label' => 'Restore Employee', 
+        'roles' => [
+            AdminRole::SUPER_ADMIN
+        ]
+    ],
     // Available actions: list, view, create, update, archive, restore
 ];
 ```
@@ -593,4 +624,3 @@ composer test
 - [PiaCore README](vendor/latsmarbls/piacore/README.md) - Full PiaCore documentation
 - [Aggregate Sync Pattern](vendor/latsmarbls/piacore/docs/aggregate-sync-pattern.md) - Store & Update strategy
 - [vendor/latsmarbls/piacore/src/](vendor/latsmarbls/piacore/src/) - Source code for contracts, actions, and base classes
-    

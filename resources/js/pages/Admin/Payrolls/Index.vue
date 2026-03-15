@@ -10,6 +10,7 @@ import DataHeader from 'piacore/components/DataHeader.vue';
 import type { DataTableActionsConfig, DataTableColumn } from 'piacore/components/DataTable.vue';
 import DataTable from 'piacore/components/DataTable.vue';
 import DataTableControls from 'piacore/components/DataTableControls.vue';
+import { createDateRangeHandler } from 'piacore/helpers/date-range';
 import type { PaginatedData } from 'piacore/Interface/Pagination';
 import type { Option } from 'piacore/Interface/Selector';
 import { computed, h, ref } from 'vue';
@@ -158,6 +159,10 @@ const tableActions = computed<DataTableActionsConfig>(() => ({
     showRoute: (row) => show({ payroll: (row as PayrollIndexResource).id }).url,
 }));
 
+const handleDateRangeChange = createDateRangeHandler({
+    rangeKey: 'created',
+});
+
 function handlePageChange(url: string | null): void {
     if (url) {
         router.visit(url, { preserveState: true });
@@ -185,6 +190,7 @@ function handlePageChange(url: string | null): void {
                         :search-placeholder="searchPlaceholder"
                         :filters="filters"
                         :sorts="sorts"
+                        :date-range="handleDateRangeChange"
                         :show-date-range="true"
                     />
 

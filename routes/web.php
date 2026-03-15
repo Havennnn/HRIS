@@ -67,7 +67,10 @@ Route::middleware(['auth:admin'])->group(function (): void {
             Route::patch('/{employee}/restore', 'restore')->middleware('can-restore-employee')->name('restore')->withTrashed();
 
             // Attendance Routes
-            Route::get('/{employee}/attendance', [AttendanceController::class, 'index'])->middleware('can-list-attendances')->name('attendance.index');
+            Route::get('/{employee}/attendance', [AttendanceController::class, 'index'])
+                ->whereNumber('employee')
+                ->middleware('can-list-attendances')
+                ->name('attendance.index');
         });
 
     // Attendance Log Management Routes
@@ -126,14 +129,6 @@ Route::middleware(['auth:admin'])->group(function (): void {
         ->group(function (): void {
             Route::get('/', 'index')->middleware('can-list-payrolls')->name('index');
             Route::get('/{payroll}', 'show')->middleware('can-list-payrolls')->name('show');
-        });
-
-    // Calendar Management Routes
-    Route::prefix('calendar')
-        ->name('calendar.')
-        ->controller(CalendarController::class)
-        ->group(function (): void {
-            Route::get('/', 'index')->name('index');
         });
 
     // Holiday Management Routes

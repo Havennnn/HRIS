@@ -10,6 +10,7 @@ import DataHeader from 'piacore/components/DataHeader.vue';
 import type { DataTableActionsConfig, DataTableColumn } from 'piacore/components/DataTable.vue';
 import DataTable from 'piacore/components/DataTable.vue';
 import DataTableControls from 'piacore/components/DataTableControls.vue';
+import { createDateRangeHandler } from 'piacore/helpers/date-range';
 import type { PaginatedData } from 'piacore/Interface/Pagination';
 import { computed, h, ref } from 'vue';
 import type { RequestIndexResource } from './index';
@@ -43,22 +44,25 @@ const columns: DataTableColumn[] = [
     {
         key: 'type',
         label: 'Type',
+        cellClass: 'text-muted-foreground',
         cell: ({ row }) => (row as RequestIndexResource).type,
     },
     {
         key: 'message',
         label: 'Message',
-        cellClass: 'max-w-[200px] truncate',
+        cellClass: 'max-w-[200px] truncate text-muted-foreground',
         cell: ({ row }) => (row as RequestIndexResource).message,
     },
     {
         key: 'requested_date',
         label: 'Requested Date',
+        cellClass: 'text-muted-foreground',
         cell: ({ row }) => (row as RequestIndexResource).requested_date,
     },
     {
         key: 'days',
         label: 'Days/Hours',
+        cellClass: 'text-muted-foreground',
         cell: ({ row }) => {
             const request = row as RequestIndexResource;
             return request.days ? `${request.days} days` : (request.overtime_hours ? `${request.overtime_hours} hours` : '-');
@@ -70,6 +74,12 @@ const columns: DataTableColumn[] = [
         cell: ({ row }) => h(DataBadge, {
             badge: (row as RequestIndexResource).status
         }),
+    },
+    {
+        key: 'created_at',
+        label: 'Created Date',
+        cellClass: 'text-muted-foreground',
+        cell: ({ row }) => (row as RequestIndexResource).created_at,
     },
     {
         key: 'actions',
@@ -141,6 +151,10 @@ const sorts = [
         ],
     },
 ];
+
+const handleDateRangeChange = createDateRangeHandler({
+    rangeKey: 'created',
+});
 
 const tableActions = computed<DataTableActionsConfig>(() => {
     const isArchived = activeTab.value === 'archived';

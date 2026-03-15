@@ -5,6 +5,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { create, destroy, edit, index, restore } from '@/routes/holidays';
 import type { BreadcrumbItem } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/vue3';
+import { Filter } from 'lucide-vue-next';
 import type { DataCalendarActionsConfig, DataCalendarEventDisplay } from 'piacore/components/DataCalendar.vue';
 import DataCalendar from 'piacore/components/DataCalendar.vue';
 import DataHeader from 'piacore/components/DataHeader.vue';
@@ -62,6 +63,7 @@ const filters = [
     {
         key: 'type',
         label: 'Type',
+        icon: Filter,
         options: typeFilterOptions.value,
     },
 ];

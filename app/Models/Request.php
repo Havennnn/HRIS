@@ -41,12 +41,17 @@ class Request extends Model
         'status' => RequestStatus::class,
     ];
 
+    /**
+     * --------------------------------------------------------------------------
+     * Search Configuration
+     * --------------------------------------------------------------------------
+     */
+
     protected array $searchable = [
         'employee.first_name',
         'employee.last_name',
-        'requested_date',
-        'status',
-        'type',
+        'employee.position.name',
+        'employee.position.department.name',
     ];
 
     /**

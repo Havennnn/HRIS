@@ -8,11 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use PiaCore\Models\Concerns\HasActivityLogs;
+use PiaCore\Search\SearchConfig;
 
 class Payroll extends Model
 {
     use HasFactory;
     use HasActivityLogs;
+    use SearchConfig;
 
     /**
      * --------------------------------------------------------------------------
@@ -46,6 +48,20 @@ class Payroll extends Model
         'net_pay' => 'decimal:2',
         'pay_period_start' => 'date',
         'pay_period_end' => 'date',
+    ];
+
+    /**
+     * --------------------------------------------------------------------------
+     * Search Configuration
+     * --------------------------------------------------------------------------
+     */
+
+    protected array $searchable = [
+        'employee.first_name',
+        'employee.last_name',
+        'employee.middle_name',
+        'employee.position.name',
+        'employee.position.department.name',
     ];
 
     /**

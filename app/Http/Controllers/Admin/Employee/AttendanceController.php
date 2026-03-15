@@ -5,22 +5,15 @@ namespace App\Http\Controllers\Admin\Employee;
 use App\Enums\Status\AttendanceStatus;
 use App\Http\Resources\Admin\Employee\Attendance\AttendanceIndexResource;
 use App\Http\Resources\Admin\Employee\EmployeeHeaderResource;
-use App\Models\Attendance;
 use App\Models\Employee;
 use App\Services\Admin\Employee\AttendanceService;
 use Illuminate\Http\Request;
+use PiaCore\Actions\Options\ListOptions;
 use PiaCore\Actions\Resource\ListAction;
 use PiaCore\Http\Controllers\ResourceController;
 
 final class AttendanceController extends ResourceController
 {
-    /**
-     * The model class associated with the resource.
-     *
-     * @var class-string<\App\Models\Attendance>
-     */
-    protected string $modelClass = Attendance::class;
-
     /**
      * Service class for attendance resource operations.
      *
@@ -43,9 +36,12 @@ final class AttendanceController extends ResourceController
      */
     public function index(Request $request, Employee $employee, ListAction $action)
     {
-        return $action($this->listOptions(
+        return $action(new ListOptions(
+            model: $employee->attendances(),
             request: $request,
-            resource: AttendanceIndexResource::class,
+            view: $this->view('Index'),
+            service: $this->service(),
+            resource: $this->resource(AttendanceIndexResource::class),
             additionalProps: [
                 'employee' => new EmployeeHeaderResource($employee),
                 'status' => AttendanceStatus::options(),

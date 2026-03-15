@@ -149,12 +149,23 @@ function submit(): void {
                     </CardHeader>
 
                     <CardContent class="grid gap-6">
-                        <div class="space-y-2">
-                            <Label>Position</Label>
-                            <div
-                                class="py-1 text-sm"
-                            >
-                                {{ employeeData?.position }}
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div class="space-y-2">
+                                <Label>Position</Label>
+                                <div
+                                    class="py-1 text-sm"
+                                >
+                                    {{ employeeData?.position }} - {{ employeeData?.position_level }}
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label>Department</Label>
+                                <div
+                                    class="py-1 text-sm"
+                                >
+                                    {{ employeeData?.department }}
+                                </div>
                             </div>
                         </div>
 

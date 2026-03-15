@@ -16,8 +16,6 @@ class AttendanceIndexResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'employee' => $this->employee?->full_name,
-            'employee_id' => $this->employee_id,
             'date' => $this->date?->format('M d, Y'),
             'time_in' => $this->time_in?->format('h:i A'),
             'time_out' => $this->time_out?->format('h:i A'),

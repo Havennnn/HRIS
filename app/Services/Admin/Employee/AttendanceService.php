@@ -2,7 +2,6 @@
 
 namespace App\Services\Admin\Employee;
 
-use App\Models\Attendance;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -27,7 +26,6 @@ class AttendanceService implements ListsRecords
                 ],
             ],
             'filters' => [
-                'employee' => fn (Builder $query, $value) => $query->where('employee_id', $value),
                 'status' => fn (Builder $query, $value) => $query->where('status', $value),
             ],
             'sorts' => [

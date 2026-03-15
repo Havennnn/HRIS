@@ -2,8 +2,6 @@ import type { Badge } from "piacore/Interface/Badge";
 
 export interface AttendanceIndexResource {
     id: number;
-    employee: string;
-    employee_id: number;
     date: string;
     time_in: string | null;
     time_out: string | null;

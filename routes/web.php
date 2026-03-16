@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\Career\CareerController;
 use App\Http\Controllers\Admin\AttendanceLog\AttendanceLogController;
 use App\Http\Controllers\Admin\Calendar\CalendarController;
 use App\Http\Controllers\Admin\Department\DepartmentController;
@@ -27,31 +28,31 @@ Route::middleware(['auth:admin'])->group(function (): void {
 
     // Department Management Routes
     Route::prefix('departments')
-    ->name('departments.')
-    ->controller(DepartmentController::class)
-    ->group(function (): void {
-        Route::get('/', 'index')->middleware('can-list-departments')->name('index');
-        Route::get('/create', 'create')->middleware('can-create-department')->name('create');
-        Route::post('/', 'store')->middleware('can-create-department')->name('store');
-        Route::get('/{department}/edit', 'edit')->middleware('can-update-department')->name('edit');
-        Route::patch('/{department}', 'update')->middleware('can-update-department')->name('update');
-        Route::delete('/{department}', 'destroy')->middleware('can-archive-department')->name('destroy');
-        Route::patch('/{department}/restore', 'restore')->middleware('can-restore-department')->name('restore')->withTrashed();
-    });
+        ->name('departments.')
+        ->controller(DepartmentController::class)
+        ->group(function (): void {
+            Route::get('/', 'index')->middleware('can-list-departments')->name('index');
+            Route::get('/create', 'create')->middleware('can-create-department')->name('create');
+            Route::post('/', 'store')->middleware('can-create-department')->name('store');
+            Route::get('/{department}/edit', 'edit')->middleware('can-update-department')->name('edit');
+            Route::patch('/{department}', 'update')->middleware('can-update-department')->name('update');
+            Route::delete('/{department}', 'destroy')->middleware('can-archive-department')->name('destroy');
+            Route::patch('/{department}/restore', 'restore')->middleware('can-restore-department')->name('restore')->withTrashed();
+        });
 
     // Position Management Routes
     Route::prefix('positions')
-    ->name('positions.')
-    ->controller(PositionController::class)
-    ->group(function (): void {
-        Route::get('/', 'index')->middleware('can-list-positions')->name('index');
-        Route::get('/create', 'create')->middleware('can-create-position')->name('create');
-        Route::post('/', 'store')->middleware('can-create-position')->name('store');
-        Route::get('/{position}/edit', 'edit')->middleware('can-update-position')->name('edit');
-        Route::patch('/{position}', 'update')->middleware('can-update-position')->name('update');
-        Route::delete('/{position}', 'destroy')->middleware('can-archive-position')->name('destroy');
-        Route::patch('/{position}/restore', 'restore')->middleware('can-restore-position')->name('restore')->withTrashed();
-    });
+        ->name('positions.')
+        ->controller(PositionController::class)
+        ->group(function (): void {
+            Route::get('/', 'index')->middleware('can-list-positions')->name('index');
+            Route::get('/create', 'create')->middleware('can-create-position')->name('create');
+            Route::post('/', 'store')->middleware('can-create-position')->name('store');
+            Route::get('/{position}/edit', 'edit')->middleware('can-update-position')->name('edit');
+            Route::patch('/{position}', 'update')->middleware('can-update-position')->name('update');
+            Route::delete('/{position}', 'destroy')->middleware('can-archive-position')->name('destroy');
+            Route::patch('/{position}/restore', 'restore')->middleware('can-restore-position')->name('restore')->withTrashed();
+        });
 
     // Employee Management Routes
     Route::prefix('employees')
@@ -84,14 +85,15 @@ Route::middleware(['auth:admin'])->group(function (): void {
     // Career Management Routes
     Route::prefix('careers')
         ->name('careers.')
+        ->controller(CareerController::class)
         ->group(function (): void {
-            Route::get('/', fn () => Inertia::render('Admin/Careers/Index'))->name('index');
-            Route::get('/create', fn () => Inertia::render('Admin/Careers/Create'))->name('create');
-            Route::post('/', fn () => redirect()->route('careers.index'))->name('store');
-            Route::get('/{career}/edit', fn () => Inertia::render('Admin/Careers/Edit'))->name('edit');
-            Route::patch('/{career}', fn () => redirect()->route('careers.index'))->name('update');
-            Route::delete('/{career}', fn () => redirect()->route('careers.index'))->name('destroy');
-            Route::patch('/{career}/restore', fn () => redirect()->route('careers.index'))->name('restore')->withTrashed();
+            Route::get('/', 'index')->middleware('can-list-careers')->name('index');
+            Route::get('/create', 'create')->middleware('can-create-career')->name('create');
+            Route::post('/', 'store')->middleware('can-create-career')->name('store');
+            Route::get('/{career}/edit', 'edit')->middleware('can-update-career')->name('edit');
+            Route::patch('/{career}', 'update')->middleware('can-update-career')->name('update');
+            Route::delete('/{career}', 'destroy')->middleware('can-archive-career')->name('destroy');
+            Route::patch('/{career}/restore', 'restore')->middleware('can-restore-career')->name('restore')->withTrashed();
         });
 
     // Application Management Routes

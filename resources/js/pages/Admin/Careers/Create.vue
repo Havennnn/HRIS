@@ -6,7 +6,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { create, index, store } from '@/routes/careers';
@@ -21,9 +20,6 @@ import { computed } from 'vue';
 const props = defineProps<{
     positions?: Option[];
 }>();
-
-// Position options from dummy data
-const positions = computed<Option[]>(() => getPositionOptions());
 
 const pageTitle = 'Create Career';
 
@@ -87,7 +83,7 @@ function submit(): void {
                                 <DataSelector
                                     id="position_id"
                                     v-model="form.position_id"
-                                    :options="positions"
+                                    :options="positions ?? []"
                                     required
                                     placeholder="-- Select a Position --"
                                     :error="form.errors.position_id"
@@ -100,13 +96,13 @@ function submit(): void {
                                     Description
                                 </Label>
 
-                                <Input
+                                <textarea
                                     id="description"
                                     v-model="form.description"
-                                    type="textarea"
                                     placeholder="Enter job description"
+                                    rows="4"
                                     :disabled="form.processing"
-                                    class="min-h-[120px] resize-y"
+                                    class="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                                     :aria-invalid="form.errors.description ? 'true' : undefined"
                                 />
 

@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { careers, getPositionOptions } from '@/dummy/DummyData';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { create, destroy, edit, index, restore } from '@/routes/careers';
 import type { BreadcrumbItem } from '@/types';
-import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { Head, Link, usePage } from '@inertiajs/vue3';
 import { ArrowUpDown, Badge } from 'lucide-vue-next';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import type { DataTableActionsConfig, DataTableColumn } from 'piacore/components/DataTable.vue';
@@ -16,6 +15,11 @@ import { Option } from 'piacore/Interface/Selector';
 import { computed, h, ref } from 'vue';
 import type { CareerIndexResource } from './index';
 
+const props = defineProps<{
+    data: PaginatedData<CareerIndexResource>;
+    positions?: Option[];
+}>();
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Careers',
@@ -23,84 +27,8 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// Transform dummy careers data to match CareerIndexResource format
-const transformCareerToResource = (career: typeof careers[0]): CareerIndexResource => ({
-    id: career.id,
-    position: career.position,
-    position_id: career.id,
-    description: career.description,
-    is_active: career.is_active,
-    status: {
-        label: career.is_active ? 'Active' : 'Inactive',
-        variant: career.is_active ? 'badge-success' : 'badge-secondary',
-    },
-    created_at: new Date().toISOString().split('T')[0],
-});
-
-// Transform careers to CareerIndexResource format
-const careersData = computed<CareerIndexResource[]>(() =>
-    careers.map(transformCareerToResource)
-);
-
-// Create paginated data from dummy data
-const dummyPaginatedData = computed<PaginatedData<CareerIndexResource>>(() => ({
-    current_page: 1,
-    last_page: 1,
-    per_page: 10,
-    total: careersData.value.length,
-    data: careersData.value,
-    count: {
-        defaultCount: careersData.value.length,
-        archivedCount: careersData.value.filter(c => !c.is_active).length,
-    },
-}));
-
-// Use dummy data if no server data provided
-const tableData = computed<PaginatedData<CareerIndexResource>>(() => {
-    if (props.data?.data?.length > 0) {
-        return props.data;
-    }
-    return dummyPaginatedData.value;
-});
-
 // Position options for filter
-const positions = computed<Option[]>(() => getPositionOptions());
-
-const props = defineProps<{
-    data?: PaginatedData<CareerIndexResource>;
-    positions?: Option[];
-    statuses?: Option[];
-}>();
-
-const columns: DataTableColumn[] = [
-    {
-        key: 'position',
-        label: 'Position',
-        headerClass: 'min-w-60',
-        cellClass: 'text-muted-foreground',
-        cell: ({ row }) => (row as CareerIndexResource).position,
-    },
-    {
-        key: 'description',
-        label: 'Description',
-        headerClass: 'min-w-80',
-        cell: ({ row }) => {
-            const career = row as CareerIndexResource;
-            return h('div', { class: 'truncate max-w-xs' }, career.description || '-');
-        },
-    },
-    {
-        key: 'created_at',
-        label: 'Created Date',
-        cellClass: 'text-muted-foreground',
-        cell: ({ row }) => (row as CareerIndexResource).created_at,
-    },
-    {
-        key: 'actions',
-        headerClass: 'text-right',
-        cellClass: 'text-muted-foreground',
-    },
-];
+const positions = computed<Option[]>(() => props.positions ?? []);
 
 const page = usePage();
 const activeTab = computed<string>(() => {
@@ -115,12 +43,12 @@ const tabs = computed(() => [
     {
         key: 'default',
         label: 'All',
-        count: tableData.value.count?.defaultCount ?? 0,
+        count: props.data.count?.defaultCount ?? 0,
     },
     {
         key: 'archived',
         label: 'Archived',
-        count: tableData.value.count?.archivedCount ?? 0,
+        count: props.data.count?.archivedCount ?? 0,
     },
     {
         key: 'activity_logs',
@@ -160,9 +88,39 @@ const tableActions = computed<DataTableActionsConfig>(() => ({
     restoreConfirmMessage: 'Are you sure you want to restore this career?',
 }));
 
+const columns: DataTableColumn[] = [
+    {
+        key: 'position',
+        label: 'Position',
+        headerClass: 'min-w-60',
+        cellClass: 'text-muted-foreground',
+        cell: ({ row }) => (row as CareerIndexResource).position?.name ?? '-',
+    },
+    {
+        key: 'description',
+        label: 'Description',
+        headerClass: 'min-w-80',
+        cell: ({ row }) => {
+            const career = row as CareerIndexResource;
+            return h('div', { class: 'truncate max-w-xs' }, career.description || '-');
+        },
+    },
+    {
+        key: 'created_at',
+        label: 'Created Date',
+        cellClass: 'text-muted-foreground',
+        cell: ({ row }) => (row as CareerIndexResource).created_at,
+    },
+    {
+        key: 'actions',
+        headerClass: 'text-right',
+        cellClass: 'text-muted-foreground',
+    },
+];
+
 function handlePageChange(url: string | null): void {
     if (url) {
-        router.visit(url, { preserveState: true });
+        window.location.href = url;
     }
 }
 </script>
@@ -198,7 +156,7 @@ function handlePageChange(url: string | null): void {
 
                     <DataTable
                         :columns="columns"
-                        :paginated="tableData"
+                        :paginated="data"
                         :actions="tableActions"
                         :active-tab="activeTab"
                         row-key="id"

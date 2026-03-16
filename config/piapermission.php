@@ -271,4 +271,36 @@ return [
             AdminRole::SUPER_ADMIN,
         ],
     ],
+
+    // Career Management Permissions
+    'can-list-careers' => [
+        'label' => 'List Careers',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-create-career' => [
+        'label' => 'Create Career',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-update-career' => [
+        'label' => 'Update Career',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-archive-career' => [
+        'label' => 'Archive Career',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-restore-career' => [
+        'label' => 'Restore Career',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
 ];

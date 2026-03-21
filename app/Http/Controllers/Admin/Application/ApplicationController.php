@@ -73,7 +73,7 @@ final class ApplicationController extends ResourceController
     public function interview(Application $application): RedirectResponse|Redirector
     {
         try {
-            app(ApplicationService::class)->interview($application);
+            $this->service()->interview($application);
 
             return redirect()->back()->with('success', 'Application moved to interview successfully.');
         } catch (\InvalidArgumentException $e) {
@@ -84,7 +84,7 @@ final class ApplicationController extends ResourceController
     public function reject(Application $application): RedirectResponse|Redirector
     {
         try {
-            app(ApplicationService::class)->reject($application);
+            $this->service()->reject($application);
 
             return redirect()->back()->with('success', 'Application rejected successfully.');
         } catch (\InvalidArgumentException $e) {
@@ -95,7 +95,7 @@ final class ApplicationController extends ResourceController
     public function hire(Application $application): RedirectResponse|Redirector
     {
         try {
-            app(ApplicationService::class)->hire($application);
+            $this->service()->hire($application);
 
             return redirect()->back()->with('success', 'Application hired successfully.');
         } catch (\InvalidArgumentException $e) {

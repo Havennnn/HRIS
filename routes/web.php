@@ -1,8 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\Application\ApplicationController;
 use App\Http\Controllers\Admin\Career\CareerController;
 use App\Http\Controllers\Admin\AttendanceLog\AttendanceLogController;
-use App\Http\Controllers\Admin\Calendar\CalendarController;
 use App\Http\Controllers\Admin\Department\DepartmentController;
 use App\Http\Controllers\Admin\Department\PositionController;
 use App\Http\Controllers\Admin\Employee\AttendanceController;
@@ -11,7 +11,6 @@ use App\Http\Controllers\Admin\Holiday\HolidayController;
 use App\Http\Controllers\Admin\Payroll\PayrollController;
 use App\Http\Controllers\Admin\Request\RequestController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -99,14 +98,15 @@ Route::middleware(['auth:admin'])->group(function (): void {
     // Application Management Routes
     Route::prefix('applications')
         ->name('applications.')
+        ->controller(ApplicationController::class)
         ->group(function (): void {
-            Route::get('/', fn () => Inertia::render('Admin/Applications/Index'))->name('index');
-            Route::get('/create', fn () => Inertia::render('Admin/Applications/Create'))->name('create');
-            Route::post('/', fn () => redirect()->route('applications.index'))->name('store');
-            Route::get('/{application}/show', fn () => Inertia::render('Admin/Applications/Show'))->name('show');
-            Route::patch('/{application}', fn () => redirect()->route('applications.index'))->name('update');
-            Route::delete('/{application}', fn () => redirect()->route('applications.index'))->name('destroy');
-            Route::patch('/{application}/restore', fn () => redirect()->route('applications.index'))->name('restore')->withTrashed();
+            Route::get('/', 'index')->middleware('can-list-applications')->name('index');
+            Route::get('/{application}', 'show')->middleware('can-view-application')->name('show');
+            Route::post('/{application}/interview', 'interview')->middleware('can-interview-application')->name('interview');
+            Route::post('/{application}/reject', 'reject')->middleware('can-reject-application')->name('reject');
+            Route::post('/{application}/hire', 'hire')->middleware('can-hire-application')->name('hire');
+            Route::delete('/{application}', 'destroy')->middleware('can-archive-application')->name('destroy');
+            Route::patch('/{application}/restore', 'restore')->middleware('can-restore-application')->name('restore')->withTrashed();
         });
 
     // Request Management Routes

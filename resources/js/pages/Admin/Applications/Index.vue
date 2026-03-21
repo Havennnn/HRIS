@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import { Card, CardContent } from '@/components/ui/card';
-import { applications, getPositionOptions, getStatusOptions } from '@/dummy/DummyData';
+import ApplicationIndexResource from '@/Http/Resources/Admin/Application/ApplicationIndexResource';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { destroy, index, restore, show } from '@/routes/applications';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router, usePage } from '@inertiajs/vue3';
-import { ArrowUpDown, Badge } from 'lucide-vue-next';
+import { ArrowUpDown, Badge, Filter } from 'lucide-vue-next';
 import DataBadge from 'piacore/components/DataBadge.vue';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import type { DataTableActionsConfig, DataTableColumn } from 'piacore/components/DataTable.vue';
 import DataTable from 'piacore/components/DataTable.vue';
 import DataTableControls from 'piacore/components/DataTableControls.vue';
+import { createDateRangeHandler } from 'piacore/helpers/date-range';
 import type { PaginatedData } from 'piacore/Interface/Pagination';
-import { Option } from 'piacore/Interface/Selector';
+import type { Option } from 'piacore/Interface/Selector';
 import { computed, h, ref } from 'vue';
-import type { ApplicationIndexResource } from './index';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -23,54 +23,9 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-// Transform dummy application data to match ApplicationIndexResource format
-const transformApplicationToResource = (app: typeof applications[0]): ApplicationIndexResource => ({
-    id: app.id,
-    job_id: app.id,
-    position: app.career,
-    full_name: app.full_name,
-    first_name: app.full_name.split(' ')[0],
-    last_name: app.full_name.split(' ').slice(1).join(' ') || '',
-    middle_name: '',
-    birthdate: app.birthdate,
-    mobile_number: app.mobile_number,
-    email: app.email,
-    status: app.status[0] || { label: 'Pending', variant: 'badge-pending' },
-    created_at: new Date().toISOString().split('T')[0],
-});
-
-// Transform applications to ApplicationIndexResource format
-const applicationsData = computed<ApplicationIndexResource[]>(() =>
-    applications.map(transformApplicationToResource)
-);
-
-// Create paginated data from dummy data
-const dummyPaginatedData = computed<PaginatedData<ApplicationIndexResource>>(() => ({
-    current_page: 1,
-    last_page: 1,
-    per_page: 10,
-    total: applicationsData.value.length,
-    data: applicationsData.value,
-    count: {
-        defaultCount: applicationsData.value.length,
-        archivedCount: 0,
-    },
-}));
-
-// Use dummy data (for development)
-const tableData = computed<PaginatedData<ApplicationIndexResource>>(() => {
-    return dummyPaginatedData.value;
-});
-
-// Job/Position options for filter
-const jobs = computed<Option[]>(() => getPositionOptions());
-
-// Status options for filter
-const statuses = computed<Option[]>(() => getStatusOptions());
-
 const props = defineProps<{
-    data?: PaginatedData<ApplicationIndexResource>;
-    jobs?: Option[];
+    data: PaginatedData<ApplicationIndexResource>;
+    positions?: Option[];
     statuses?: Option[];
 }>();
 
@@ -83,7 +38,7 @@ const columns: DataTableColumn[] = [
             const application = row as ApplicationIndexResource;
             return h('div', { class: 'flex flex-col' }, [
                 h('span', { class: 'font-medium capitalize' }, application.full_name),
-                h('span', { class: 'text-muted-foreground' }, application.email),
+                h('span', { class: 'text-muted-foreground text-sm' }, application.email),
             ]);
         },
     },
@@ -110,9 +65,13 @@ const columns: DataTableColumn[] = [
     },
     {
         key: 'created_at',
-        label: 'Created Date',
+        label: 'Applied Date',
         cellClass: 'text-muted-foreground',
-        cell: ({ row }) => (row as ApplicationIndexResource).created_at,
+        sortable: false,
+        cell: ({ row }) => {
+            const date = new Date((row as ApplicationIndexResource).created_at);
+            return date.toLocaleDateString();
+        },
     },
     {
         key: 'actions',
@@ -134,56 +93,63 @@ const tabs = computed(() => [
     {
         key: 'default',
         label: 'All',
-        count: tableData.value.count?.defaultCount ?? 0,
+        count: props.data?.count?.defaultCount ?? 0,
     },
     {
         key: 'archived',
         label: 'Archived',
-        count: tableData.value.count?.archivedCount ?? 0,
-    },
-    {
-        key: 'activity_logs',
-        label: 'Activity Log',
+        count: props.data?.count?.archivedCount ?? 0,
     },
 ]);
 
-const filters = [
+const filters = computed(() => [
     {
         key: 'position',
         label: 'Position',
         icon: Badge,
-        options: jobs.value,
+        placeholder: 'Filter by position',
+        widthClass: 'w-84',
+        options: props.positions ?? [],
     },
     {
         key: 'status',
         label: 'Status',
-        icon: Badge,
-        options: statuses.value,
+        icon: Filter,
+        placeholder: 'Filter by status',
+        options: props.statuses ?? [],
     },
-];
+]);
 
 const sorts = [
     {
-        key: 'name',
         label: 'Sort',
         icon: ArrowUpDown,
         menuLabel: 'Sort Applications',
-        widthClass: 'w-44',
+        widthClass: 'w-56',
         options: [
-            { value: 'asc', label: 'Name (A-Z)' },
-            { value: 'desc', label: 'Name (Z-A)' },
+            { value: 'asc', key: 'created', label: 'Created Date (Oldest)' },
+            { value: 'desc', key: 'created', label: 'Created Date (Newest)' },
         ],
     },
 ];
 
-const tableActions = computed<DataTableActionsConfig>(() => ({
-    editRoute: (row) => show({ application: row.id as number }).url,
-    deleteRoute: (row) => destroy({ application: row.id as number }).url,
-    restoreRoute: (row) => restore({ application: row.id as number }).url,
-    destructiveAction: activeTab.value === 'archived' ? 'restore' : 'delete',
-    deleteConfirmMessage: 'Are you sure you want to delete this application?',
-    restoreConfirmMessage: 'Are you sure you want to restore this application?',
-}));
+const handleDateRangeChange = createDateRangeHandler({
+    rangeKey: 'created',
+});
+
+const tableActions = computed<DataTableActionsConfig>(() => {
+    const isArchived = activeTab.value === 'archived';
+
+    return {
+        variant: 'inline',
+        showRoute: (row) => show((row as ApplicationIndexResource).id).url,
+        deleteRoute: !isArchived ? (row) => destroy({ application: (row as ApplicationIndexResource).id }).url : undefined,
+        restoreRoute: isArchived ? (row) => restore({ application: (row as ApplicationIndexResource).id }).url : undefined,
+        destructiveAction: isArchived ? 'restore' : 'delete',
+        deleteConfirmMessage: 'Are you sure you want to delete this application?',
+        restoreConfirmMessage: 'Are you sure you want to restore this application?',
+    };
+});
 
 function handlePageChange(url: string | null): void {
     if (url) {
@@ -212,12 +178,13 @@ function handlePageChange(url: string | null): void {
                         :filters="filters"
                         :sorts="sorts"
                         :show-date-range="true"
+                        :date-range="handleDateRangeChange"
                         :search-placeholder="searchPlaceholder"
                     />
 
                     <DataTable
                         :columns="columns"
-                        :paginated="tableData"
+                        :paginated="data"
                         :actions="tableActions"
                         :active-tab="activeTab"
                         row-key="id"

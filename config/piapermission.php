@@ -303,4 +303,48 @@ return [
             AdminRole::SUPER_ADMIN,
         ],
     ],
+
+    // Application Management Permissions
+    'can-list-applications' => [
+        'label' => 'List Applications',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-view-application' => [
+        'label' => 'View Application',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-interview-application' => [
+        'label' => 'Move Application to Interview',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-reject-application' => [
+        'label' => 'Reject Application',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-hire-application' => [
+        'label' => 'Hire Application',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-archive-application' => [
+        'label' => 'Archive Application',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+    'can-restore-application' => [
+        'label' => 'Restore Application',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
 ];

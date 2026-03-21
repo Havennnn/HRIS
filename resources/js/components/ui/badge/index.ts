@@ -22,6 +22,8 @@ export const badgeVariants = cva(
             "border-green-400 bg-opacity-20",
         'badge-approved':
             "border-green-400 bg-opacity-20",
+        'badge-hired':
+            "border-green-400 bg-opacity-20",
 
         // Gray
         'badge-inactive':
@@ -32,9 +34,13 @@ export const badgeVariants = cva(
         // Yellow
         'badge-onboarding':
             "border-yellow-400 bg-opacity-20",
+        'badge-reviewing':
+            "border-yellow-400 bg-opacity-20",
 
         // Blue
         'badge-vacation':
+            "border-blue-400 bg-opacity-20",
+        'badge-interview':
             "border-blue-400 bg-opacity-20",
 
         // Red

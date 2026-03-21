@@ -58,4 +58,19 @@ class Application extends Model
     {
         return $this->hasOne(ApplicationInterview::class);
     }
+
+    /**
+     * --------------------------------------------------------------------------
+     * Accessors
+     * --------------------------------------------------------------------------
+     */
+
+    public function getFullNameAttribute(): string
+    {
+        $middleInitial = $this->middle_name
+            ? strtoupper(substr($this->middle_name, 0, 1)) . '.'
+            : null;
+
+        return trim("{$this->first_name} {$middleInitial} {$this->last_name}");
+    }
 }

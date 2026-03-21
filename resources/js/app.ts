@@ -1,10 +1,15 @@
+import { initializeTheme } from '@/composables/useAppearance';
 import { createInertiaApp } from '@inertiajs/vue3';
-import { resolvePage } from 'piacore/resolve-pages';
+import { resolvePage, setAppPages } from 'piacore/resolve-pages';
+import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import '../css/app.css';
-import { initializeTheme } from '@/composables/useAppearance';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+
+// Load app pages and set them in the resolver
+const appPages = import.meta.glob<DefineComponent>('./pages/**/*.vue');
+setAppPages(appPages);
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),

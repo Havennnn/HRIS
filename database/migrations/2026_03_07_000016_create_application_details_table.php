@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreignIdFor(Application::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(UploadedFile::class, 'resume_id')->nullable()->nullOnDelete();
             $table->foreignIdFor(UploadedFile::class, 'portfolio_id')->nullable()->nullOnDelete();
+            $table->timestamps();
 
             $table->index('application_id');
             $table->index('resume_id');

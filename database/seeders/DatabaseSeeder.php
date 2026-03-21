@@ -22,6 +22,8 @@ class DatabaseSeeder extends Seeder
             AttendanceSeeder::class,
             AttendanceLogSeeder::class,
             RequestSeeder::class,
+            CareerSeeder::class,
+            ApplicationSeeder::class,
 
             // System Setup
             HolidaySeeder::class,

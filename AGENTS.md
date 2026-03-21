@@ -524,6 +524,7 @@ app/
 - Follow ESLint configuration
 - Use Composition API with `<script setup>` syntax
 - Inertia pages go in `resources/js/Pages/Admin/[Module]/`
+- Use Wayfinder instead of ziggy and normla route like ('/Application/Create')
 
 ### CSS/Tailwind
 

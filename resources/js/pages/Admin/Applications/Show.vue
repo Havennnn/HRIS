@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { Head, router, usePage } from '@inertiajs/vue3';
+import { ArrowLeft, BriefcaseBusiness, UserRoundX } from 'lucide-vue-next';
+import { computed } from 'vue';
 import {
     Card,
     CardContent,
@@ -6,156 +9,51 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { getApplicationById, getHrAdminOptions, getInterviewByApplicationId, getPositionOptions, getStatusOptions } from '@/dummy/DummyData';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { index, show, update } from '@/routes/applications';
+import {
+    hire,
+    index,
+    interview,
+    reject,
+    show,
+} from '@/routes/applications';
 import type { BreadcrumbItem } from '@/types';
-import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { ArrowLeft, Calendar, Check, ClipboardCheck, X } from 'lucide-vue-next';
 import ActivityLogTable from 'piacore/components/ActivityLogTable.vue';
 import DataBadge from 'piacore/components/DataBadge.vue';
 import DataHeader from 'piacore/components/DataHeader.vue';
-import DataSelector from 'piacore/components/DataSelector.vue';
 import DataTableControls from 'piacore/components/DataTableControls.vue';
-import type { Option } from 'piacore/Interface/Selector';
-import { computed, ref } from 'vue';
-import type { ApplicationEditResource } from './index';
+import { ApplicationStatus } from './index';
+import type { ApplicationShowResource } from './index';
 
 const props = defineProps<{
-    data?: ApplicationEditResource;
-    jobs?: Option[];
-    statuses?: Option[];
-    application?: number;
+    data: ApplicationShowResource | { data: ApplicationShowResource };
 }>();
-
-// Get application ID from route params
-const applicationId = computed(() => {
-    if (props.application) return props.application;
-    const pageProps = usePage().props as Record<string, unknown>;
-    return (pageProps.application as number) ?? 1;
-});
-
-// Job/Position options from dummy data
-const jobs = computed<Option[]>(() => getPositionOptions());
-
-// Status options from dummy data
-const statuses = computed<Option[]>(() => getStatusOptions());
-
-// HR Admin options for interviewer selector
-const hrAdmins = computed<Option[]>(() => getHrAdminOptions());
-
-// Helper to get status value from label
-function getStatusValue(label: string): number {
-    const statusMap: Record<string, number> = {
-        'Pending': 1,
-        'Reviewing': 2,
-        'Interview': 3,
-        'Rejected': 4,
-        'Hired': 5,
-    };
-    return statusMap[label] || 1;
-}
-
-// Current status value
-const currentStatusValue = ref(1);
-
-// Get application data from dummy if no server data
-const dummyApplicationData = computed(() => {
-    if (props.data?.data) {
-        return props.data.data;
-    }
-    const app = getApplicationById(applicationId.value);
-    if (app) {
-        const statusVal = getStatusValue(app.status[0]?.label || 'Pending');
-        // Update current status value
-        currentStatusValue.value = statusVal;
-
-        return {
-            id: app.id,
-            job_id: app.id,
-            job_name: app.career,
-            first_name: app.full_name.split(' ')[0],
-            last_name: app.full_name.split(' ').slice(1).join(' ') || '',
-            middle_name: '',
-            birthdate: app.birthdate,
-            mobile_number: app.mobile_number,
-            email: app.email,
-            status: app.status[0] || { label: 'Pending', variant: 'badge-pending' },
-            status_value: statusVal,
-            created_at: new Date().toISOString().split('T')[0],
-        };
-    }
-    return null;
-});
-
-// Get interview data
-const interviewData = computed(() => {
-    return getInterviewByApplicationId(applicationId.value);
-});
-
-const isEditing = ref(false);
-const isSchedulingInterview = ref(false);
 
 const page = usePage();
 const pageTitle = 'Application';
 
-const applicationData = computed(() => dummyApplicationData.value);
-
-// Tabs based on status
-const activeTab = ref('information');
-
-const tabs = computed(() => {
-    const tabList = [
-        { key: 'information', label: 'Information' },
-    ];
-
-    // Add Interview tab only if status is Interview (3) or higher
-    if (currentStatusValue.value >= 3) {
-        tabList.push({ key: 'interview', label: 'Interview' });
+const applicationData = computed<ApplicationShowResource>(() => {
+    if ('data' in props.data) {
+        return props.data.data;
     }
 
-    tabList.push({ key: 'activity_logs', label: 'Activity Log' });
-
-    return tabList;
+    return props.data;
 });
 
 const breadcrumbs = computed<BreadcrumbItem[]>(() => [
-    { title: 'Applications', href: index().url },
     {
-        title: 'Edit',
-        href: applicationData.value?.id ? show({ application: applicationData.value.id }).url : '#',
+        title: 'Applications',
+        href: index().url,
+    },
+    {
+        title: applicationData.value?.full_name ?? 'Application Details',
+        href: applicationData.value?.id
+            ? show({ application: applicationData.value.id }).url
+            : '#',
     },
 ]);
 
-const form = useForm({
-    job_id: applicationData.value?.job_id ?? '',
-    first_name: applicationData.value?.first_name ?? '',
-    last_name: applicationData.value?.last_name ?? '',
-    middle_name: applicationData.value?.middle_name ?? '',
-    birthdate: applicationData.value?.birthdate ?? '',
-    mobile_number: applicationData.value?.mobile_number ?? '',
-    email: applicationData.value?.email ?? '',
-    status: applicationData.value?.status_value ?? '',
-});
-
-// Form for interview scheduling
-const interviewForm = useForm({
-    scheduled_at: '',
-    location: '',
-    interviewer_name: '',
-    notes: '',
-});
-
-// Form for interview scores
-const scoreForm = useForm({
-    score: null as number | null,
-    feedback: '',
-    result: 'pending',
-});
-
-// Header actions based on current status
 const headerActions = computed(() => {
     const actions = [
         {
@@ -167,112 +65,114 @@ const headerActions = computed(() => {
         },
     ];
 
-    // Pending -> Start Review
-    if (currentStatusValue.value === 1) {
-        actions.push({
-            label: 'Start Review',
-            icon: ClipboardCheck,
-            variant: 'default' as const,
-            size: 'sm' as const,
-            onClick: () => updateStatus(2),
-        });
-    }
-
-    // Reviewing -> Schedule Interview
-    if (currentStatusValue.value === 2) {
-        actions.push({
-            label: 'Schedule Interview',
-            icon: Calendar,
-            variant: 'default' as const,
-            size: 'sm' as const,
-            onClick: () => isSchedulingInterview.value = true,
-        });
-    }
-
-    // Interview -> Hire or Reject
-    if (currentStatusValue.value === 3) {
-        actions.push({
-            label: 'Reject',
-            icon: X,
-            variant: 'destructive' as const,
-            size: 'sm' as const,
-            onClick: () => updateStatus(4),
-        });
-        actions.push({
-            label: 'Hire',
-            icon: Check,
-            variant: 'default' as const,
-            size: 'sm' as const,
-            class: 'bg-green-600 hover:bg-green-700',
-            onClick: () => updateStatus(5),
-        });
+    switch (applicationData.value?.status_value) {
+        case ApplicationStatus.REVIEWING:
+            actions.push(
+                {
+                    label: 'Reject',
+                    icon: UserRoundX,
+                    variant: 'destructive' as const,
+                    size: 'sm' as const,
+                    onClick: () => handleReject(),
+                },
+                {
+                    label: 'Move to Interview',
+                    icon: BriefcaseBusiness,
+                    variant: 'default' as const,
+                    size: 'sm' as const,
+                    onClick: () => handleInterview(),
+                },
+            );
+            break;
+        case ApplicationStatus.INTERVIEW:
+            actions.push(
+                {
+                    label: 'Reject',
+                    icon: UserRoundX,
+                    variant: 'destructive' as const,
+                    size: 'sm' as const,
+                    onClick: () => handleReject(),
+                },
+                {
+                    label: 'Hire',
+                    icon: BriefcaseBusiness,
+                    variant: 'default' as const,
+                    size: 'sm' as const,
+                    onClick: () => handleHire(),
+                },
+            );
+            break;
+        default:
+            break;
     }
 
     return actions;
 });
 
-// Update status
-function updateStatus(newStatus: number): void {
-    currentStatusValue.value = newStatus;
-    form.status = newStatus;
-    // In real app, would submit to backend
-    console.log('Updating status to:', newStatus);
+const activeTab = computed<string>(() => {
+    const url = new URL(page.url, window.location.origin);
+    return url.searchParams.get('tab') ?? 'default';
+});
+
+const tabs = computed(() => [
+    {
+        key: 'default',
+        label: 'Information',
+    },
+    {
+        key: 'activity_logs',
+        label: 'Activity Log',
+    },
+]);
+
+function handleInterview(): void {
+    if (!applicationData.value?.id) {
+        return;
+    }
+
+    if (confirm('Move this application to interview?')) {
+        router.post(interview({ application: applicationData.value.id }).url);
+    }
 }
 
-// Submit application form
-function submit(): void {
-    if (!applicationData.value?.id) return;
-    form.patch(update({ application: applicationData.value.id }).url, {
-        onSuccess: () => {
-            isEditing.value = false;
-        },
-    });
+function handleReject(): void {
+    if (!applicationData.value?.id) {
+        return;
+    }
+
+    if (confirm('Reject this application?')) {
+        router.post(reject({ application: applicationData.value.id }).url);
+    }
 }
 
-// Submit interview scheduling
-function submitInterviewSchedule(): void {
-    console.log('Scheduling interview:', interviewForm);
-    isSchedulingInterview.value = false;
-    // Update status to Interview
-    updateStatus(3);
+function handleHire(): void {
+    if (!applicationData.value?.id) {
+        return;
+    }
+
+    if (confirm('Mark this application as hired?')) {
+        router.post(hire({ application: applicationData.value.id }).url);
+    }
 }
-
-// Submit interview scores
-function submitInterviewScore(): void {
-    console.log('Submitting score:', scoreForm);
-}
-
-// Default status for DataBadge
-const defaultStatus = { label: 'Pending', variant: 'badge-pending' };
-const applicationStatus = computed(() => applicationData.value?.status ?? defaultStatus);
-
-// Result options for selector
-const resultOptions = [
-    { value: 'pending', label: 'Pending' },
-    { value: 'passed', label: 'Passed' },
-    { value: 'failed', label: 'Failed' },
-];
 </script>
 
 <template>
-    <Head :title="pageTitle" />
+    <Head :title="applicationData?.full_name ? `${applicationData.full_name} - ${pageTitle}` : pageTitle" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
-            <!-- Header -->
             <DataHeader
                 variant="form"
-                :title="applicationData?.full_name || 'Application'"
-                subtitle="Job Application"
+                :title="applicationData?.full_name ?? 'Application Details'"
+                subtitle="Job Application Profile"
                 :use-avatar="false"
                 :actions="headerActions"
             >
                 <template #badge>
-                    <DataBadge :badge="applicationStatus" />
+                    <DataBadge v-if="applicationData?.status" :badge="applicationData.status" />
                 </template>
             </DataHeader>
 
-            <!-- Tabs -->
             <DataTableControls
                 :tabs="tabs"
                 :active-tab="activeTab"
@@ -281,156 +181,32 @@ const resultOptions = [
                 :show-search="false"
             />
 
-            <!-- Activity Logs -->
             <div v-if="activeTab === 'activity_logs'" class="mx-auto w-full">
                 <ActivityLogTable />
             </div>
 
-            <!-- Interview Tab -->
-            <div v-else-if="activeTab === 'interview'" class="mx-auto w-full max-w-4xl">
-                <!-- Interview Schedule Card -->
-                <Card class="mb-6 border-dashed">
-                    <CardHeader>
-                        <CardTitle class="flex items-center gap-2">
-                            <Calendar class="h-5 w-5" />
-                            Interview Schedule
-                        </CardTitle>
-                        <CardDescription>
-                            Details of the scheduled interview.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent class="grid gap-6">
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <div class="space-y-2">
-                                <Label>Scheduled Date & Time</Label>
-                                <div class="py-1 text-sm">
-                                    {{ interviewData?.scheduled_at || 'Not scheduled' }}
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <Label>Location</Label>
-                                <div class="py-1 text-sm">
-                                    {{ interviewData?.location || 'Not specified' }}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="space-y-2">
-                            <Label>Interviewer</Label>
-                            <div class="py-1 text-sm">
-                                {{ interviewData?.interviewer_name || 'Not assigned' }}
-                            </div>
-                        </div>
-                        <div class="space-y-2">
-                            <Label>Notes</Label>
-                            <div class="py-1 text-sm">
-                                {{ interviewData?.notes || 'No notes' }}
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <!-- Interview Score Card -->
-                <Card class="border-dashed">
-                    <CardHeader>
-                        <CardTitle class="flex items-center gap-2">
-                            <ClipboardCheck class="h-5 w-5" />
-                            Interview Score
-                        </CardTitle>
-                        <CardDescription>
-                            Evaluate the candidate's interview performance.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <form class="grid gap-6" @submit.prevent="submitInterviewScore">
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <div class="space-y-2">
-                                    <Label for="score">
-                                        Score (0-100)
-                                    </Label>
-                                    <Input
-                                        id="score"
-                                        v-model="scoreForm.score"
-                                        type="number"
-                                        min="0"
-                                        max="100"
-                                        placeholder="Enter score"
-                                    />
-                                </div>
-                                <div class="space-y-2">
-                                    <Label for="result">
-                                        Result
-                                    </Label>
-                                    <DataSelector
-                                        id="result"
-                                        v-model="scoreForm.result"
-                                        :options="resultOptions"
-                                        placeholder="Select result"
-                                    />
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <Label for="feedback">
-                                    Feedback
-                                </Label>
-                                <textarea
-                                    id="feedback"
-                                    v-model="scoreForm.feedback"
-                                    placeholder="Enter interview feedback"
-                                    rows="4"
-                                    class="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                />
-                            </div>
-                            <div class="flex justify-end gap-3">
-                                <button
-                                    type="submit"
-                                    class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2"
-                                >
-                                    Submit Score
-                                </button>
-                            </div>
-                        </form>
-                    </CardContent>
-                </Card>
-            </div>
-
-            <!-- Information Tab -->
             <div v-else class="mx-auto w-full max-w-4xl">
-                <!-- VIEW MODE -->
-                <Card v-if="!isEditing" class="border-dashed">
+                <Card class="border-dashed">
                     <CardHeader>
                         <CardTitle>Application Information</CardTitle>
                         <CardDescription>
-                            Basic job application details.
+                            Overview of the applicant profile and submission details.
                         </CardDescription>
                     </CardHeader>
 
                     <CardContent class="grid gap-6">
-                        <div class="space-y-2">
-                            <Label>Position</Label>
-                            <div class="py-1 text-sm">
-                                {{ applicationData?.job_name }}
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
-                                <Label>First Name</Label>
+                                <Label>Applicant Name</Label>
                                 <div class="py-1 text-sm">
-                                    {{ applicationData?.first_name }}
+                                    {{ applicationData?.full_name || '-' }}
                                 </div>
                             </div>
 
                             <div class="space-y-2">
-                                <Label>Middle Name</Label>
+                                <Label>Position Applied</Label>
                                 <div class="py-1 text-sm">
-                                    {{ applicationData?.middle_name || '-' }}
-                                </div>
-                            </div>
-
-                            <div class="space-y-2">
-                                <Label>Last Name</Label>
-                                <div class="py-1 text-sm">
-                                    {{ applicationData?.last_name }}
+                                    {{ applicationData?.position || '-' }}
                                 </div>
                             </div>
                         </div>
@@ -439,92 +215,50 @@ const resultOptions = [
                             <div class="space-y-2">
                                 <Label>Birthdate</Label>
                                 <div class="py-1 text-sm">
-                                    {{ applicationData?.birthdate }}
+                                    {{ applicationData?.birthdate || '-' }}
                                 </div>
                             </div>
 
+                            <div class="space-y-2">
+                                <Label>Applied At</Label>
+                                <div class="py-1 text-sm">
+                                    {{ applicationData?.created_at || '-' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
                                 <Label>Mobile Number</Label>
                                 <div class="py-1 text-sm">
-                                    {{ applicationData?.mobile_number }}
+                                    {{ applicationData?.mobile_number || '-' }}
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label>Email</Label>
+                                <div class="py-1 text-sm">
+                                    {{ applicationData?.email || '-' }}
                                 </div>
                             </div>
                         </div>
 
-                        <div class="space-y-2">
-                            <Label>Email</Label>
-                            <div class="py-1 text-sm">
-                                {{ applicationData?.email }}
+                        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div class="space-y-2">
+                                <Label>Current Status</Label>
+                                <div class="py-1 text-sm">
+                                    <DataBadge v-if="applicationData?.status" :badge="applicationData.status" />
+                                    <span v-else>-</span>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label>Last Updated</Label>
+                                <div class="py-1 text-sm">
+                                    {{ applicationData?.updated_at || '-' }}
+                                </div>
                             </div>
                         </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            <!-- Interview Schedule Modal -->
-            <div v-if="isSchedulingInterview" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-                <Card class="w-full max-w-lg mx-4">
-                    <CardHeader>
-                        <CardTitle>Schedule Interview</CardTitle>
-                        <CardDescription>
-                            Set up an interview for this applicant.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <form class="grid gap-4" @submit.prevent="submitInterviewSchedule">
-                            <div class="space-y-2">
-                                <Label for="scheduled_at">Date & Time</Label>
-                                <Input
-                                    id="scheduled_at"
-                                    v-model="interviewForm.scheduled_at"
-                                    type="datetime-local"
-                                    required
-                                />
-                            </div>
-                            <div class="space-y-2">
-                                <Label for="location">Location</Label>
-                                <Input
-                                    id="location"
-                                    v-model="interviewForm.location"
-                                    placeholder="Enter location"
-                                    required
-                                />
-                            </div>
-                            <div class="space-y-2">
-                                <Label for="interviewer_name">Interviewer</Label>
-                                <DataSelector
-                                    id="interviewer_name"
-                                    v-model="interviewForm.interviewer_name"
-                                    :options="hrAdmins"
-                                    placeholder="Select an HR Admin"
-                                />
-                            </div>
-                            <div class="space-y-2">
-                                <Label for="notes">Notes</Label>
-                                <textarea
-                                    id="notes"
-                                    v-model="interviewForm.notes"
-                                    placeholder="Enter any notes"
-                                    rows="3"
-                                    class="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                                />
-                            </div>
-                            <div class="flex justify-end gap-3 pt-2">
-                                <button
-                                    type="button"
-                                    class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
-                                    @click="isSchedulingInterview = false"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-9 px-4 py-2"
-                                >
-                                    Schedule Interview
-                                </button>
-                            </div>
-                        </form>
                     </CardContent>
                 </Card>
             </div>

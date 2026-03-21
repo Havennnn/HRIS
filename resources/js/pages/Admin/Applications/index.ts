@@ -1,4 +1,12 @@
-import type { Badge } from "piacore/Interface/Badge";
+import type { Badge } from 'piacore/Interface/Badge';
+
+export const ApplicationStatus = {
+    PENDING: 1,
+    REVIEWING: 2,
+    INTERVIEW: 3,
+    REJECTED: 4,
+    HIRED: 5,
+} as const;
 
 export interface ApplicationIndexResource {
     id: number;
@@ -12,38 +20,28 @@ export interface ApplicationIndexResource {
     mobile_number: string;
     email: string;
     status: Badge;
+    status_value?: number;
     created_at: string;
 }
 
-export interface ApplicationEditResource {
+export interface ApplicationShowResource {
     id: number;
-    job_id: number;
-    job_name: string;
+    position: string;
+    full_name: string;
     first_name: string;
     last_name: string;
     middle_name: string;
-    full_name: string;
     birthdate: string;
     mobile_number: string;
     email: string;
+    status: Badge;
     status_value: number;
-    status: Badge;
+    details: {
+        id: number;
+    } | null;
+    interview: {
+        id: number;
+    } | null;
     created_at: string;
-}
-
-export interface Form {
-    job_id: string;
-    first_name: string;
-    last_name: string;
-    middle_name: string;
-    birthdate: string;
-    mobile_number: string;
-    email: string;
-    status: string;
-}
-
-export interface ApplicationData {
-    id: number;
-    full_name: string;
-    status: Badge;
+    updated_at: string;
 }

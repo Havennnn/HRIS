@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('email');
             $table->unsignedTinyInteger('status');
             $table->timestamps();
+            $table->archives();
 
             $table->index('career_id');
         });

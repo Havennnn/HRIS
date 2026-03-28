@@ -35,6 +35,10 @@ class EmployeeEditResource extends JsonResource
             'type' => $this->type?->label(),
             'hired_date' => $this->hired_date?->format('M d, Y'),
             'created_at' => $this->created_at?->format('M d, Y'),
+            'device' => $this->device ? [
+                'desktop' => $this->device?->desktop ?? '',
+                'laptop' => $this->device?->laptop ?? '',
+            ] : null,
         ];
     }
 }

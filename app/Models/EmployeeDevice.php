@@ -15,11 +15,16 @@ class EmployeeDevice extends Model
      * Attributes
      * --------------------------------------------------------------------------
      */
-    
+
     protected $fillable = [
         'employee_id',
         'desktop',
         'laptop'
+    ];
+
+    protected $casts = [
+        'desktop' => 'string',
+        'laptop' => 'string',
     ];
 
     /**

@@ -10,6 +10,7 @@ export interface EmployeeIndexResource {
     email: string;
     status: Badge;
     type: string;
+    device: string | null;
     created_at: string;
 }
 
@@ -35,6 +36,10 @@ export interface EmployeeEditResource {
     type: string;
     type_label: string;
     created_at: string;
+    device: {
+        desktop: boolean | null;
+        laptop: boolean | null;
+    } | null;
 }
 
 export interface Form {

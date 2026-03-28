@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Employee;
 use App\Enums\Status\EmployeeStatus;
 use App\Enums\Type\EmployeeType;
 use App\Http\Requests\Admin\Employee\EmployeeRequest;
+use App\Http\Requests\Admin\Employee\EmployeeDeviceRequest;
 use App\Http\Resources\Admin\Employee\EmployeeEditResource;
 use App\Http\Resources\Admin\Employee\EmployeeIndexResource;
 use App\Models\Employee;
@@ -53,7 +54,7 @@ final class EmployeeController extends ResourceController
     {
         return $action($this->listOptions(
             request: $request,
-            resource: EmployeeIndexResource::class, 
+            resource: EmployeeIndexResource::class,
             additionalProps: [
                 'positions' => Position::options(),
                 'statuses' => EmployeeStatus::options(),
@@ -81,7 +82,7 @@ final class EmployeeController extends ResourceController
     public function edit(Employee $employee, EditAction $action, Request $request)
     {
         return $action($this->editOptions(
-            record: $employee,
+            record: $employee->load('device'),
             request: $request,
             resource: EmployeeEditResource::class,
             additionalProps: [
@@ -121,5 +122,15 @@ final class EmployeeController extends ResourceController
     public function restore(Employee $employee, RestoreAction $action, Request $request)
     {
         return $action($this->restoreOptions($employee, $request));
+    }
+
+    /**
+     * Update the device information for the specified employee.
+     */
+    public function updateDevice(EmployeeDeviceRequest $request, Employee $employee)
+    {
+        $this->service()->updateDevice($employee, $request->validated());
+
+        return redirect()->back()->with('success', 'Device information updated successfully.');
     }
 }

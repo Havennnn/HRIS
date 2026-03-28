@@ -3,10 +3,13 @@
 namespace App\Services\Admin\Employee;
 
 use App\Models\Employee;
+use App\Models\EmployeeDevice;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use PiaCore\Contracts\CrudService\ListsRecords;
 
 class EmployeeService implements ListsRecords
@@ -22,7 +25,7 @@ class EmployeeService implements ListsRecords
     {
         return [
             'baseQuery' => function (Builder $query): Builder {
-                return $query->with(['position', 'position.department']);
+                return $query->with(['position', 'position.department', 'device']);
             },
             'tabs' => [
                 'default' => [
@@ -42,6 +45,41 @@ class EmployeeService implements ListsRecords
                 'name' => 'first_name',
                 'created' => 'created_at',
             ],
+        ];
+    }
+
+    /**
+     * Update the device information for an employee.
+     *
+     * @param  Employee  $employee
+     * @param  array  $payload
+     * @return EmployeeDevice
+     */
+    public function updateDevice(Employee $employee, array $payload): EmployeeDevice
+    {
+        return DB::transaction(function () use ($employee, $payload) {
+            // Extract device data from payload
+            $deviceData = $this->extractDeviceData($payload);
+
+            // Update or create the device record
+            return $employee->device()->updateOrCreate(
+                [], // Empty array means we update the existing device or create if none exists
+                $deviceData
+            );
+        });
+    }
+
+    /**
+     * Extract device data from the payload.
+     *
+     * @param  array  $payload
+     * @return array
+     */
+    protected function extractDeviceData(array $payload): array
+    {
+        return [
+            'desktop' => $payload['desktop'] ?? '',
+            'laptop' => $payload['laptop'] ?? '',
         ];
     }
 }

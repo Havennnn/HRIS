@@ -92,7 +92,7 @@ class Employee extends Model
         return $this->hasOne(EmployeeTool::class);
     }
 
-    public function devices(): HasOne
+    public function device(): HasOne
     {
         return $this->hasOne(EmployeeDevice::class);
     }

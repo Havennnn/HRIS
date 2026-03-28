@@ -77,6 +77,12 @@ const columns: DataTableColumn[] = [
         cell: ({ row }) => (row as EmployeeIndexResource).type,
     },
     {
+        key: 'device',
+        label: 'Device',
+        cellClass: 'text-muted-foreground',
+        cell: ({ row }) => (row as EmployeeIndexResource).device,
+    },
+    {
         key: 'status',
         label: 'Status',
         cellClass: 'text-muted-foreground',

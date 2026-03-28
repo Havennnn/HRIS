@@ -66,12 +66,22 @@ Route::middleware(['auth:admin'])->group(function (): void {
             Route::delete('/{employee}', 'destroy')->middleware('can-archive-employee')->name('destroy');
             Route::patch('/{employee}/restore', 'restore')->middleware('can-restore-employee')->name('restore')->withTrashed();
 
+            // Employee Device Routes
+            Route::prefix('/{employee}/device')
+                ->name('device.')
+                ->controller(EmployeeController::class)
+                ->group(function():void {
+                    Route::patch('/', 'updateDevice')->middleware('can-update-employee')->name('update');
+                });
+
             // Attendance Routes
-            Route::get('/{employee}/attendance', [AttendanceController::class, 'index'])
-                ->whereNumber('employee')
-                ->middleware('can-list-attendances')
-                ->name('attendance.index');
-        });
+            Route::prefix('/{employee}/attendance')
+                ->name('attendance.')
+                ->controller(AttendanceController::class)
+                ->group(function():void {
+                    Route::get('/', 'index')->middleware('can-list-attendances')->name('index');
+                });
+            });
 
     // Attendance Log Management Routes
     Route::prefix('attendance-logs')
@@ -147,3 +157,5 @@ Route::middleware(['auth:admin'])->group(function (): void {
             Route::patch('/{holiday}/restore', 'restore')->middleware('can-restore-holiday')->name('restore')->withTrashed();
         });
 });
+
+

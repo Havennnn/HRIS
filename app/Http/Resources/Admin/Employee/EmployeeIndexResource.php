@@ -14,6 +14,21 @@ class EmployeeIndexResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        // Determine device status
+        $deviceStatus = 'No Device';
+        if ($this->device) {
+            $desktop = $this->device->desktop ?? '';
+            $laptop = $this->device->laptop ?? '';
+
+            if ($desktop !== '' && $laptop !== '') {
+                $deviceStatus = 'completed';
+            } elseif ($desktop !== '' && $laptop === '') {
+                $deviceStatus = 'only desktop';
+            } elseif ($desktop === '' && $laptop !== '') {
+                $deviceStatus = 'only laptop';
+            }
+        }
+
         return [
             'id' => $this->id,
             'position' => $this->position?->name,
@@ -24,6 +39,7 @@ class EmployeeIndexResource extends JsonResource
             'email' => $this->email,
             'status' => $this->status?->badge(),
             'type' => $this->type?->label(),
+            'device' => $deviceStatus,
             'hired_date' => $this->hired_date?->format('M d, Y'),
             'created_at' => $this->created_at?->format('M d, Y'),
         ];

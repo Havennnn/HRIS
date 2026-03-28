@@ -7,19 +7,26 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { useRoleAccess } from '@/composables/useRoleAccess';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useRoleAccess } from '@/composables/useRoleAccess';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { edit, index, update } from '@/routes/employees';
 import * as attendanceRoutes from '@/routes/employees/attendance';
 import type { BreadcrumbItem } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { ArrowLeft, Pencil, Save } from 'lucide-vue-next';
+import { ArrowLeft, LaptopMinimalCheck, Pencil, Save } from 'lucide-vue-next';
 import ActivityLogTable from 'piacore/components/ActivityLogTable.vue';
 import DataBadge from 'piacore/components/DataBadge.vue';
 import DataHeader from 'piacore/components/DataHeader.vue';
-import DataSelector from 'piacore/components/DataSelector.vue';
 import DataTableControls from 'piacore/components/DataTableControls.vue';
 import type { Option } from 'piacore/Interface/Selector';
 import { computed, ref } from 'vue';
@@ -32,6 +39,8 @@ const props = defineProps<{
 }>();
 
 const isEditing = ref(false);
+const isUpdatingDevice = ref(false);
+
 const { HR_ROLES, canAccessRoles } = useRoleAccess();
 const canEditEmployee = computed(() => canAccessRoles(HR_ROLES));
 
@@ -39,6 +48,16 @@ const page = usePage();
 const pageTitle = 'Employee';
 
 const employeeData = computed(() => props.data?.data);
+const deviceData = computed(() => employeeData.value?.device ?? null);
+const hasDeviceInfo = computed(() => {
+    const device = deviceData.value;
+
+    if (!device) {
+        return false;
+    }
+
+    return [device.desktop, device.laptop].some((value) => Boolean(value?.trim()));
+});
 
 const breadcrumbs = computed<BreadcrumbItem[]>(() => [
     { title: 'Employees', href: index().url },
@@ -59,6 +78,11 @@ const form = useForm({
     type: employeeData.value?.type_value ?? '',
 });
 
+const deviceForm = useForm({
+    desktop: deviceData.value?.desktop ?? '',
+    laptop: deviceData.value?.laptop ?? '',
+});
+
 const headerActions = computed(() => [
     {
         label: 'Back',
@@ -68,20 +92,29 @@ const headerActions = computed(() => [
         size: 'sm' as const,
     },
     ...(!isEditing.value && canEditEmployee.value
-        ? [{
-            label: 'Edit',
-            icon: Pencil,
-            variant: 'default',
-            size: 'sm',
-            onClick: () => (isEditing.value = true),
-        }]
+        ? [
+            {
+                label: 'Edit',
+                icon: Pencil,
+                variant: 'default' as const,
+                size: 'sm' as const,
+                onClick: () => (isEditing.value = true),
+            },
+            {
+                label: 'Device',
+                icon: LaptopMinimalCheck,
+                variant: 'default' as const,
+                size: 'sm' as const,
+                onClick: () => {
+                    deviceForm.desktop = deviceData.value?.desktop ?? '';
+                    deviceForm.laptop = deviceData.value?.laptop ?? '';
+                    deviceForm.clearErrors();
+                    isUpdatingDevice.value = true;
+                },
+            },
+        ]
         : []),
 ]);
-
-const activeTab = computed<string>(() => {
-    const url = new URL(page.url, window.location.origin);
-    return url.searchParams.get('tab') ?? 'default';
-});
 
 const tabs = computed(() => [
     {
@@ -99,6 +132,11 @@ const tabs = computed(() => [
     },
 ]);
 
+const activeTab = computed<string>(() => {
+    const url = new URL(page.url, window.location.origin);
+    return url.searchParams.get('tab') ?? 'default';
+});
+
 function submit(): void {
     if (!canEditEmployee.value) {
         return;
@@ -107,6 +145,19 @@ function submit(): void {
     form.patch(update({ employee: employeeData.value?.id as number }).url, {
         onSuccess: () => {
             isEditing.value = false;
+        },
+    });
+}
+
+function updateDevice(): void {
+    if (!employeeData.value?.id) {
+        return;
+    }
+
+    deviceForm.patch(`/employees/${employeeData.value.id}/device`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            isUpdatingDevice.value = false;
         },
     });
 }
@@ -141,13 +192,11 @@ function submit(): void {
                 <ActivityLogTable />
             </div>
 
-            <div v-else class="mx-auto w-full max-w-4xl">
+            <div v-else class="mx-auto w-full max-w-4xl space-y-6">
                 <Card v-if="!isEditing" class="border-dashed">
                     <CardHeader>
                         <CardTitle>Employee Information</CardTitle>
-                        <CardDescription>
-                            Basic employee details.
-                        </CardDescription>
+                        <CardDescription>Basic employee details.</CardDescription>
                     </CardHeader>
 
                     <CardContent class="grid gap-6">
@@ -194,7 +243,7 @@ function submit(): void {
                             <div class="space-y-2">
                                 <Label>Birthdate</Label>
                                 <div class="py-1 text-sm">
-                                    {{ employeeData?.birthdate }}
+                                    {{ employeeData?.birthdate_formatted ?? employeeData?.birthdate ?? '-' }}
                                 </div>
                             </div>
 
@@ -224,146 +273,109 @@ function submit(): void {
                     </CardContent>
                 </Card>
 
+                <Card v-if="!isEditing" class="border-dashed">
+                    <CardHeader>
+                        <CardTitle>Device Information</CardTitle>
+                        <CardDescription>Assigned employee devices.</CardDescription>
+                    </CardHeader>
+
+                    <CardContent>
+                        <div v-if="hasDeviceInfo" class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                            <div class="space-y-2">
+                                <Label>Desktop</Label>
+                                <div class="py-1 text-sm">
+                                    {{ deviceData?.desktop || '-' }}
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label>Laptop</Label>
+                                <div class="py-1 text-sm">
+                                    {{ deviceData?.laptop || '-' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-else class="text-sm text-muted-foreground">
+                            No device provided.
+                        </div>
+                    </CardContent>
+                </Card>
+
                 <Card v-else-if="canEditEmployee" class="border-dashed">
                     <CardHeader>
                         <CardTitle class="flex items-center gap-2 text-lg">
                             <Save class="h-5 w-5" />
                             Edit Employee
                         </CardTitle>
-
-                        <CardDescription>
-                            Update employee information.
-                        </CardDescription>
+                        <CardDescription>Update employee information.</CardDescription>
                     </CardHeader>
 
                     <CardContent>
                         <form class="grid gap-6" @submit.prevent="submit">
-                            <div class="space-y-2">
-                                <DataSelector
-                                    id="position_id"
-                                    v-model="form.position_id"
-                                    :label="'Position'"
-                                    :options="positions ?? []"
-                                    placeholder="-- Select Position --"
-                                    :error="form.errors.position_id"
-                                />
-                            </div>
-
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                <div class="space-y-2">
-                                    <Label>First Name</Label>
-                                    <Input v-model="form.first_name" required />
-
-                                    <p
-                                        v-if="form.errors.first_name"
-                                        class="text-xs text-destructive"
-                                    >
-                                        {{ form.errors.first_name }}
-                                    </p>
-                                </div>
-
-                                <div class="space-y-2">
-                                    <Label>Middle Name</Label>
-                                    <Input v-model="form.middle_name" />
-                                </div>
-
-                                <div class="space-y-2">
-                                    <Label>Last Name</Label>
-                                    <Input v-model="form.last_name" required />
-
-                                    <p
-                                        v-if="form.errors.last_name"
-                                        class="text-xs text-destructive"
-                                    >
-                                        {{ form.errors.last_name }}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <div class="space-y-2">
-                                    <Label>Birthdate</Label>
-                                    <Input
-                                        v-model="form.birthdate"
-                                        type="date"
-                                        required
-                                    />
-
-                                    <p
-                                        v-if="form.errors.birthdate"
-                                        class="text-xs text-destructive"
-                                    >
-                                        {{ form.errors.birthdate }}
-                                    </p>
-                                </div>
-
-                                <div class="space-y-2">
-                                    <DataSelector
-                                        id="type"
-                                        v-model="form.type"
-                                        :options="types ?? []"
-                                        label="Employee Type"
-                                        required
-                                        placeholder="-- Select Type --"
-                                        :error="form.errors.type"
-                                    />
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <div class="space-y-2">
-                                    <Label>Mobile Number</Label>
-                                    <Input
-                                        v-model="form.mobile_number"
-                                        required
-                                    />
-
-                                    <p
-                                        v-if="form.errors.mobile_number"
-                                        class="text-xs text-destructive"
-                                    >
-                                        {{ form.errors.mobile_number }}
-                                    </p>
-                                </div>
-
-                                <div class="space-y-2">
-                                    <Label>Email</Label>
-                                    <Input
-                                        v-model="form.email"
-                                        type="email"
-                                        required
-                                    />
-
-                                    <p
-                                        v-if="form.errors.email"
-                                        class="text-xs text-destructive"
-                                    >
-                                        {{ form.errors.email }}
-                                    </p>
-                                </div>
-                            </div>
-
                             <div class="flex justify-end gap-3">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    @click="isEditing = false"
-                                >
+                                <Button type="button" variant="outline" @click="isEditing = false">
                                     Cancel
                                 </Button>
 
-                                <Button
-                                    type="submit"
-                                    :disabled="form.processing"
-                                >
-                                    {{
-                                        form.processing ? 'Saving...' : 'Update'
-                                    }}
+                                <Button type="submit" :disabled="form.processing">
+                                    {{ form.processing ? 'Saving...' : 'Update' }}
                                 </Button>
                             </div>
                         </form>
                     </CardContent>
                 </Card>
+
+                <Dialog v-model:open="isUpdatingDevice">
+                    <DialogContent class="sm:max-w-[400px]">
+                        <DialogHeader>
+                            <DialogTitle>Update Device Information</DialogTitle>
+                            <DialogDescription>
+                                Update assigned devices for this employee.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <form
+                            id="update-device-form"
+                            class="grid gap-6"
+                            @submit.prevent="updateDevice"
+                        >
+                            <div class="space-y-2">
+                                <Label for="desktop">Desktop</Label>
+                                <Input id="desktop" v-model="deviceForm.desktop" placeholder="Desktop asset or name" />
+                                <p v-if="deviceForm.errors.desktop" class="text-sm text-destructive">
+                                    {{ deviceForm.errors.desktop }}
+                                </p>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="laptop">Laptop</Label>
+                                <Input id="laptop" v-model="deviceForm.laptop" placeholder="Laptop asset or name" />
+                                <p v-if="deviceForm.errors.laptop" class="text-sm text-destructive">
+                                    {{ deviceForm.errors.laptop }}
+                                </p>
+                            </div>
+                        </form>
+
+                        <DialogFooter>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                @click="isUpdatingDevice = false"
+                            >
+                                Cancel
+                            </Button>
+
+                            <Button
+                                type="submit"
+                                form="update-device-form"
+                                :disabled="deviceForm.processing"
+                            >
+                                {{ deviceForm.processing ? 'Saving...' : 'Update Device' }}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </div>
     </AppLayout>

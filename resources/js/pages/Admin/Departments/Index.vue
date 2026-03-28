@@ -8,8 +8,8 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { ArrowUpDown } from 'lucide-vue-next';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import type { DataTableActionsConfig, DataTableColumn } from 'piacore/components/DataTable.vue';
-import DataTable from 'piacore/components/DataTable.vue';
-import DataTableControls from 'piacore/components/DataTableControls.vue';
+import DataTablePanel from 'piacore/components/DataTablePanel.vue';
+import { useAuth } from 'piacore/composables/useAuth';
 import type { PaginatedData } from 'piacore/Interface/Pagination';
 import { computed, h, ref } from 'vue';
 import type { DepartmentResource } from './Departments';
@@ -24,6 +24,13 @@ const breadcrumbs: BreadcrumbItem[] = [
 const props = defineProps<{
     data: PaginatedData<DepartmentResource>;
 }>();
+
+const { hasPermission } = useAuth();
+
+const canCreateDepartment = computed(() => hasPermission('can-create-department'));
+const canUpdateDepartment = computed(() => hasPermission('can-update-department'));
+const canArchiveDepartment = computed(() => hasPermission('can-archive-department'));
+const canRestoreDepartment = computed(() => hasPermission('can-restore-department'));
 
 const columns: DataTableColumn[] = [
     {
@@ -89,29 +96,40 @@ const sorts = [
         menuLabel: 'Sort Departments',
         widthClass: 'w-64',
         options: [
-            { value: 'asc', key:'name', label: 'Name (A-Z)' },
-            { value: 'desc', key:'name', label: 'Name (Z-A)' },
-            { value: 'asc', key:'created', label: 'Created Date (Oldest)' },
-            { value: 'desc', key:'created', label: 'Created Date (Newest)' },
+            { value: 'asc', key: 'name', label: 'Name (A-Z)' },
+            { value: 'desc', key: 'name', label: 'Name (Z-A)' },
+            { value: 'asc', key: 'created', label: 'Created Date (Oldest)' },
+            { value: 'desc', key: 'created', label: 'Created Date (Newest)' },
         ],
     },
 ];
 
-const tableActions = computed<DataTableActionsConfig>(() => ({
-    editRoute: (row) => edit({ department: (row as DepartmentResource).id }).url,
-    deleteRoute: (row) => destroy({ department: (row as DepartmentResource).id }).url,
-    restoreRoute: (row) => restore({ department: (row as DepartmentResource).id }).url,
-    destructiveAction: activeTab.value === 'archived' ? 'restore' : 'delete',
-    deleteConfirmMessage: 'Are you sure you want to delete this department?',
-    restoreConfirmMessage: 'Are you sure you want to restore this department?',
-}));
+const tableActions = computed<DataTableActionsConfig | undefined>(() => {
+    const archivedTab = activeTab.value === 'archived';
+
+    if (!archivedTab && !canUpdateDepartment.value && !canArchiveDepartment.value) {
+        return undefined;
+    }
+
+    if (archivedTab && !canRestoreDepartment.value) {
+        return undefined;
+    }
+
+    return {
+        editRoute: canUpdateDepartment.value ? (row) => edit({ department: (row as DepartmentResource).id }).url : undefined,
+        deleteRoute: !archivedTab && canArchiveDepartment.value ? (row) => destroy({ department: (row as DepartmentResource).id }).url : undefined,
+        restoreRoute: archivedTab && canRestoreDepartment.value ? (row) => restore({ department: (row as DepartmentResource).id }).url : undefined,
+        destructiveAction: archivedTab ? 'restore' : 'delete',
+        deleteConfirmMessage: 'Are you sure you want to delete this department?',
+        restoreConfirmMessage: 'Are you sure you want to restore this department?',
+    };
+});
 
 function handlePageChange(url: string | null): void {
     if (url) {
         router.visit(url, { preserveState: true });
     }
 }
-
 </script>
 
 <template>
@@ -125,15 +143,16 @@ function handlePageChange(url: string | null): void {
                     description="Manage departments within the organization."
                 >
                     <template #actions>
-                        <Button as-child>
+                        <Button v-if="canCreateDepartment" as-child>
                             <Link :href="create().url">Add Department</Link>
                         </Button>
                     </template>
                 </DataHeader>
 
                 <CardContent class="space-y-4 -mt-3">
-                    <DataTableControls
+                    <DataTablePanel
                         :tabs="tabs"
+                        layout="inline"
                         :active-tab="activeTab"
                         :activity-log="true"
                         :search-query="search"
@@ -141,13 +160,9 @@ function handlePageChange(url: string | null): void {
                         :sorts="sorts"
                         :show-date-range="false"
                         :search-placeholder="searchPlaceholder"
-                    />
-
-                    <DataTable
                         :columns="columns"
                         :paginated="data"
                         :actions="tableActions"
-                        :active-tab="activeTab"
                         row-key="id"
                         empty-message="No departments matched your filters."
                         @page-change="handlePageChange"

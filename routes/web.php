@@ -61,7 +61,7 @@ Route::middleware(['auth:admin'])->group(function (): void {
             Route::get('/', 'index')->middleware('can-list-employees')->name('index');
             Route::get('/create', 'create')->middleware('can-create-employee')->name('create');
             Route::post('/', 'store')->middleware('can-create-employee')->name('store');
-            Route::get('/{employee}/edit', 'edit')->middleware('can-update-employee')->name('edit');
+            Route::get('/{employee}/edit', 'edit')->middleware('can-edit-employee')->name('edit');
             Route::patch('/{employee}', 'update')->middleware('can-update-employee')->name('update');
             Route::delete('/{employee}', 'destroy')->middleware('can-archive-employee')->name('destroy');
             Route::patch('/{employee}/restore', 'restore')->middleware('can-restore-employee')->name('restore')->withTrashed();

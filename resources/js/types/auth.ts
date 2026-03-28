@@ -9,8 +9,13 @@ export type User = {
     [key: string]: unknown;
 };
 
+export type AuthRole = string | null;
+export type AuthPermission = string;
+
 export type Auth = {
-    user: User;
+    user: User | null;
+    role: AuthRole;
+    permissions: AuthPermission[];
 };
 
 export type TwoFactorConfigContent = {

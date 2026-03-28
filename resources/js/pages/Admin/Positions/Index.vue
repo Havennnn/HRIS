@@ -8,10 +8,10 @@ import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { ArrowUpDown, Briefcase } from 'lucide-vue-next';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import type { DataTableActionsConfig, DataTableColumn } from 'piacore/components/DataTable.vue';
-import DataTable from 'piacore/components/DataTable.vue';
-import DataTableControls from 'piacore/components/DataTableControls.vue';
+import DataTablePanel from 'piacore/components/DataTablePanel.vue';
+import { useAuth } from 'piacore/composables/useAuth';
 import type { PaginatedData } from 'piacore/Interface/Pagination';
-import { Option } from 'piacore/Interface/Selector';
+import type { Option } from 'piacore/Interface/Selector';
 import { computed, h, ref } from 'vue';
 import type { PositionResource } from './Positions';
 
@@ -26,6 +26,13 @@ const props = defineProps<{
     data: PaginatedData<PositionResource>;
     departments?: Option[];
 }>();
+
+const { hasPermission } = useAuth();
+
+const canCreatePosition = computed(() => hasPermission('can-create-position'));
+const canUpdatePosition = computed(() => hasPermission('can-update-position'));
+const canArchivePosition = computed(() => hasPermission('can-archive-position'));
+const canRestorePosition = computed(() => hasPermission('can-restore-position'));
 
 const columns: DataTableColumn[] = [
     {
@@ -51,7 +58,7 @@ const columns: DataTableColumn[] = [
         cellClass: 'text-muted-foreground',
         cell: ({ row }) => {
             const position = row as PositionResource;
-            return position.salary ? `₱${Number(position.salary).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
+            return position.salary ? `P${Number(position.salary).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
         },
     },
     {
@@ -60,7 +67,7 @@ const columns: DataTableColumn[] = [
         cellClass: 'text-muted-foreground',
         cell: ({ row }) => {
             const position = row as PositionResource;
-            return position.allowance ? `₱${Number(position.allowance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
+            return position.allowance ? `P${Number(position.allowance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
         },
     },
     {
@@ -110,7 +117,7 @@ const filters = [
         label: 'Department',
         icon: Briefcase,
         options: props.departments ?? [],
-    }
+    },
 ];
 
 const sorts = [
@@ -120,29 +127,40 @@ const sorts = [
         menuLabel: 'Sort Positions',
         widthClass: 'w-64',
         options: [
-            { value: 'asc', key:'name', label: 'Name (A-Z)' },
-            { value: 'desc', key:'name', label: 'Name (Z-A)' },
-            { value: 'asc', key:'created', label: 'Created Date (Oldest)' },
-            { value: 'desc', key:'created', label: 'Created Date (Newest)' },
+            { value: 'asc', key: 'name', label: 'Name (A-Z)' },
+            { value: 'desc', key: 'name', label: 'Name (Z-A)' },
+            { value: 'asc', key: 'created', label: 'Created Date (Oldest)' },
+            { value: 'desc', key: 'created', label: 'Created Date (Newest)' },
         ],
     },
 ];
 
-const tableActions = computed<DataTableActionsConfig>(() => ({
-    editRoute: (row) => edit({ position: (row as PositionResource).id }).url,
-    deleteRoute: (row) => destroy({ position: (row as PositionResource).id }).url,
-    restoreRoute: (row) => restore({ position: (row as PositionResource).id }).url,
-    destructiveAction: activeTab.value === 'archived' ? 'restore' : 'delete',
-    deleteConfirmMessage: 'Are you sure you want to delete this position?',
-    restoreConfirmMessage: 'Are you sure you want to restore this position?',
-}));
+const tableActions = computed<DataTableActionsConfig | undefined>(() => {
+    const archivedTab = activeTab.value === 'archived';
+
+    if (!archivedTab && !canUpdatePosition.value && !canArchivePosition.value) {
+        return undefined;
+    }
+
+    if (archivedTab && !canRestorePosition.value) {
+        return undefined;
+    }
+
+    return {
+        editRoute: canUpdatePosition.value ? (row) => edit({ position: (row as PositionResource).id }).url : undefined,
+        deleteRoute: !archivedTab && canArchivePosition.value ? (row) => destroy({ position: (row as PositionResource).id }).url : undefined,
+        restoreRoute: archivedTab && canRestorePosition.value ? (row) => restore({ position: (row as PositionResource).id }).url : undefined,
+        destructiveAction: archivedTab ? 'restore' : 'delete',
+        deleteConfirmMessage: 'Are you sure you want to delete this position?',
+        restoreConfirmMessage: 'Are you sure you want to restore this position?',
+    };
+});
 
 function handlePageChange(url: string | null): void {
     if (url) {
         router.visit(url, { preserveState: true });
     }
 }
-
 </script>
 
 <template>
@@ -156,15 +174,16 @@ function handlePageChange(url: string | null): void {
                     description="Manage positions within the organization."
                 >
                     <template #actions>
-                        <Button as-child>
+                        <Button v-if="canCreatePosition" as-child>
                             <Link :href="create().url">Add Position</Link>
                         </Button>
                     </template>
                 </DataHeader>
 
                 <CardContent class="space-y-4 -mt-3">
-                    <DataTableControls
+                    <DataTablePanel
                         :tabs="tabs"
+                        layout="inline"
                         :active-tab="activeTab"
                         :activity-log="true"
                         :search-query="search"
@@ -172,13 +191,9 @@ function handlePageChange(url: string | null): void {
                         :sorts="sorts"
                         :show-date-range="false"
                         :search-placeholder="searchPlaceholder"
-                    />
-
-                    <DataTable
                         :columns="columns"
                         :paginated="data"
                         :actions="tableActions"
-                        :active-tab="activeTab"
                         row-key="id"
                         empty-message="No positions matched your filters."
                         @page-change="handlePageChange"

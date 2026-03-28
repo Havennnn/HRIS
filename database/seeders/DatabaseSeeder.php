@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Enums\AdminRole;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use PiaCore\Enums\AdminRole;
 use PiaCore\Models\Admin;
 
 class DatabaseSeeder extends Seeder
@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
     {
         // Call individual seeders in order
         $this->call([
+            AdminSeeder::class,
             DepartmentSeeder::class,
             PositionSeeder::class,
             EmployeeSeeder::class,
@@ -24,21 +25,8 @@ class DatabaseSeeder extends Seeder
             RequestSeeder::class,
             CareerSeeder::class,
             ApplicationSeeder::class,
-
-            // System Setup
             HolidaySeeder::class,
-        ]);
-
-        // Super Admin
-        Admin::query()->updateOrCreate([
-            'email' => 'latsmarbls@piacore.com',
-        ], [
-            'role' => AdminRole::SUPER_ADMIN,
-            'first_name' => 'Super',
-            'last_name' => 'Admin',
-            'mobile_number' => '09000000001',
-            'password' => Hash::make('password'),
-            'email_verified_at' => now(),
         ]);
     }
 }
+

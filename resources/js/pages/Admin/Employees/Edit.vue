@@ -7,6 +7,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { useRoleAccess } from '@/composables/useRoleAccess';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -31,6 +32,8 @@ const props = defineProps<{
 }>();
 
 const isEditing = ref(false);
+const { HR_ROLES, canAccessRoles } = useRoleAccess();
+const canEditEmployee = computed(() => canAccessRoles(HR_ROLES));
 
 const page = usePage();
 const pageTitle = 'Employee';
@@ -64,15 +67,15 @@ const headerActions = computed(() => [
         variant: 'outline' as const,
         size: 'sm' as const,
     },
-    ...(!isEditing.value
-        ? [{ 
-            label: 'Edit', 
-            icon: Pencil, 
-            variant: 'default', 
-            size: 'sm', 
-            onClick: () => (isEditing.value = true) 
+    ...(!isEditing.value && canEditEmployee.value
+        ? [{
+            label: 'Edit',
+            icon: Pencil,
+            variant: 'default',
+            size: 'sm',
+            onClick: () => (isEditing.value = true),
         }]
-    : []),
+        : []),
 ]);
 
 const activeTab = computed<string>(() => {
@@ -81,22 +84,26 @@ const activeTab = computed<string>(() => {
 });
 
 const tabs = computed(() => [
-    { 
-        key: 'default', 
-        label: 'Information' 
+    {
+        key: 'default',
+        label: 'Information',
     },
-    { 
-        key: 'attendance', 
+    {
+        key: 'attendance',
         label: 'Attendance',
         route: attendanceRoutes.index({ employee: employeeData.value?.id as number }).url,
     },
-    { 
-        key: 'activity_logs', 
-        label: 'Activity Log' 
+    {
+        key: 'activity_logs',
+        label: 'Activity Log',
     },
 ]);
 
 function submit(): void {
+    if (!canEditEmployee.value) {
+        return;
+    }
+
     form.patch(update({ employee: employeeData.value?.id as number }).url, {
         onSuccess: () => {
             isEditing.value = false;
@@ -110,7 +117,6 @@ function submit(): void {
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
-            <!-- Header -->
             <DataHeader
                 variant="form"
                 :title="employeeData?.full_name"
@@ -123,7 +129,6 @@ function submit(): void {
                 </template>
             </DataHeader>
 
-            <!-- Tabs -->
             <DataTableControls
                 :tabs="tabs"
                 :active-tab="activeTab"
@@ -132,14 +137,11 @@ function submit(): void {
                 :show-search="false"
             />
 
-            <!-- Activity Logs -->
             <div v-if="activeTab === 'activity_logs'" class="mx-auto w-full">
                 <ActivityLogTable />
             </div>
 
-            <!-- Information -->
             <div v-else class="mx-auto w-full max-w-4xl">
-                <!-- VIEW MODE -->
                 <Card v-if="!isEditing" class="border-dashed">
                     <CardHeader>
                         <CardTitle>Employee Information</CardTitle>
@@ -152,18 +154,14 @@ function submit(): void {
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
                                 <Label>Position</Label>
-                                <div
-                                    class="py-1 text-sm"
-                                >
+                                <div class="py-1 text-sm">
                                     {{ employeeData?.position }} - {{ employeeData?.position_level }}
                                 </div>
                             </div>
 
                             <div class="space-y-2">
                                 <Label>Department</Label>
-                                <div
-                                    class="py-1 text-sm"
-                                >
+                                <div class="py-1 text-sm">
                                     {{ employeeData?.department }}
                                 </div>
                             </div>
@@ -172,27 +170,21 @@ function submit(): void {
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div class="space-y-2">
                                 <Label>First Name</Label>
-                                <div
-                                    class="py-1 text-sm"
-                                >
+                                <div class="py-1 text-sm">
                                     {{ employeeData?.first_name }}
                                 </div>
                             </div>
 
                             <div class="space-y-2">
                                 <Label>Middle Name</Label>
-                                <div
-                                    class="py-1 text-sm"
-                                >
+                                <div class="py-1 text-sm">
                                     {{ employeeData?.middle_name || '-' }}
                                 </div>
                             </div>
 
                             <div class="space-y-2">
                                 <Label>Last Name</Label>
-                                <div
-                                    class="py-1 text-sm"
-                                >
+                                <div class="py-1 text-sm">
                                     {{ employeeData?.last_name }}
                                 </div>
                             </div>
@@ -201,18 +193,14 @@ function submit(): void {
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
                                 <Label>Birthdate</Label>
-                                <div
-                                    class="py-1 text-sm"
-                                >
+                                <div class="py-1 text-sm">
                                     {{ employeeData?.birthdate }}
                                 </div>
                             </div>
 
                             <div class="space-y-2">
                                 <Label>Employee Type</Label>
-                                <div
-                                    class="py-1 text-sm"
-                                >
+                                <div class="py-1 text-sm">
                                     {{ employeeData?.type }}
                                 </div>
                             </div>
@@ -221,18 +209,14 @@ function submit(): void {
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
                                 <Label>Mobile Number</Label>
-                                <div
-                                    class="py-1 text-sm"
-                                >
+                                <div class="py-1 text-sm">
                                     {{ employeeData?.mobile_number }}
                                 </div>
                             </div>
 
                             <div class="space-y-2">
                                 <Label>Email</Label>
-                                <div
-                                    class="py-1 text-sm"
-                                >
+                                <div class="py-1 text-sm">
                                     {{ employeeData?.email }}
                                 </div>
                             </div>
@@ -240,8 +224,7 @@ function submit(): void {
                     </CardContent>
                 </Card>
 
-                <!-- EDIT MODE -->
-                <Card v-else class="border-dashed">
+                <Card v-else-if="canEditEmployee" class="border-dashed">
                     <CardHeader>
                         <CardTitle class="flex items-center gap-2 text-lg">
                             <Save class="h-5 w-5" />

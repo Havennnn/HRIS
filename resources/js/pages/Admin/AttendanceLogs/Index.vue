@@ -7,8 +7,7 @@ import { Head, router } from '@inertiajs/vue3';
 import { ArrowUpDown, Clock } from 'lucide-vue-next';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import type { DataTableColumn } from 'piacore/components/DataTable.vue';
-import DataTable from 'piacore/components/DataTable.vue';
-import DataTableControls from 'piacore/components/DataTableControls.vue';
+import DataTablePanel from 'piacore/components/DataTablePanel.vue';
 import type { PaginatedData } from 'piacore/Interface/Pagination';
 import type { Option } from 'piacore/Interface/Selector';
 import { h, ref } from 'vue';
@@ -105,8 +104,7 @@ function handlePageChange(url: string | null): void {
                 />
 
                 <CardContent class="space-y-4 -mt-3">
-                    <!-- Controls -->
-                    <DataTableControls
+                    <DataTablePanel
                         :search-query="search"
                         :search-placeholder="searchPlaceholder"
                         :filters="filters"
@@ -114,10 +112,6 @@ function handlePageChange(url: string | null): void {
                         :show-sorts
                         :show-date-range="false"
                         :show-tabs="false"
-                    />
-
-                    <!-- Data Table -->
-                    <DataTable
                         :columns="columns"
                         :paginated="data"
                         empty-message="No employees matched your filters."
@@ -128,3 +122,10 @@ function handlePageChange(url: string | null): void {
         </div>
     </AppLayout>
 </template>
+
+
+
+
+
+
+

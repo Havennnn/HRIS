@@ -1,6 +1,6 @@
 <?php
 
-use PiaCore\Enums\AdminRole;
+use App\Enums\AdminRole;
 
 /*
 |--------------------------------------------------------------------------
@@ -57,30 +57,39 @@ return [
         'label' => 'List Departments',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
+            AdminRole::FINANCE_MANAGER,
+            AdminRole::FINANCE_OFFICER,
         ],
     ],
     'can-create-department' => [
         'label' => 'Create Department',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
         ],
     ],
     'can-update-department' => [
         'label' => 'Update Department',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER
         ],
     ],
     'can-archive-department' => [
         'label' => 'Archive Department',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
         ],
     ],
     'can-restore-department' => [
         'label' => 'Restore Department',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
         ],
     ],
 
@@ -89,30 +98,39 @@ return [
         'label' => 'List Positions',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
+            AdminRole::FINANCE_MANAGER,
+            AdminRole::FINANCE_OFFICER,
         ],
     ],
     'can-create-position' => [
         'label' => 'Create Position',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
         ],
     ],
     'can-update-position' => [
         'label' => 'Update Position',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER
         ],
     ],
     'can-archive-position' => [
         'label' => 'Archive Position',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
         ],
     ],
     'can-restore-position' => [
         'label' => 'Restore Position',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
         ],
     ],
 
@@ -121,30 +139,50 @@ return [
         'label' => 'List Employees',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
+            AdminRole::FINANCE_MANAGER,
+            AdminRole::FINANCE_OFFICER,
         ],
     ],
     'can-create-employee' => [
         'label' => 'Create Employee',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
+        ],
+    ],
+    'can-edit-employee' => [
+        'label' => 'Update Employee',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
+            AdminRole::FINANCE_MANAGER,
+            AdminRole::FINANCE_OFFICER,
         ],
     ],
     'can-update-employee' => [
         'label' => 'Update Employee',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
         ],
     ],
     'can-archive-employee' => [
         'label' => 'Archive Employee',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
         ],
     ],
     'can-restore-employee' => [
         'label' => 'Restore Employee',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
         ],
     ],
 
@@ -153,6 +191,10 @@ return [
         'label' => 'List Attendances',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
+            AdminRole::FINANCE_MANAGER,
+            AdminRole::FINANCE_OFFICER,
         ],
     ],
 
@@ -161,6 +203,10 @@ return [
         'label' => 'List Attendances Logs',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
+            AdminRole::FINANCE_MANAGER,
+            AdminRole::FINANCE_OFFICER,
         ],
     ],
 
@@ -169,48 +215,60 @@ return [
         'label' => 'List Requests',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
         ],
     ],
     'can-view-request' => [
         'label' => 'View Request',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
         ],
     ],
     'can-approve-request' => [
         'label' => 'Approve Request',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
         ],
     ],
     'can-reject-request' => [
         'label' => 'Reject Request',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
         ],
     ],
     'can-cancel-request' => [
         'label' => 'Cancel Request',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
         ],
     ],
     'can-complete-request' => [
         'label' => 'Complete Request',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
         ],
     ],
     'can-archive-request' => [
         'label' => 'Archive Request',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
         ],
     ],
     'can-restore-request' => [
         'label' => 'Restore Request',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
         ],
     ],
 
@@ -219,24 +277,31 @@ return [
         'label' => 'List Payrolls',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::FINANCE_MANAGER,
+            AdminRole::FINANCE_OFFICER,
         ],
     ],
     'can-approve-payroll' => [
         'label' => 'Approve Payroll',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::FINANCE_MANAGER,
         ],
     ],
     'can-reject-payroll' => [
         'label' => 'Reject Payroll',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::FINANCE_MANAGER,
         ],
     ],
     'can-disburse-payroll' => [
         'label' => 'Disburse Payroll',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::FINANCE_MANAGER,
+            AdminRole::FINANCE_OFFICER,
         ],
     ],
 
@@ -245,30 +310,38 @@ return [
         'label' => 'List Holidays',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
         ],
     ],
     'can-create-holiday' => [
         'label' => 'Create Holiday',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
         ],
     ],
     'can-update-holiday' => [
         'label' => 'Update Holiday',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
         ],
     ],
     'can-archive-holiday' => [
         'label' => 'Archive Holiday',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
         ],
     ],
     'can-restore-holiday' => [
         'label' => 'Restore Holiday',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
         ],
     ],
 
@@ -277,30 +350,38 @@ return [
         'label' => 'List Careers',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
         ],
     ],
     'can-create-career' => [
         'label' => 'Create Career',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
         ],
     ],
     'can-update-career' => [
         'label' => 'Update Career',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
         ],
     ],
     'can-archive-career' => [
         'label' => 'Archive Career',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
         ],
     ],
     'can-restore-career' => [
         'label' => 'Restore Career',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
         ],
     ],
 
@@ -309,42 +390,54 @@ return [
         'label' => 'List Applications',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
         ],
     ],
     'can-view-application' => [
         'label' => 'View Application',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
         ],
     ],
     'can-interview-application' => [
         'label' => 'Move Application to Interview',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
         ],
     ],
     'can-reject-application' => [
         'label' => 'Reject Application',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
         ],
     ],
     'can-hire-application' => [
         'label' => 'Hire Application',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
         ],
     ],
     'can-archive-application' => [
         'label' => 'Archive Application',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
         ],
     ],
     'can-restore-application' => [
         'label' => 'Restore Application',
         'roles' => [
             AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
         ],
     ],
 ];
+

@@ -8,8 +8,7 @@ import { Head, Link, usePage } from '@inertiajs/vue3';
 import { ArrowUpDown, Badge } from 'lucide-vue-next';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import type { DataTableActionsConfig, DataTableColumn } from 'piacore/components/DataTable.vue';
-import DataTable from 'piacore/components/DataTable.vue';
-import DataTableControls from 'piacore/components/DataTableControls.vue';
+import DataTablePanel from 'piacore/components/DataTablePanel.vue';
 import type { PaginatedData } from 'piacore/Interface/Pagination';
 import { Option } from 'piacore/Interface/Selector';
 import { computed, h, ref } from 'vue';
@@ -143,8 +142,9 @@ function handlePageChange(url: string | null): void {
                 </DataHeader>
 
                 <CardContent class="space-y-4 -mt-3">
-                    <DataTableControls
+                    <DataTablePanel
                         :tabs="tabs"
+                        layout="inline"
                         :active-tab="activeTab"
                         :activity-log="true"
                         :search-query="search"
@@ -152,13 +152,9 @@ function handlePageChange(url: string | null): void {
                         :sorts="sorts"
                         :show-date-range="true"
                         :search-placeholder="searchPlaceholder"
-                    />
-
-                    <DataTable
                         :columns="columns"
                         :paginated="data"
                         :actions="tableActions"
-                        :active-tab="activeTab"
                         row-key="id"
                         empty-message="No careers matched your filters."
                         @page-change="handlePageChange"
@@ -168,3 +164,7 @@ function handlePageChange(url: string | null): void {
         </div>
     </AppLayout>
 </template>
+
+
+
+

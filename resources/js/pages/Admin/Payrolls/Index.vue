@@ -8,8 +8,7 @@ import { ArrowUpDown, BadgeDollarSign } from 'lucide-vue-next';
 import DataBadge from 'piacore/components/DataBadge.vue';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import type { DataTableActionsConfig, DataTableColumn } from 'piacore/components/DataTable.vue';
-import DataTable from 'piacore/components/DataTable.vue';
-import DataTableControls from 'piacore/components/DataTableControls.vue';
+import DataTablePanel from 'piacore/components/DataTablePanel.vue';
 import { createDateRangeHandler } from 'piacore/helpers/date-range';
 import type { PaginatedData } from 'piacore/Interface/Pagination';
 import type { Option } from 'piacore/Interface/Selector';
@@ -183,8 +182,9 @@ function handlePageChange(url: string | null): void {
                 />
 
                 <CardContent class="space-y-4 -mt-3">
-                    <DataTableControls
+                    <DataTablePanel
                         :tabs="tabs"
+                        layout="inline"
                         :active-tab="activeTab"
                         :search-query="search"
                         :search-placeholder="searchPlaceholder"
@@ -192,13 +192,9 @@ function handlePageChange(url: string | null): void {
                         :sorts="sorts"
                         :date-range="handleDateRangeChange"
                         :show-date-range="true"
-                    />
-
-                    <DataTable
                         :columns="columns"
                         :paginated="data"
                         :actions="tableActions"
-                        :active-tab="activeTab"
                         row-key="id"
                         empty-message="No payrolls matched your filters."
                         @page-change="handlePageChange"
@@ -208,3 +204,10 @@ function handlePageChange(url: string | null): void {
         </div>
     </AppLayout>
 </template>
+
+
+
+
+
+
+

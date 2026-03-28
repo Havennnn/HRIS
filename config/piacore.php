@@ -5,6 +5,9 @@ return [
 
     'inertia_prefix' => 'Admin',
 
+    // Enum class used to cast admin.role. Override this to add app-specific roles.
+    'admin_role_enum' => App\Enums\AdminRole::class,
+
     'admin_ui' => [
         'enabled' => true,
         'dashboard_path' => 'dashboard',

@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\AdminRole;
+use App\Constant\AdminRole;
 
 /*
 |--------------------------------------------------------------------------
@@ -61,6 +61,7 @@ return [
             AdminRole::HR_OFFICER,
             AdminRole::FINANCE_MANAGER,
             AdminRole::FINANCE_OFFICER,
+            AdminRole::PROJECT_MANAGER
         ],
     ],
     'can-create-department' => [
@@ -102,6 +103,7 @@ return [
             AdminRole::HR_OFFICER,
             AdminRole::FINANCE_MANAGER,
             AdminRole::FINANCE_OFFICER,
+            AdminRole::PROJECT_MANAGER
         ],
     ],
     'can-create-position' => [
@@ -116,7 +118,8 @@ return [
         'roles' => [
             AdminRole::SUPER_ADMIN,
             AdminRole::HEAD_HR,
-            AdminRole::HR_OFFICER
+            AdminRole::HR_OFFICER,
+            AdminRole::FINANCE_MANAGER,
         ],
     ],
     'can-archive-position' => [
@@ -143,6 +146,7 @@ return [
             AdminRole::HR_OFFICER,
             AdminRole::FINANCE_MANAGER,
             AdminRole::FINANCE_OFFICER,
+            AdminRole::PROJECT_MANAGER
         ],
     ],
     'can-create-employee' => [

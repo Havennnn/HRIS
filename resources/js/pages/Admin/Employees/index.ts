@@ -10,7 +10,6 @@ export interface EmployeeIndexResource {
     email: string;
     status: Badge;
     type: string;
-    device: string | null;
     created_at: string;
 }
 

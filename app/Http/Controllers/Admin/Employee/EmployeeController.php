@@ -82,7 +82,7 @@ final class EmployeeController extends ResourceController
     public function edit(Employee $employee, EditAction $action, Request $request)
     {
         return $action($this->editOptions(
-            record: $employee->load('device'),
+            record: $employee->load(['contacts', 'device']),
             request: $request,
             resource: EmployeeEditResource::class,
             additionalProps: [
@@ -134,3 +134,6 @@ final class EmployeeController extends ResourceController
         return redirect()->back()->with('success', 'Device information updated successfully.');
     }
 }
+
+
+

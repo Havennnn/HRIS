@@ -27,6 +27,7 @@ import { ArrowLeft, LaptopMinimalCheck, Pencil, Save } from 'lucide-vue-next';
 import ActivityLogTable from 'piacore/components/ActivityLogTable.vue';
 import DataBadge from 'piacore/components/DataBadge.vue';
 import DataHeader from 'piacore/components/DataHeader.vue';
+import DataSelector from 'piacore/components/DataSelector.vue';
 import DataTableControls from 'piacore/components/DataTableControls.vue';
 import type { Option } from 'piacore/Interface/Selector';
 import { computed, ref } from 'vue';
@@ -48,6 +49,17 @@ const page = usePage();
 const pageTitle = 'Employee';
 
 const employeeData = computed(() => props.data?.data);
+const contactPerson = computed(() => employeeData.value?.contact_person ?? null);
+const hasContactPerson = computed(() => {
+    const contact = contactPerson.value;
+
+    if (!contact) {
+        return false;
+    }
+
+    return [contact.name, contact.type, contact.mobile_number].some((value) => Boolean(value?.trim()));
+});
+
 const deviceData = computed(() => employeeData.value?.device ?? null);
 const hasDeviceInfo = computed(() => {
     const device = deviceData.value;
@@ -275,6 +287,42 @@ function updateDevice(): void {
 
                 <Card v-if="!isEditing" class="border-dashed">
                     <CardHeader>
+                        <CardTitle>Contact Person</CardTitle>
+                        <CardDescription>Employee emergency or reference contact.</CardDescription>
+                    </CardHeader>
+
+                    <CardContent>
+                        <div v-if="hasContactPerson" class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                            <div class="space-y-2">
+                                <Label>Name</Label>
+                                <div class="py-1 text-sm">
+                                    {{ contactPerson?.name || '-' }}
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label>Type</Label>
+                                <div class="py-1 text-sm">
+                                    {{ contactPerson?.type || '-' }}
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label>Mobile Number</Label>
+                                <div class="py-1 text-sm">
+                                    {{ contactPerson?.mobile_number || '-' }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-else class="text-sm text-muted-foreground">
+                            No contact person provided.
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card v-if="!isEditing" class="border-dashed">
+                    <CardHeader>
                         <CardTitle>Device Information</CardTitle>
                         <CardDescription>Assigned employee devices.</CardDescription>
                     </CardHeader>
@@ -308,11 +356,172 @@ function updateDevice(): void {
                             <Save class="h-5 w-5" />
                             Edit Employee
                         </CardTitle>
-                        <CardDescription>Update employee information.</CardDescription>
+                        <CardDescription>
+                            Update employee information.
+                        </CardDescription>
                     </CardHeader>
 
                     <CardContent>
                         <form class="grid gap-6" @submit.prevent="submit">
+                            <div class="space-y-2">
+                                <DataSelector
+                                    id="position_id"
+                                    v-model="form.position_id"
+                                    :options="positions ?? []"
+                                    required
+                                    placeholder="-- Select a Position --"
+                                    :error="form.errors.position_id"
+                                    label="Position"
+                                />
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                <div class="space-y-2">
+                                    <Label for="first_name">
+                                        First Name
+                                        <span class="text-destructive ml-0.5">*</span>
+                                    </Label>
+
+                                    <Input
+                                        id="first_name"
+                                        v-model="form.first_name"
+                                        placeholder="Enter first name"
+                                        required
+                                        :disabled="form.processing"
+                                        :aria-invalid="form.errors.first_name ? 'true' : undefined"
+                                    />
+
+                                    <p
+                                        v-if="form.errors.first_name"
+                                        class="text-destructive text-xs font-medium"
+                                    >
+                                        {{ form.errors.first_name }}
+                                    </p>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <Label for="middle_name">
+                                        Middle Name
+                                    </Label>
+
+                                    <Input
+                                        id="middle_name"
+                                        v-model="form.middle_name"
+                                        placeholder="Enter middle name"
+                                        :disabled="form.processing"
+                                    />
+                                </div>
+
+                                <div class="space-y-2">
+                                    <Label for="last_name">
+                                        Last Name
+                                        <span class="text-destructive ml-0.5">*</span>
+                                    </Label>
+
+                                    <Input
+                                        id="last_name"
+                                        v-model="form.last_name"
+                                        placeholder="Enter last name"
+                                        required
+                                        :disabled="form.processing"
+                                        :aria-invalid="form.errors.last_name ? 'true' : undefined"
+                                    />
+
+                                    <p
+                                        v-if="form.errors.last_name"
+                                        class="text-destructive text-xs font-medium"
+                                    >
+                                        {{ form.errors.last_name }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div class="space-y-2">
+                                    <Label for="birthdate">
+                                        Birthdate
+                                        <span class="text-destructive ml-0.5">*</span>
+                                    </Label>
+
+                                    <Input
+                                        id="birthdate"
+                                        v-model="form.birthdate"
+                                        type="date"
+                                        required
+                                        :disabled="form.processing"
+                                        :aria-invalid="form.errors.birthdate ? 'true' : undefined"
+                                    />
+
+                                    <p
+                                        v-if="form.errors.birthdate"
+                                        class="text-destructive text-xs font-medium"
+                                    >
+                                        {{ form.errors.birthdate }}
+                                    </p>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <DataSelector
+                                        id="type"
+                                        v-model="form.type"
+                                        :options="types ?? []"
+                                        required
+                                        placeholder="-- Select Type --"
+                                        :error="form.errors.type"
+                                        label="Employee Type"
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div class="space-y-2">
+                                    <Label for="mobile_number">
+                                        Mobile Number
+                                        <span class="text-destructive ml-0.5">*</span>
+                                    </Label>
+
+                                    <Input
+                                        id="mobile_number"
+                                        v-model="form.mobile_number"
+                                        placeholder="Enter mobile number"
+                                        required
+                                        :disabled="form.processing"
+                                        :aria-invalid="form.errors.mobile_number ? 'true' : undefined"
+                                    />
+
+                                    <p
+                                        v-if="form.errors.mobile_number"
+                                        class="text-destructive text-xs font-medium"
+                                    >
+                                        {{ form.errors.mobile_number }}
+                                    </p>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <Label for="email">
+                                        Email
+                                        <span class="text-destructive ml-0.5">*</span>
+                                    </Label>
+
+                                    <Input
+                                        id="email"
+                                        v-model="form.email"
+                                        type="email"
+                                        placeholder="Enter email address"
+                                        required
+                                        :disabled="form.processing"
+                                        :aria-invalid="form.errors.email ? 'true' : undefined"
+                                    />
+
+                                    <p
+                                        v-if="form.errors.email"
+                                        class="text-destructive text-xs font-medium"
+                                    >
+                                        {{ form.errors.email }}
+                                    </p>
+                                </div>
+                            </div>
+
                             <div class="flex justify-end gap-3">
                                 <Button type="button" variant="outline" @click="isEditing = false">
                                     Cancel

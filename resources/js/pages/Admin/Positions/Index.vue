@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { useRoleAccess } from '@/composables/useRoleAccess';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { create, destroy, edit, index, restore } from '@/routes/positions';
 import type { BreadcrumbItem } from '@/types';
@@ -26,6 +27,8 @@ const props = defineProps<{
     data: PaginatedData<PositionResource>;
     departments?: Option[];
 }>();
+const { HR_FINANCE_ROLES, canAccessRoles } = useRoleAccess();
+const isHR_FINANCE = computed(() => canAccessRoles(HR_FINANCE_ROLES));
 
 const { hasPermission } = useAuth();
 
@@ -52,24 +55,28 @@ const columns: DataTableColumn[] = [
         cellClass: 'text-muted-foreground',
         cell: ({ row }) => (row as PositionResource).level ?? '-',
     },
-    {
-        key: 'salary',
-        label: 'Salary',
-        cellClass: 'text-muted-foreground',
-        cell: ({ row }) => {
-            const position = row as PositionResource;
-            return position.salary ? `P${Number(position.salary).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
-        },
-    },
-    {
-        key: 'allowance',
-        label: 'Allowance',
-        cellClass: 'text-muted-foreground',
-        cell: ({ row }) => {
-            const position = row as PositionResource;
-            return position.allowance ? `P${Number(position.allowance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
-        },
-    },
+    ...(isHR_FINANCE.value
+        ? [
+            {
+                key: 'salary',
+                label: 'Salary',
+                cellClass: 'text-muted-foreground',
+                cell: ({ row }) => {
+                    const position = row as PositionResource;
+                    return position.salary ? `P${Number(position.salary).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
+                },
+            },
+            {
+                key: 'allowance',
+                label: 'Allowance',
+                cellClass: 'text-muted-foreground',
+                cell: ({ row }) => {
+                    const position = row as PositionResource;
+                    return position.allowance ? `P${Number(position.allowance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '-';
+                },
+            },
+        ]
+    : []),
     {
         key: 'department',
         label: 'Department',
@@ -147,7 +154,7 @@ const tableActions = computed<DataTableActionsConfig | undefined>(() => {
     }
 
     return {
-        editRoute: canUpdatePosition.value ? (row) => edit({ position: (row as PositionResource).id }).url : undefined,
+        editRoute: isHR_FINANCE.value ? (row) => edit({ position: (row as PositionResource).id }).url : undefined,
         deleteRoute: !archivedTab && canArchivePosition.value ? (row) => destroy({ position: (row as PositionResource).id }).url : undefined,
         restoreRoute: archivedTab && canRestorePosition.value ? (row) => restore({ position: (row as PositionResource).id }).url : undefined,
         destructiveAction: archivedTab ? 'restore' : 'delete',

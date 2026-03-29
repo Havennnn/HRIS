@@ -249,7 +249,6 @@ function handlePageChange(url: string | null): void {
                 <CardContent class="space-y-4 -mt-3">
                     <DataTablePanel
                         :tabs="tabs"
-                        layout="inline"
                         :active-tab="activeTab"
                         :activity-log="true"
                         :search-query="search"

@@ -2,10 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Enums\AdminRole;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
-use PiaCore\Models\Admin;
 
 class DatabaseSeeder extends Seeder
 {

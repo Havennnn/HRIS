@@ -31,11 +31,11 @@ const props = defineProps<{
     types?: Option[];
 }>();
 
-const { ALL_BUSINESS_ROLES, canAccessRoles } = useRoleAccess();
+const { HR_FINANCE_ROLES, ALL_BUSINESS_ROLES, canAccessRoles } = useRoleAccess();
 const { hasPermission } = useAuth();
 
 const canCreateEmployee = computed(() => hasPermission('can-create-employee'));
-const canEditEmployee = computed(() => canAccessRoles(ALL_BUSINESS_ROLES));
+const canEditEmployee = computed(() => canAccessRoles(HR_FINANCE_ROLES));
 const canArchiveEmployee = computed(() => hasPermission('can-archive-employee'));
 const canRestoreEmployee = computed(() => hasPermission('can-restore-employee'));
 
@@ -75,12 +75,6 @@ const columns: DataTableColumn[] = [
         label: 'Type',
         cellClass: 'text-muted-foreground',
         cell: ({ row }) => (row as EmployeeIndexResource).type,
-    },
-    {
-        key: 'device',
-        label: 'Device',
-        cellClass: 'text-muted-foreground',
-        cell: ({ row }) => (row as EmployeeIndexResource).device,
     },
     {
         key: 'status',
@@ -177,7 +171,7 @@ const tableActions = computed<DataTableActionsConfig | undefined>(() => {
     }
 
     return {
-        editRoute: canEditEmployee.value ? (row) => edit({ employee: (row as EmployeeIndexResource).id }).url : undefined,
+        showRoute: canEditEmployee.value ? (row) => edit({ employee: (row as EmployeeIndexResource).id }).url : undefined,
         deleteRoute: !archivedTab && canArchiveEmployee.value ? (row) => destroy({ employee: (row as EmployeeIndexResource).id }).url : undefined,
         restoreRoute: archivedTab && canRestoreEmployee.value ? (row) => restore({ employee: (row as EmployeeIndexResource).id }).url : undefined,
         destructiveAction: archivedTab ? 'restore' : 'delete',

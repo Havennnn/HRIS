@@ -14,6 +14,8 @@ class EmployeeEditResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $contactPerson = $this->contacts->first();
+
         return [
             'id' => $this->id,
             'position_id' => $this->position?->id,
@@ -35,6 +37,12 @@ class EmployeeEditResource extends JsonResource
             'type' => $this->type?->label(),
             'hired_date' => $this->hired_date?->format('M d, Y'),
             'created_at' => $this->created_at?->format('M d, Y'),
+            'contact_person' => $contactPerson ? [
+                'name' => $contactPerson->name,
+                'type_value' => $contactPerson->type?->value,
+                'type' => $contactPerson->type?->label(),
+                'mobile_number' => $contactPerson->mobile_number,
+            ] : null,
             'device' => $this->device ? [
                 'desktop' => $this->device?->desktop ?? '',
                 'laptop' => $this->device?->laptop ?? '',

@@ -41,7 +41,7 @@ type SidebarSection = {
     items: SidebarItem[];
 };
 
-const { SUPER_ADMIN_ONLY, HR_ROLES, FINANCE_ROLES, ALL_BUSINESS_ROLES, canAccessRoles } = useRoleAccess();
+const { SUPER_ADMIN_ONLY, HR_ROLES, FINANCE_ROLES, HR_FINANCE_ROLES, PROJECT_MANAGEMENT_ROLES, ALL_BUSINESS_ROLES, canAccessRoles } = useRoleAccess();
 
 const sectionItems: SidebarSection[] = [
     {
@@ -56,7 +56,7 @@ const sectionItems: SidebarSection[] = [
             { title: 'Departments', href: departments.index(), icon: Building2, roles: ALL_BUSINESS_ROLES },
             { title: 'Positions', href: positions.index(), icon: UserCog, roles: ALL_BUSINESS_ROLES },
             { title: 'Employees', href: employees.index(), icon: Users, roles: ALL_BUSINESS_ROLES },
-            { title: 'Attendance Logs', href: attendanceLogs.index(), icon: CalendarDays, roles: ALL_BUSINESS_ROLES },
+            { title: 'Attendance Logs', href: attendanceLogs.index(), icon: CalendarDays, roles: HR_FINANCE_ROLES },
         ],
     },
     {
@@ -64,7 +64,7 @@ const sectionItems: SidebarSection[] = [
         items: [
             { title: 'Holiday Calendar', href: holidays.index(), icon: CalendarHeart, roles: HR_ROLES},
             { title: 'Requests', href: requests.index(), icon: CalendarX, roles: HR_ROLES},
-            { title: 'Payroll', href: payrolls.index(), icon: DollarSign, roles: ALL_BUSINESS_ROLES },
+            { title: 'Payroll', href: payrolls.index(), icon: DollarSign, roles: HR_FINANCE_ROLES },
         ],
     },
     {
@@ -77,8 +77,8 @@ const sectionItems: SidebarSection[] = [
     {
         label: 'Performance',
         items: [
-            { title: 'Performance Reviews', href: '/performance-reviews', icon: TrendingUp, roles: HR_ROLES },
-            { title: 'KPIs', href: '/kpis', icon: ClipboardList, roles: HR_ROLES },
+            { title: 'Performance Reviews', href: '/performance-reviews', icon: TrendingUp, roles: PROJECT_MANAGEMENT_ROLES },
+            { title: 'KPIs', href: '/kpis', icon: ClipboardList, roles: PROJECT_MANAGEMENT_ROLES },
         ],
     },
 ];

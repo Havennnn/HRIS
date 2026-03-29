@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Enums;
+namespace App\Constant;
 
 use PiaCore\Concerns\HasOptions;
 use PiaCore\Enums\Concerns\HasMeta;
@@ -16,6 +16,7 @@ enum AdminRole: string
     case HR_OFFICER = 'hr_officer';
     case FINANCE_MANAGER = 'finance_manager';
     case FINANCE_OFFICER = 'finance_officer';
+    case PROJECT_MANAGER = 'project_manager';
 
     /**
      * Add app-specific roles below as needed.
@@ -34,19 +35,23 @@ enum AdminRole: string
             ],
             self::HEAD_HR->name => [
                 'label' => 'Head HR',
-                'variant' => 'badge-info',
+                'variant' => 'badge-head-hr',
             ],
             self::HR_OFFICER->name => [
                 'label' => 'HR Officer',
-                'variant' => 'badge-primary',
+                'variant' => 'badge-hr-officer',
             ],
             self::FINANCE_MANAGER->name => [
                 'label' => 'Finance Manager',
-                'variant' => 'badge-success',
+                'variant' => 'badge-finance-manager',
             ],
             self::FINANCE_OFFICER->name => [
                 'label' => 'Finance Officer',
-                'variant' => 'badge-warning',
+                'variant' => 'badge-finance-officer',
+            ],
+            self::PROJECT_MANAGER->name => [
+                'label' => 'Project Manager',
+                'variant' => 'badge-project-manager',
             ],
         ];
     }

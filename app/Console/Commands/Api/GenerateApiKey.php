@@ -25,10 +25,8 @@ class GenerateApiKey extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return void
      */
-    public function handle()
+    public function handle(): void
     {
         $this->warn('This will generate API and encryption keys. Be sure that other client-side applications must be using the same generated keys.');
 
@@ -40,33 +38,41 @@ class GenerateApiKey extends Command
             hint: 'Navigate the options by using arrow keys then press Enter.',
         );
 
-        if (!$confirmed) {
+        if (! $confirmed) {
             return;
         }
 
         $apiKey = Str::random(32);
 
+        $this->saveKeysToEnv($apiKey);
+
         $this->comment('Successfully generated! Please use keys below:');
         $this->info("<fg=gray>API Key:</> {$apiKey}");
 
-        $this->saveKeysToEnv($apiKey);
-        $this->call('config:cache');
+        $this->call('config:clear');
     }
 
     /**
-     * Save generated keys to ENV
-     *
-     * @param string $apiKey
-     *
-     * @return void
+     * Save generated keys to ENV.
      */
     protected function saveKeysToEnv(string $apiKey): void
     {
         $envFile = base_path('.env');
         $envContent = file_get_contents($envFile);
 
-        $envContent = preg_replace('/^APP_API_KEY=.*$/m', "APP_API_KEY={$apiKey}", $envContent);
+        if ($envContent === false) {
+            $this->error('Unable to read the .env file.');
+            return;
+        }
 
-        file_put_contents($envContent, $envContent);
+        $replacement = "APP_API_KEY={$apiKey}";
+
+        if (preg_match('/^APP_API_KEY=.*$/m', $envContent) === 1) {
+            $envContent = preg_replace('/^APP_API_KEY=.*$/m', $replacement, $envContent) ?? $envContent;
+        } else {
+            $envContent = rtrim($envContent) . PHP_EOL . $replacement . PHP_EOL;
+        }
+
+        file_put_contents($envFile, $envContent);
     }
 }

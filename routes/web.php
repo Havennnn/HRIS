@@ -63,6 +63,7 @@ Route::middleware(['auth:admin'])->group(function (): void {
             Route::post('/', 'store')->middleware('can-create-employee')->name('store');
             Route::get('/{employee}/edit', 'edit')->middleware('can-edit-employee')->name('edit');
             Route::patch('/{employee}', 'update')->middleware('can-update-employee')->name('update');
+            Route::post('/{employee}/reset-password', 'resetPassword')->middleware('can-update-employee')->name('reset-password');
             Route::delete('/{employee}', 'destroy')->middleware('can-archive-employee')->name('destroy');
             Route::patch('/{employee}/restore', 'restore')->middleware('can-restore-employee')->name('restore')->withTrashed();
 
@@ -72,6 +73,14 @@ Route::middleware(['auth:admin'])->group(function (): void {
                 ->controller(EmployeeController::class)
                 ->group(function():void {
                     Route::patch('/', 'updateDevice')->middleware('can-update-employee')->name('update');
+                });
+
+            // Employee Contact Person Routes
+            Route::prefix('/{employee}/contact-person')
+                ->name('contact-person.')
+                ->controller(EmployeeController::class)
+                ->group(function (): void {
+                    Route::patch('/', 'updateContactPerson')->middleware('can-update-employee')->name('update');
                 });
 
             // Attendance Routes

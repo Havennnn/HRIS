@@ -22,8 +22,8 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { edit, index, update } from '@/routes/employees';
 import * as attendanceRoutes from '@/routes/employees/attendance';
 import type { BreadcrumbItem } from '@/types';
-import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { ArrowLeft, LaptopMinimalCheck, Pencil, Save } from 'lucide-vue-next';
+import { Head, router, useForm, usePage } from '@inertiajs/vue3';
+import { ArrowLeft, Eye, KeyRound, LaptopMinimalCheck, Pencil, Phone, Save } from 'lucide-vue-next';
 import ActivityLogTable from 'piacore/components/ActivityLogTable.vue';
 import DataBadge from 'piacore/components/DataBadge.vue';
 import DataHeader from 'piacore/components/DataHeader.vue';
@@ -37,10 +37,15 @@ const props = defineProps<{
     data: EmployeeEditResource;
     positions?: Option[];
     types?: Option[];
+    contactTypes?: Option[];
 }>();
 
 const isEditing = ref(false);
 const isUpdatingDevice = ref(false);
+const isUpdatingContactPerson = ref(false);
+const isDocumentPreviewOpen = ref(false);
+const selectedDocumentUrl = ref('');
+const selectedDocumentName = ref('Document Preview');
 
 const { HR_ROLES, canAccessRoles } = useRoleAccess();
 const canEditEmployee = computed(() => canAccessRoles(HR_ROLES));
@@ -71,6 +76,50 @@ const hasDeviceInfo = computed(() => {
     return [device.desktop, device.laptop].some((value) => Boolean(value?.trim()));
 });
 
+const documents = computed(() => employeeData.value?.documents ?? null);
+const documentItems = computed(() => [
+    { key: 'sss', label: 'SSS', file: documents.value?.sss ?? null },
+    { key: 'philhealth', label: 'PhilHealth', file: documents.value?.philhealth ?? null },
+    { key: 'bir', label: 'BIR', file: documents.value?.bir ?? null },
+    { key: 'medical', label: 'Medical', file: documents.value?.medical ?? null },
+]);
+const hasUploadedDocument = computed(() =>
+    documentItems.value.some((item) => Boolean(item.file?.url)),
+);
+
+function isImageFile(file: { name?: string; url?: string } | null | undefined): boolean {
+    if (!file?.url) {
+        return false;
+    }
+
+    const source = (file.name || file.url).toLowerCase();
+    return /\.(png|jpe?g|gif|webp|bmp|svg)(\?|$)/i.test(source);
+}
+
+function formatFileSize(size?: number | string): string {
+    const bytes = Number(size ?? 0);
+
+    if (!Number.isFinite(bytes) || bytes <= 0) {
+        return '-';
+    }
+
+    if (bytes < 1024) {
+        return `${bytes} B`;
+    }
+
+    if (bytes < 1024 * 1024) {
+        return `${(bytes / 1024).toFixed(1)} KB`;
+    }
+
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function openDocumentPreview(url: string, name?: string): void {
+    selectedDocumentUrl.value = url;
+    selectedDocumentName.value = name || 'Document Preview';
+    isDocumentPreviewOpen.value = true;
+}
+
 const breadcrumbs = computed<BreadcrumbItem[]>(() => [
     { title: 'Employees', href: index().url },
     {
@@ -95,6 +144,12 @@ const deviceForm = useForm({
     laptop: deviceData.value?.laptop ?? '',
 });
 
+const contactForm = useForm({
+    name: contactPerson.value?.name ?? '',
+    type: contactPerson.value?.type_value ?? '',
+    mobile_number: contactPerson.value?.mobile_number ?? '',
+});
+
 const headerActions = computed(() => [
     {
         label: 'Back',
@@ -106,16 +161,16 @@ const headerActions = computed(() => [
     ...(!isEditing.value && canEditEmployee.value
         ? [
             {
-                label: 'Edit',
+                label: 'Edit Information',
                 icon: Pencil,
-                variant: 'default' as const,
+                variant: 'outline' as const,
                 size: 'sm' as const,
                 onClick: () => (isEditing.value = true),
             },
             {
-                label: 'Device',
+                label: 'Edit Device',
                 icon: LaptopMinimalCheck,
-                variant: 'default' as const,
+                variant: 'outline' as const,
                 size: 'sm' as const,
                 onClick: () => {
                     deviceForm.desktop = deviceData.value?.desktop ?? '';
@@ -123,6 +178,26 @@ const headerActions = computed(() => [
                     deviceForm.clearErrors();
                     isUpdatingDevice.value = true;
                 },
+            },
+            {
+                label: 'Contact Person',
+                icon: Phone,
+                variant: 'outline' as const,
+                size: 'sm' as const,
+                onClick: () => {
+                    contactForm.name = contactPerson.value?.name ?? '';
+                    contactForm.type = contactPerson.value?.type_value ?? '';
+                    contactForm.mobile_number = contactPerson.value?.mobile_number ?? '';
+                    contactForm.clearErrors();
+                    isUpdatingContactPerson.value = true;
+                },
+            },
+            {
+                label: 'Reset Password',
+                icon: KeyRound,
+                variant: 'outline' as const,
+                size: 'sm' as const,
+                onClick: handleResetPassword,
             },
         ]
         : []),
@@ -171,6 +246,33 @@ function updateDevice(): void {
         onSuccess: () => {
             isUpdatingDevice.value = false;
         },
+    });
+}
+
+function updateContactPerson(): void {
+    if (!employeeData.value?.id) {
+        return;
+    }
+
+    contactForm.patch(`/employees/${employeeData.value.id}/contact-person`, {
+        preserveScroll: true,
+        onSuccess: () => {
+            isUpdatingContactPerson.value = false;
+        },
+    });
+}
+
+function handleResetPassword(): void {
+    if (!employeeData.value?.id) {
+        return;
+    }
+
+    if (!confirm('Are you sure you want to reset this employee\'s password? They will receive an email with a reset link.')) {
+        return;
+    }
+
+    router.post(`/employees/${employeeData.value.id}/reset-password`, {}, {
+        preserveScroll: true,
     });
 }
 </script>
@@ -317,6 +419,82 @@ function updateDevice(): void {
 
                         <div v-else class="text-sm text-muted-foreground">
                             No contact person provided.
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card v-if="!isEditing" class="border-dashed">
+                    <CardHeader>
+                        <CardTitle>Employee Documents</CardTitle>
+                        <CardDescription>Uploaded onboarding documents.</CardDescription>
+                    </CardHeader>
+
+                    <CardContent>
+                        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                            <div
+                                v-for="item in documentItems"
+                                :key="item.key"
+                                class="space-y-1.5"
+                            >
+                                <Label>{{ item.label }}</Label>
+
+                                <div class="rounded-lg border border-dashed p-2.5">
+                                    <div v-if="item.file?.url" class="flex items-center gap-3">
+                                        <img
+                                            v-if="isImageFile(item.file)"
+                                            :src="item.file.url"
+                                            :alt="item.file.name || `${item.label} document`"
+                                            class="h-12 w-12 shrink-0 rounded-md border object-cover"
+                                            loading="lazy"
+                                        >
+
+                                        <div
+                                            v-else
+                                            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-md border bg-muted text-[9px] text-muted-foreground"
+                                        >
+                                            No preview
+                                        </div>
+
+                                        <div class="min-w-0 flex-1 space-y-1">
+                                            <div class="flex items-center gap-2">
+                                                <a
+                                                    :href="item.file.url"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    class="block min-w-0 truncate text-sm text-primary underline-offset-4 hover:underline"
+                                                >
+                                                    {{ item.file?.name || 'View file' }}
+                                                </a>
+                                            </div>
+
+                                            <div class="text-xs text-muted-foreground">
+                                                Size: {{ formatFileSize(item.file?.size) }}
+                                            </div>
+                                        </div>
+
+                                        <div class="flex h-full items-center">
+                                            <Button
+                                                v-if="isImageFile(item.file)"
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                class="h-8 w-8 shrink-0 cursor-pointer border-0 bg-transparent p-0 text-muted-foreground hover:bg-transparent hover:text-foreground focus-visible:bg-transparent"
+                                                @click="openDocumentPreview(item.file.url, item.file.name || item.label)"
+                                            >
+                                                <Eye class="h-5 w-5" />
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    <div v-else class="text-xs text-muted-foreground">
+                                        No file uploaded.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div v-if="!hasUploadedDocument" class="mt-4 text-sm text-muted-foreground">
+                            No documents uploaded.
                         </div>
                     </CardContent>
                 </Card>
@@ -536,7 +714,7 @@ function updateDevice(): void {
                 </Card>
 
                 <Dialog v-model:open="isUpdatingDevice">
-                    <DialogContent class="sm:max-w-[400px]">
+                    <DialogContent class="sm:max-w-100">
                         <DialogHeader>
                             <DialogTitle>Update Device Information</DialogTitle>
                             <DialogDescription>
@@ -583,6 +761,95 @@ function updateDevice(): void {
                                 {{ deviceForm.processing ? 'Saving...' : 'Update Device' }}
                             </Button>
                         </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                <Dialog v-model:open="isUpdatingContactPerson">
+                    <DialogContent class="sm:max-w-105">
+                        <DialogHeader>
+                            <DialogTitle>Update Contact Person</DialogTitle>
+                            <DialogDescription>
+                                Set or clear the employee emergency/reference contact.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <form
+                            id="update-contact-person-form"
+                            class="grid gap-6"
+                            @submit.prevent="updateContactPerson"
+                        >
+                            <div class="space-y-2">
+                                <Label for="contact_name">Name</Label>
+                                <Input
+                                    id="contact_name"
+                                    v-model="contactForm.name"
+                                    placeholder="Enter contact person name"
+                                />
+                                <p v-if="contactForm.errors.name" class="text-sm text-destructive">
+                                    {{ contactForm.errors.name }}
+                                </p>
+                            </div>
+
+                            <div class="space-y-2">
+                                <DataSelector
+                                    id="contact_type"
+                                    v-model="contactForm.type"
+                                    :options="contactTypes ?? []"
+                                    placeholder="-- Select Contact Type --"
+                                    :error="contactForm.errors.type"
+                                    label="Type"
+                                />
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="contact_mobile_number">Mobile Number</Label>
+                                <Input
+                                    id="contact_mobile_number"
+                                    v-model="contactForm.mobile_number"
+                                    placeholder="Enter contact mobile number"
+                                />
+                                <p v-if="contactForm.errors.mobile_number" class="text-sm text-destructive">
+                                    {{ contactForm.errors.mobile_number }}
+                                </p>
+                            </div>
+                        </form>
+
+                        <DialogFooter>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                @click="isUpdatingContactPerson = false"
+                            >
+                                Cancel
+                            </Button>
+
+                            <Button
+                                type="submit"
+                                form="update-contact-person-form"
+                                :disabled="contactForm.processing"
+                            >
+                                {{ contactForm.processing ? 'Saving...' : 'Update Contact' }}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                <Dialog v-model:open="isDocumentPreviewOpen">
+                    <DialogContent class="sm:max-w-2xl [&>button]:cursor-pointer [&>button]:border-0 [&>button]:bg-transparent [&>button]:text-muted-foreground [&>button:hover]:bg-transparent [&>button:hover]:text-foreground [&>button:focus-visible]:bg-transparent [&>button>svg]:h-5 [&>button>svg]:w-5">
+                        <DialogHeader>
+                            <DialogTitle>{{ selectedDocumentName }}</DialogTitle>
+                            <DialogDescription>
+                                Document image preview.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div class="overflow-hidden rounded-md border bg-muted/20">
+                            <img
+                                :src="selectedDocumentUrl"
+                                :alt="selectedDocumentName"
+                                class="max-h-[70vh] w-full object-contain"
+                            >
+                        </div>
                     </DialogContent>
                 </Dialog>
             </div>

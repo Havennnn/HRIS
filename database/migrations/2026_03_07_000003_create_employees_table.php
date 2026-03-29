@@ -22,6 +22,7 @@ return new class extends Migration
             $table->date('birthdate');
             $table->string('mobile_number');
             $table->string('email');
+            $table->string('password')->nullable();
             $table->date('hired_date')->nullable();
             $table->unsignedTinyInteger('status')->default(EmployeeStatus::ACTIVE);
             $table->unsignedTinyInteger('type');

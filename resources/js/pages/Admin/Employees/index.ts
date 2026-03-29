@@ -13,6 +13,12 @@ export interface EmployeeIndexResource {
     created_at: string;
 }
 
+export interface UploadedFilePreview {
+    name?: string;
+    url?: string;
+    size?: number | string;
+}
+
 export interface EmployeeEditResource {
     id: number;
     position_id: number;
@@ -35,9 +41,21 @@ export interface EmployeeEditResource {
     type: string;
     type_label: string;
     created_at: string;
+    contact_person: {
+        name: string;
+        type_value: number;
+        type: string;
+        mobile_number: string;
+    } | null;
+    documents: {
+        sss: UploadedFilePreview | null;
+        philhealth: UploadedFilePreview | null;
+        bir: UploadedFilePreview | null;
+        medical: UploadedFilePreview | null;
+    };
     device: {
-        desktop: boolean | null;
-        laptop: boolean | null;
+        desktop: string;
+        laptop: string;
     } | null;
 }
 

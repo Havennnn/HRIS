@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin\Employee;
 
 use App\Enums\Status\EmployeeStatus;
+use App\Enums\Type\EmployeeContactType;
 use App\Enums\Type\EmployeeType;
+use App\Http\Requests\Admin\Employee\EmployeeContactRequest;
 use App\Http\Requests\Admin\Employee\EmployeeRequest;
 use App\Http\Requests\Admin\Employee\EmployeeDeviceRequest;
 use App\Http\Resources\Admin\Employee\EmployeeEditResource;
@@ -82,12 +84,20 @@ final class EmployeeController extends ResourceController
     public function edit(Employee $employee, EditAction $action, Request $request)
     {
         return $action($this->editOptions(
-            record: $employee->load(['contacts', 'device']),
+            record: $employee->load([
+                'contact',
+                'device',
+                'documents.sssFile',
+                'documents.philhealthFile',
+                'documents.birFile',
+                'documents.medicalFile',
+            ]),
             request: $request,
             resource: EmployeeEditResource::class,
             additionalProps: [
                 'positions' => Position::options(),
                 'types' => EmployeeType::options(),
+                'contactTypes' => EmployeeContactType::options(),
             ]
         ));
     }
@@ -125,6 +135,16 @@ final class EmployeeController extends ResourceController
     }
 
     /**
+     * Send a password reset link to the employee's email.
+     */
+    public function resetPassword(Employee $employee)
+    {
+        $employee->sendPasswordResetLink();
+
+        return redirect()->back()->with('success', 'Password reset link sent successfully to '.$employee->email);
+    }
+
+    /**
      * Update the device information for the specified employee.
      */
     public function updateDevice(EmployeeDeviceRequest $request, Employee $employee)
@@ -132,6 +152,20 @@ final class EmployeeController extends ResourceController
         $this->service()->updateDevice($employee, $request->validated());
 
         return redirect()->back()->with('success', 'Device information updated successfully.');
+    }
+
+    /**
+     * Update the contact person information for the specified employee.
+     */
+    public function updateContactPerson(EmployeeContactRequest $request, Employee $employee)
+    {
+        $contactPerson = $this->service()->updateContactPerson($employee, $request->validated());
+
+        if ($contactPerson === null) {
+            return redirect()->back()->with('success', 'Contact person removed successfully.');
+        }
+
+        return redirect()->back()->with('success', 'Contact person updated successfully.');
     }
 }
 

@@ -14,13 +14,11 @@ return new class extends Migration
     {
         Schema::create('employee_contacts', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Employee::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Employee::class)->unique()->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->unsignedTinyInteger('type');
             $table->string('mobile_number');
             $table->timestamps();
-
-            $table->index('employee_id');
         });
     }
 

@@ -3,11 +3,11 @@
 namespace App\Services\Admin\Employee;
 
 use App\Models\Employee;
+use App\Models\EmployeeContact;
 use App\Models\EmployeeDevice;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use PiaCore\Contracts\CrudService\ListsRecords;
@@ -70,6 +70,24 @@ class EmployeeService implements ListsRecords
     }
 
     /**
+     * Create, update, or remove the contact person for an employee.
+     */
+    public function updateContactPerson(Employee $employee, array $payload): ?EmployeeContact
+    {
+        return DB::transaction(function () use ($employee, $payload) {
+            $contactData = $this->extractContactData($payload);
+
+            if ($this->isContactDataEmpty($contactData)) {
+                $employee->contact()->delete();
+
+                return null;
+            }
+
+            return $employee->contact()->updateOrCreate([], $contactData);
+        });
+    }
+
+    /**
      * Extract device data from the payload.
      *
      * @param  array  $payload
@@ -81,5 +99,27 @@ class EmployeeService implements ListsRecords
             'desktop' => $payload['desktop'] ?? '',
             'laptop' => $payload['laptop'] ?? '',
         ];
+    }
+
+    /**
+     * Extract contact person data from the payload.
+     */
+    protected function extractContactData(array $payload): array
+    {
+        return [
+            'name' => trim((string) ($payload['name'] ?? '')),
+            'type' => $payload['type'] ?? null,
+            'mobile_number' => trim((string) ($payload['mobile_number'] ?? '')),
+        ];
+    }
+
+    /**
+     * Determine if the contact payload should clear the existing contact person.
+     */
+    protected function isContactDataEmpty(array $data): bool
+    {
+        return blank($data['name'])
+            && blank($data['type'])
+            && blank($data['mobile_number']);
     }
 }

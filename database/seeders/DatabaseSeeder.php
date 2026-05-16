@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             DepartmentSeeder::class,
             PositionSeeder::class,
             EmployeeSeeder::class,
+            AttendanceTagSeeder::class,
             AttendanceSeeder::class,
             AttendanceLogSeeder::class,
             RequestSeeder::class,

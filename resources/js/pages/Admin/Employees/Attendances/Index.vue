@@ -84,9 +84,23 @@ const columns: DataTableColumn[] = [
         key: 'status',
         label: 'Status',
         cellClass: 'text-muted-foreground',
-        cell: ({ row }) => h(DataBadge, {
-            badge: (row as AttendanceIndexResource).status
-        }),
+        cell: ({ row }) => {
+            const attendance = row as AttendanceIndexResource;
+
+            if (attendance.tags && attendance.tags.length > 0) {
+                return h('div', { class: 'flex flex-wrap gap-1' },
+                    attendance.tags.map((tag) =>
+                        tag.badge
+                            ? h(DataBadge, { badge: tag.badge })
+                            : null
+                    )
+                );
+            }
+
+            return attendance.status
+                ? h(DataBadge, { badge: attendance.status })
+                : '-';
+        },
     },
     {
         key: 'created_at',
@@ -119,7 +133,7 @@ const filters = [
         key: 'status',
         label: 'Status',
         icon: Calendar,
-        options: props.status,
+        options: props.status ?? [],
     }
 ];
 

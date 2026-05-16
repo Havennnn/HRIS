@@ -24,7 +24,6 @@ return new class extends Migration
             $table->time('time_out')->nullable();
             $table->integer('late_minutes')->default(0);
             $table->integer('overtime_minutes')->default(0);
-            $table->unsignedTinyInteger('status');
             $table->date('date');
             $table->timestamps();
 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Auth\AuthController;
+use App\Http\Controllers\Api\V1\Attendance\AttendanceController;
 use App\Http\Controllers\Api\V1\Employee\EmployeeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -42,6 +43,17 @@ Route::prefix('auth')
     });
 
 Route::middleware('auth:sanctum')->group(function (): void {
+    // Attendance Route
+    Route::prefix('attendance')
+        ->name('attendance.')
+        ->controller(AttendanceController::class)
+        ->group(function (): void {
+            Route::get('/', 'list')->name('list');
+            Route::get('/today', 'today')->name('today');
+            Route::post('/time-in', 'timeIn')->name('time-in');
+            Route::post('/time-out', 'timeOut')->name('time-out');
+        });
+
     // Employee Route
     Route::prefix('employee')
         ->name('employee.')

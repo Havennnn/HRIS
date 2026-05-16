@@ -12,7 +12,9 @@ enum AttendanceStatus: int
 
     case PRESENT = 1;
     case LATE = 2;
-    case ABSENT = 3;
+    case EARLY_LEAVE = 3;
+    case OVERTIME = 4;
+    case ABSENT = 5;
 
     /**
      * {@inheritdoc}
@@ -27,6 +29,14 @@ enum AttendanceStatus: int
             self::LATE->value => [
                 'label' => 'Late',
                 'variant' => 'badge-late',
+            ],
+            self::EARLY_LEAVE->value => [
+                'label' => 'Early Leave',
+                'variant' => 'badge-early-leave',
+            ],
+            self::OVERTIME->value => [
+                'label' => 'Overtime',
+                'variant' => 'badge-overtime',
             ],
             self::ABSENT->value => [
                 'label' => 'Absent',

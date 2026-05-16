@@ -20,13 +20,19 @@ class AttendanceService implements ListsRecords
     public function list(Model|string|Relation $model, Request $request): array
     {
         return [
+            'baseQuery' => function (Builder $query): Builder {
+                return $query->with([
+                    'tags:id,name,value',
+                    'employee:id,first_name,last_name',
+                ]);
+            },
             'tabs' => [
                 'default' => [
                     'countKey' => 'defaultCount',
                 ],
             ],
             'filters' => [
-                'status' => fn (Builder $query, $value) => $query->where('status', $value),
+                'status' => fn (Builder $query, $value) => $query->whereHas('tags', fn (Builder $tagQuery) => $tagQuery->whereIn('value', $value)),
             ],
             'sorts' => [
                 'date' => 'date',

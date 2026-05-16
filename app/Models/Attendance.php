@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use App\Enums\Status\AttendanceStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use PiaCore\Search\SearchConfig;
 
 class Attendance extends Model
@@ -25,7 +25,6 @@ class Attendance extends Model
         'time_out',
         'late_minutes',
         'overtime_minutes',
-        'status',
         'date',
         'request_id',
     ];
@@ -33,13 +32,11 @@ class Attendance extends Model
     protected $casts = [
         'time_in' => 'datetime:H:i',
         'time_out' => 'datetime:H:i',
-        'status' => AttendanceStatus::class,
         'date' => 'date',
     ];
 
     protected array $searchable = [
         'date',
-        'status',
         'time_in',
         'time_out',
         'late_minutes',
@@ -60,5 +57,10 @@ class Attendance extends Model
     public function request(): BelongsTo
     {
         return $this->belongsTo(Request::class);
+    }
+
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(AttendanceTag::class, 'attendance_attendance_tags');
     }
 }

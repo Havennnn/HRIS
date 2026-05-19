@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useRoleAccess } from '@/composables/useRoleAccess';
-import admins from '@/routes/admins/index';
 import applications from '@/routes/applications/index';
 import attendanceLogs from '@/routes/attendance-logs/index';
 import careers from '@/routes/careers/index';
@@ -11,16 +10,17 @@ import { dashboard } from '@/routes/index';
 import payrolls from '@/routes/payrolls/index';
 import positions from '@/routes/positions/index';
 import requests from '@/routes/requests/index';
+import payoutConfigurations from '@/routes/settings/payout-configurations/index';
 import {
     Building2,
     CalendarDays,
     CalendarHeart,
     CalendarX,
     ClipboardList,
+    Cog,
     DollarSign,
     DoorOpen,
     LayoutGrid,
-    Shield,
     TrendingUp,
     UserCog,
     UserPlus,
@@ -41,7 +41,7 @@ type SidebarSection = {
     items: SidebarItem[];
 };
 
-const { SUPER_ADMIN_ONLY, HR_ROLES, FINANCE_ROLES, HR_FINANCE_ROLES, PROJECT_MANAGEMENT_ROLES, ALL_BUSINESS_ROLES, canAccessRoles } = useRoleAccess();
+const { SUPER_ADMIN_ONLY, HR_ROLES, HR_FINANCE_ROLES, PROJECT_MANAGEMENT_ROLES, ALL_BUSINESS_ROLES, canAccessRoles } = useRoleAccess();
 
 const sectionItems: SidebarSection[] = [
     {
@@ -78,15 +78,15 @@ const sectionItems: SidebarSection[] = [
         label: 'Performance',
         items: [
             { title: 'Performance Reviews', href: '/performance-reviews', icon: TrendingUp, roles: PROJECT_MANAGEMENT_ROLES },
-            { title: 'KPIs', href: '/kpis', icon: ClipboardList, roles: PROJECT_MANAGEMENT_ROLES },
+            { title: 'KPIs tyest', href: '/kpis', icon: ClipboardList, roles: PROJECT_MANAGEMENT_ROLES },
         ],
     },
 ];
 
 const settingsItem: SidebarItem = {
-    title: 'Admin',
-    href: admins.index(),
-    icon: Shield,
+    title: 'Settings',
+    href: payoutConfigurations.index(),
+    icon: Cog,
     roles: SUPER_ADMIN_ONLY,
 };
 

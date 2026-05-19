@@ -8,10 +8,6 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// First half: Mar 1–15
-Schedule::command('payroll:generate-cutoff')->monthlyOn(10, '23:55');
-Schedule::command('payroll:auto-disburse')->monthlyOn(15, '17:00');
-
-// Second half: Mar 16–EOM
-Schedule::command('payroll:generate-second-half')->monthlyOn(25, '23:55');
-Schedule::command('payroll:auto-disburse-second-half')->lastDayOfMonth('17:00');
+// Payout schedule — reads from active PayoutConfiguration records
+Schedule::command('payroll:process --action=generate')->dailyAt('23:55');
+Schedule::command('payroll:process --action=disburse')->dailyAt('17:00');

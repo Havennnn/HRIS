@@ -17,12 +17,12 @@ enum HolidayType: int
     {
         return [
             self::REGULAR->value => [
-                'label' => 'Regular Holiday', 
-                'variant' => 'badge-regular'
+                'label' => 'Regular Holiday',
+                'variant' => 'badge-regular',
             ],
             self::SPECIAL->value => [
-                'label' => 'Special Holiday', 
-                'variant' => 'badge-special'
+                'label' => 'Special Holiday',
+                'variant' => 'badge-special',
             ],
         ];
     }

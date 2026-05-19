@@ -11,9 +11,9 @@ use PiaCore\Models\Concerns\HasArchives;
 
 class Department extends Model
 {
-    use HasFactory;
-    use HasArchives;
     use HasActivityLogs;
+    use HasArchives;
+    use HasFactory;
     use HasOptions;
 
     /**
@@ -21,7 +21,6 @@ class Department extends Model
      * Attributes
      * --------------------------------------------------------------------------
      */
-    
     protected $fillable = [
         'name',
     ];
@@ -31,7 +30,6 @@ class Department extends Model
      * Relationships
      * --------------------------------------------------------------------------
      */
-
     public function positions(): HasMany
     {
         return $this->hasMany(Position::class);

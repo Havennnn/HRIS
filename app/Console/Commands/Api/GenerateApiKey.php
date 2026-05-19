@@ -62,6 +62,7 @@ class GenerateApiKey extends Command
 
         if ($envContent === false) {
             $this->error('Unable to read the .env file.');
+
             return;
         }
 
@@ -70,7 +71,7 @@ class GenerateApiKey extends Command
         if (preg_match('/^APP_API_KEY=.*$/m', $envContent) === 1) {
             $envContent = preg_replace('/^APP_API_KEY=.*$/m', $replacement, $envContent) ?? $envContent;
         } else {
-            $envContent = rtrim($envContent) . PHP_EOL . $replacement . PHP_EOL;
+            $envContent = rtrim($envContent).PHP_EOL.$replacement.PHP_EOL;
         }
 
         file_put_contents($envFile, $envContent);

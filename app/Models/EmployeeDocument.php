@@ -18,7 +18,6 @@ class EmployeeDocument extends Model
      * Attributes
      * --------------------------------------------------------------------------
      */
-    
     protected $fillable = [
         'employee_id',
         'sss_id',
@@ -32,7 +31,6 @@ class EmployeeDocument extends Model
      * Relationships
      * --------------------------------------------------------------------------
      */
-
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);

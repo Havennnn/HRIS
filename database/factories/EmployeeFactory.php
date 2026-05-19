@@ -7,8 +7,6 @@ use App\Enums\Type\EmployeeType;
 use App\Models\Employee;
 use App\Models\Position;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class EmployeeFactory extends Factory
 {
@@ -18,7 +16,7 @@ class EmployeeFactory extends Factory
     {
         $firstName = $this->faker->firstName();
         $lastName = $this->faker->lastName();
-        
+
         return [
             'position_id' => Position::factory(),
             'first_name' => $firstName,
@@ -27,7 +25,7 @@ class EmployeeFactory extends Factory
             'birthdate' => $this->faker->date('Y-m-d', '-18 years'),
             'hired_date' => $this->faker->dateTimeBetween('-5 years', 'now')->format('Y-m-d'),
             'mobile_number' => $this->faker->phoneNumber(),
-            'email' => strtolower($firstName . '.' . $lastName . '@' . $this->faker->domainName()),
+            'email' => strtolower($firstName.'.'.$lastName.'@'.$this->faker->domainName()),
             'status' => EmployeeStatus::ACTIVE,
             'type' => EmployeeType::REGULAR,
         ];
@@ -37,7 +35,7 @@ class EmployeeFactory extends Factory
     {
         return $this->afterMaking(function (Employee $employee) {
             if (empty($employee->email)) {
-                $employee->email = strtolower($employee->first_name . '.' . $employee->last_name . '@example.com');
+                $employee->email = strtolower($employee->first_name.'.'.$employee->last_name.'@example.com');
             }
         });
     }

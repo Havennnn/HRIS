@@ -80,7 +80,7 @@ class CareerSeeder extends Seeder
         ];
 
         foreach ($positions as $position) {
-            $description = $careerDescriptions[$position->name] ?? 'Join our team as a ' . $position->name . '. We are looking for talented individuals to contribute to our organization\'s success.';
+            $description = $careerDescriptions[$position->name] ?? 'Join our team as a '.$position->name.'. We are looking for talented individuals to contribute to our organization\'s success.';
 
             Career::create([
                 'position_id' => $position->id,

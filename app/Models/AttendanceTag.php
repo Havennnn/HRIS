@@ -10,8 +10,8 @@ use PiaCore\Models\Concerns\HasArchives;
 
 class AttendanceTag extends Model
 {
-    use HasFactory;
     use HasArchives;
+    use HasFactory;
 
     protected $fillable = [
         'name',

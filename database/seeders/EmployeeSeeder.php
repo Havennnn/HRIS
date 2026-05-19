@@ -13,7 +13,7 @@ class EmployeeSeeder extends Seeder
     public function run(): void
     {
         $positions = Position::all();
-        
+
         $employees = [
             // IT Department
             ['first_name' => 'John', 'last_name' => 'Smith', 'position_id' => 1, 'type' => EmployeeType::REGULAR, 'status' => EmployeeStatus::ACTIVE],
@@ -87,11 +87,11 @@ class EmployeeSeeder extends Seeder
         ];
 
         foreach ($employees as $employeeData) {
-            $employeeData['email'] = strtolower($employeeData['first_name'] . '.' . $employeeData['last_name']) . '@company.com';
+            $employeeData['email'] = strtolower($employeeData['first_name'].'.'.$employeeData['last_name']).'@company.com';
             $employeeData['middle_name'] = '';
-            $employeeData['birthdate'] = rand(1980, 2000) . '-' . str_pad(rand(1, 12), 2, '0', STR_PAD_LEFT) . '-' . str_pad(rand(1, 28), 2, '0', STR_PAD_LEFT);
+            $employeeData['birthdate'] = rand(1980, 2000).'-'.str_pad(rand(1, 12), 2, '0', STR_PAD_LEFT).'-'.str_pad(rand(1, 28), 2, '0', STR_PAD_LEFT);
             $employeeData['hired_date'] = now()->subMonths(rand(1, 36))->format('Y-m-d');
-            $employeeData['mobile_number'] = '09' . rand(100000000, 999999999);
+            $employeeData['mobile_number'] = '09'.rand(100000000, 999999999);
 
             Employee::query()->updateOrCreate(
                 ['email' => $employeeData['email']],

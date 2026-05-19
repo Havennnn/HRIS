@@ -6,8 +6,8 @@ use App\Enums\Status\EmployeeStatus;
 use App\Enums\Type\EmployeeContactType;
 use App\Enums\Type\EmployeeType;
 use App\Http\Requests\Admin\Employee\EmployeeContactRequest;
-use App\Http\Requests\Admin\Employee\EmployeeRequest;
 use App\Http\Requests\Admin\Employee\EmployeeDeviceRequest;
+use App\Http\Requests\Admin\Employee\EmployeeRequest;
 use App\Http\Resources\Admin\Employee\EmployeeEditResource;
 use App\Http\Resources\Admin\Employee\EmployeeIndexResource;
 use App\Models\Employee;
@@ -139,9 +139,7 @@ final class EmployeeController extends ResourceController
      */
     public function resetPassword(Employee $employee)
     {
-        $employee->sendPasswordResetLink();
-
-        return redirect()->back()->with('success', 'Password reset link sent successfully to '.$employee->email);
+        return $this->service()->resetPassword($employee);
     }
 
     /**
@@ -149,9 +147,7 @@ final class EmployeeController extends ResourceController
      */
     public function updateDevice(EmployeeDeviceRequest $request, Employee $employee)
     {
-        $this->service()->updateDevice($employee, $request->validated());
-
-        return redirect()->back()->with('success', 'Device information updated successfully.');
+        return $this->service()->updateDevice($employee, $request);
     }
 
     /**
@@ -159,15 +155,6 @@ final class EmployeeController extends ResourceController
      */
     public function updateContactPerson(EmployeeContactRequest $request, Employee $employee)
     {
-        $contactPerson = $this->service()->updateContactPerson($employee, $request->validated());
-
-        if ($contactPerson === null) {
-            return redirect()->back()->with('success', 'Contact person removed successfully.');
-        }
-
-        return redirect()->back()->with('success', 'Contact person updated successfully.');
+        return $this->service()->updateContactPerson($employee, $request);
     }
 }
-
-
-

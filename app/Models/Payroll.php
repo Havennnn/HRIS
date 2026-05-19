@@ -12,8 +12,8 @@ use PiaCore\Search\SearchConfig;
 
 class Payroll extends Model
 {
-    use HasFactory;
     use HasActivityLogs;
+    use HasFactory;
     use SearchConfig;
 
     /**
@@ -55,7 +55,6 @@ class Payroll extends Model
      * Search Configuration
      * --------------------------------------------------------------------------
      */
-
     protected array $searchable = [
         'employee.first_name',
         'employee.last_name',
@@ -69,7 +68,6 @@ class Payroll extends Model
      * Relationships
      * --------------------------------------------------------------------------
      */
-
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);

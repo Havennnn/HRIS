@@ -61,7 +61,7 @@ return [
             AdminRole::HR_OFFICER,
             AdminRole::FINANCE_MANAGER,
             AdminRole::FINANCE_OFFICER,
-            AdminRole::PROJECT_MANAGER
+            AdminRole::PROJECT_MANAGER,
         ],
     ],
     'can-create-department' => [
@@ -76,7 +76,7 @@ return [
         'roles' => [
             AdminRole::SUPER_ADMIN,
             AdminRole::HEAD_HR,
-            AdminRole::HR_OFFICER
+            AdminRole::HR_OFFICER,
         ],
     ],
     'can-archive-department' => [
@@ -103,7 +103,7 @@ return [
             AdminRole::HR_OFFICER,
             AdminRole::FINANCE_MANAGER,
             AdminRole::FINANCE_OFFICER,
-            AdminRole::PROJECT_MANAGER
+            AdminRole::PROJECT_MANAGER,
         ],
     ],
     'can-create-position' => [
@@ -146,7 +146,7 @@ return [
             AdminRole::HR_OFFICER,
             AdminRole::FINANCE_MANAGER,
             AdminRole::FINANCE_OFFICER,
-            AdminRole::PROJECT_MANAGER
+            AdminRole::PROJECT_MANAGER,
         ],
     ],
     'can-create-employee' => [
@@ -443,5 +443,96 @@ return [
             AdminRole::HEAD_HR,
         ],
     ],
-];
 
+    // KPI Management Permissions
+    'can-list-kpis' => [
+        'label' => 'List KPIs',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
+        ],
+    ],
+    'can-create-kpi' => [
+        'label' => 'Create KPI',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+        ],
+    ],
+    'can-update-kpi' => [
+        'label' => 'Update KPI',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+        ],
+    ],
+    'can-archive-kpi' => [
+        'label' => 'Archive KPI',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+        ],
+    ],
+    'can-restore-kpi' => [
+        'label' => 'Restore KPI',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+        ],
+    ],
+
+    // Settings - Payout Configuration Permissions
+    'can-list-payout-configurations' => [
+        'label' => 'List Payout Configurations',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::FINANCE_MANAGER,
+        ],
+    ],
+    'can-update-payout-configuration' => [
+        'label' => 'Update Payout Configuration',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+        ],
+    ],
+
+    // Performance Review Management Permissions
+    'can-list-performance-reviews' => [
+        'label' => 'List Performance Reviews',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
+        ],
+    ],
+    'can-create-performance-review' => [
+        'label' => 'Create Performance Review',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+        ],
+    ],
+    'can-update-performance-review' => [
+        'label' => 'Update Performance Review',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+        ],
+    ],
+    'can-archive-performance-review' => [
+        'label' => 'Archive Performance Review',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+        ],
+    ],
+    'can-restore-performance-review' => [
+        'label' => 'Restore Performance Review',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+        ],
+    ],
+];

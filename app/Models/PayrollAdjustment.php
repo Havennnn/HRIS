@@ -16,7 +16,6 @@ class PayrollAdjustment extends Model
      * Attributes
      * --------------------------------------------------------------------------
      */
-    
     protected $fillable = [
         'payroll_id',
         'type',
@@ -34,7 +33,6 @@ class PayrollAdjustment extends Model
      * Relationships
      * --------------------------------------------------------------------------
      */
-
     public function payroll(): BelongsTo
     {
         return $this->belongsTo(Payroll::class);

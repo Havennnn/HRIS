@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources\Admin\Holiday;
 
-use App\Enums\Type\HolidayType;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 

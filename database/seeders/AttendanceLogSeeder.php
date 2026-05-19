@@ -12,13 +12,13 @@ class AttendanceLogSeeder extends Seeder
     public function run(): void
     {
         $employees = Employee::all();
-        
+
         foreach ($employees as $employee) {
             // Create 10 attendance log records per employee
             for ($i = 0; $i < 10; $i++) {
                 $type = rand(1, 100) <= 50 ? AttendanceLogType::IN : AttendanceLogType::OUT;
                 $timestamp = now()->subDays(rand(1, 30));
-                
+
                 // Adjust timestamp based on type
                 if ($type === AttendanceLogType::IN) {
                     // Clock in between 7 AM and 10 AM

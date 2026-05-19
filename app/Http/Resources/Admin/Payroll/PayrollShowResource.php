@@ -54,7 +54,7 @@ class PayrollShowResource extends JsonResource
                 'holiday_name' => $holiday?->name,
                 'holiday_type' => $holiday?->type?->label(),
                 'holiday_type_value' => $holiday?->type?->value,
-                'has_work_on_holiday_approved' => $holiday !== null && 
+                'has_work_on_holiday_approved' => $holiday !== null &&
                     $attendance->request?->type === RequestType::WORK_ON_HOLIDAY &&
                     $attendance->request?->status === RequestStatus::APPROVED,
             ];
@@ -76,7 +76,7 @@ class PayrollShowResource extends JsonResource
                     $hasApprovedWorkOnHoliday = $attendance->request?->type === RequestType::WORK_ON_HOLIDAY
                         && $attendance->request?->status === RequestStatus::APPROVED;
 
-                    if (!$hasApprovedWorkOnHoliday) {
+                    if (! $hasApprovedWorkOnHoliday) {
                         return false;
                     }
                 }
@@ -98,8 +98,8 @@ class PayrollShowResource extends JsonResource
                 // Check if this day is a holiday
                 $dateStr = $cursor->toDateString();
                 $isHoliday = $holidays->has($dateStr);
-                
-                if (!$isHoliday) {
+
+                if (! $isHoliday) {
                     $expectedWeekdays++;
                 }
             }
@@ -108,8 +108,7 @@ class PayrollShowResource extends JsonResource
         }
 
         $approvedOvertimeMinutes = (int) $payableAttendances
-            ->filter(fn (Attendance $attendance) =>
-                $attendance->request?->type === RequestType::OVERTIME
+            ->filter(fn (Attendance $attendance) => $attendance->request?->type === RequestType::OVERTIME
                 && $attendance->request?->status === RequestStatus::APPROVED
             )
             ->sum('overtime_minutes');

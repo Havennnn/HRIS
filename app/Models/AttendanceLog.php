@@ -18,7 +18,6 @@ class AttendanceLog extends Model
      * Attributes
      * --------------------------------------------------------------------------
      */
-
     protected $fillable = [
         'employee_id',
         'type',
@@ -31,8 +30,8 @@ class AttendanceLog extends Model
     ];
 
     protected array $searchable = [
-         'employee.first_name',
-         'employee.last_name',
+        'employee.first_name',
+        'employee.last_name',
     ];
 
     /**
@@ -40,7 +39,6 @@ class AttendanceLog extends Model
      * Relationships
      * --------------------------------------------------------------------------
      */
-
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);

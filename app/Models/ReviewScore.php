@@ -15,7 +15,6 @@ class ReviewScore extends Model
      * Attributes
      * --------------------------------------------------------------------------
      */
-    
     protected $fillable = [
         'performance_review_id',
         'kpi_id',
@@ -27,7 +26,6 @@ class ReviewScore extends Model
      * Relationships
      * --------------------------------------------------------------------------
      */
-
     public function performanceReview(): BelongsTo
     {
         return $this->belongsTo(PerformanceReview::class);

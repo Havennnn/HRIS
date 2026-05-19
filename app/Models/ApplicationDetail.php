@@ -18,7 +18,6 @@ class ApplicationDetail extends Model
      * Attributes
      * --------------------------------------------------------------------------
      */
-    
     protected $fillable = [
         'application_id',
         'resume_id',
@@ -30,7 +29,6 @@ class ApplicationDetail extends Model
      * Relationships
      * --------------------------------------------------------------------------
      */
-
     public function application(): BelongsTo
     {
         return $this->belongsTo(Application::class);

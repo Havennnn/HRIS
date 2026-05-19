@@ -9,7 +9,7 @@ class CollectionResponse implements Responsable
 {
     public function __construct(
         protected mixed $data,
-        protected array|null $meta = null,
+        protected ?array $meta = null,
         protected int $status = 200,
         protected array $headers = []
     ) {}

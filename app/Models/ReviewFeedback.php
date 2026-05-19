@@ -16,7 +16,6 @@ class ReviewFeedback extends Model
      * Attributes
      * --------------------------------------------------------------------------
      */
-    
     protected $fillable = [
         'performance_review_id',
         'feedback',
@@ -32,7 +31,6 @@ class ReviewFeedback extends Model
      * Relationships
      * --------------------------------------------------------------------------
      */
-
     public function performanceReview(): BelongsTo
     {
         return $this->belongsTo(PerformanceReview::class);

@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin\Employee;
 
 use App\Enums\Type\EmployeeType;
 use App\Models\Employee;
+use App\Models\Position;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -27,7 +28,7 @@ class EmployeeRequest extends FormRequest
         $employeeId = $this->route('employee');
 
         return [
-            'position_id' => ['nullable', 'exists:positions,id'],
+            'position_id' => ['nullable', Rule::exists(Position::class, 'id')],
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'middle_name' => ['nullable', 'string', 'max:255'],

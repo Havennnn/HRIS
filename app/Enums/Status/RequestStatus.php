@@ -17,6 +17,7 @@ enum RequestStatus: int
     case CANCELLED = 5;
     case RESCHEDULE = 6;
     case COMPLETED = 7;
+
     /**
      * {@inheritdoc}
      */

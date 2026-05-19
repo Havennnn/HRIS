@@ -24,10 +24,10 @@ class EmployeeDocumentUploadRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'sss_file'        => ['nullable', File::types(['pdf', 'jpg', 'jpeg', 'png'])->max(10240)],
+            'sss_file' => ['nullable', File::types(['pdf', 'jpg', 'jpeg', 'png'])->max(10240)],
             'philhealth_file' => ['nullable', File::types(['pdf', 'jpg', 'jpeg', 'png'])->max(10240)],
-            'bir_file'        => ['nullable', File::types(['pdf', 'jpg', 'jpeg', 'png'])->max(10240)],
-            'medical_file'    => ['nullable', File::types(['pdf', 'jpg', 'jpeg', 'png'])->max(10240)],
+            'bir_file' => ['nullable', File::types(['pdf', 'jpg', 'jpeg', 'png'])->max(10240)],
+            'medical_file' => ['nullable', File::types(['pdf', 'jpg', 'jpeg', 'png'])->max(10240)],
         ];
     }
 

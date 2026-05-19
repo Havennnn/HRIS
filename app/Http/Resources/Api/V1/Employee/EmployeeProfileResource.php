@@ -15,21 +15,21 @@ class EmployeeProfileResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id'               => $this->id,
-            'first_name'       => $this->first_name,
-            'middle_name'      => $this->middle_name,
-            'last_name'        => $this->last_name,
-            'full_name'        => $this->full_name,
-            'email'            => $this->email,
-            'mobile_number'    => $this->mobile_number,
-            'birthdate'        => $this->birthdate?->toDateString(),
-            'hired_date'       => $this->hired_date?->toDateString(),
-            'status'           => $this->status?->badge(),
-            'type'             => $this->type?->label(),
-            'position'         => [
-                'id'         => $this->position?->id,
-                'name'       => $this->position?->name,
-                'level'      => $this->position?->level,
+            'id' => $this->id,
+            'first_name' => $this->first_name,
+            'middle_name' => $this->middle_name,
+            'last_name' => $this->last_name,
+            'full_name' => $this->full_name,
+            'email' => $this->email,
+            'mobile_number' => $this->mobile_number,
+            'birthdate' => $this->birthdate?->toDateString(),
+            'hired_date' => $this->hired_date?->toDateString(),
+            'status' => $this->status?->badge(),
+            'type' => $this->type?->label(),
+            'position' => [
+                'id' => $this->position?->id,
+                'name' => $this->position?->name,
+                'level' => $this->position?->level,
                 'department' => $this->position?->department?->name,
             ],
             'contact_person' => $this->contact ? [

@@ -12,16 +12,15 @@ use PiaCore\Models\Concerns\HasArchives;
 
 class Application extends Model
 {
-    use HasFactory;
-    use HasArchives;
     use HasActivityLogs;
+    use HasArchives;
+    use HasFactory;
 
     /**
      * --------------------------------------------------------------------------
      * Attributes
      * --------------------------------------------------------------------------
      */
-
     protected $fillable = [
         'career_id',
         'first_name',
@@ -43,7 +42,6 @@ class Application extends Model
      * Relationships
      * --------------------------------------------------------------------------
      */
-
     public function career(): BelongsTo
     {
         return $this->belongsTo(Career::class);
@@ -64,11 +62,10 @@ class Application extends Model
      * Accessors
      * --------------------------------------------------------------------------
      */
-
     public function getFullNameAttribute(): string
     {
         $middleInitial = $this->middle_name
-            ? strtoupper(substr($this->middle_name, 0, 1)) . '.'
+            ? strtoupper(substr($this->middle_name, 0, 1)).'.'
             : null;
 
         return trim("{$this->first_name} {$middleInitial} {$this->last_name}");

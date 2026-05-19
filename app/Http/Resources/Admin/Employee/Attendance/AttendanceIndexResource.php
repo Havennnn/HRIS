@@ -4,9 +4,9 @@ namespace App\Http\Resources\Admin\Employee\Attendance;
 
 use App\Enums\Status\AttendanceStatus;
 use App\Models\AttendanceTag;
-use Illuminate\Support\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Collection;
 
 class AttendanceIndexResource extends JsonResource
 {

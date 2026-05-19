@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Admin\Holiday;
 
 use App\Enums\Type\HolidayType;
-use App\Models\Holiday;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 

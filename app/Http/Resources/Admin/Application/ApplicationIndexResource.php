@@ -16,8 +16,8 @@ class ApplicationIndexResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'position' => $this->career?->position?->name . ' - ' . $this->career?->position?->level,
-            'full_name' => $this->first_name . ' ' . $this->last_name,
+            'position' => $this->career?->position?->name.' - '.$this->career?->position?->level,
+            'full_name' => $this->first_name.' '.$this->last_name,
             'email' => $this->email,
             'mobile_number' => $this->mobile_number,
             'status' => $this->status?->badge(),

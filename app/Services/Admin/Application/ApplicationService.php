@@ -10,12 +10,12 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
-use PiaCore\Contracts\CrudService\ListsRecords;
-use PiaCore\Contracts\CrudService\ShowsRecords;
 use PiaCore\Contracts\CrudService\DeletesRecords;
+use PiaCore\Contracts\CrudService\ListsRecords;
 use PiaCore\Contracts\CrudService\RestoresRecords;
+use PiaCore\Contracts\CrudService\ShowsRecords;
 
-class ApplicationService implements ListsRecords, ShowsRecords, DeletesRecords, RestoresRecords
+class ApplicationService implements DeletesRecords, ListsRecords, RestoresRecords, ShowsRecords
 {
     /**
      * @return array{

@@ -3,40 +3,39 @@
 namespace App\Services\Api\V1\Attendance;
 
 use App\Enums\Status\AttendanceStatus;
+use App\Enums\Status\RequestStatus;
 use App\Enums\Type\AttendanceLogType;
+use App\Enums\Type\RequestType;
 use App\Models\Attendance;
 use App\Models\AttendanceLog;
 use App\Models\AttendanceTag;
 use App\Models\Employee;
 use App\Models\Request as RequestModel;
 use App\Models\ShiftSchedule;
-use App\Enums\Status\RequestStatus;
-use App\Enums\Type\RequestType;
+use App\Traits\BuildsApiResponses;
 use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class AttendanceApiService
 {
-    /**
-     * Record employee time in for today.
-     *
-     * @return array<string, mixed>
-     *
-     * @throws Exception
-     */
-    public function timeIn(?Employee $employee): array
+    use BuildsApiResponses;
+
+    public function timeIn(Request $request): JsonResponse
     {
+        $employee = $request->user();
+
         if (! $employee instanceof Employee) {
-            throw new Exception('Unauthorized.');
+            return $this->unauthorizedResponse();
         }
 
         try {
-            return DB::transaction(function () use ($employee): array {
+            $data = DB::transaction(function () use ($employee): array {
                 $now = Carbon::now();
                 $today = $now->toDateString();
 
-                /** @var Attendance|null $attendance */
                 $attendance = Attendance::query()
                     ->with('tags')
                     ->where('employee_id', $employee->id)
@@ -88,30 +87,32 @@ class AttendanceApiService
 
                 return $this->formatAttendanceSummary($attendance->fresh('tags'), $log);
             });
+
+            return $this->successResponse($data, 'Time in recorded successfully.');
         } catch (Exception $e) {
-            throw new Exception('Failed to record time in: '.$e->getMessage(), 0, $e);
+            $message = $e->getMessage();
+
+            if (str_contains($message, 'already') || str_contains($message, 'No active')) {
+                return $this->errorResponse($message, 422);
+            }
+
+            return $this->errorResponse('Failed to record time in: '.$message, 500);
         }
     }
 
-    /**
-     * Record employee time out for today.
-     *
-     * @return array<string, mixed>
-     *
-     * @throws Exception
-     */
-    public function timeOut(?Employee $employee): array
+    public function timeOut(Request $request): JsonResponse
     {
+        $employee = $request->user();
+
         if (! $employee instanceof Employee) {
-            throw new Exception('Unauthorized.');
+            return $this->unauthorizedResponse();
         }
 
         try {
-            return DB::transaction(function () use ($employee): array {
+            $data = DB::transaction(function () use ($employee): array {
                 $now = Carbon::now();
                 $today = $now->toDateString();
 
-                /** @var Attendance|null $attendance */
                 $attendance = Attendance::query()
                     ->with('tags')
                     ->where('employee_id', $employee->id)
@@ -163,28 +164,30 @@ class AttendanceApiService
 
                 return $this->formatAttendanceSummary($attendance->fresh('tags'), $log);
             });
+
+            return $this->successResponse($data, 'Time out recorded successfully.');
         } catch (Exception $e) {
-            throw new Exception('Failed to record time out: '.$e->getMessage(), 0, $e);
+            $message = $e->getMessage();
+
+            if (str_contains($message, 'already') || str_contains($message, 'No active')) {
+                return $this->errorResponse($message, 422);
+            }
+
+            return $this->errorResponse('Failed to record time out: '.$message, 500);
         }
     }
 
-    /**
-     * Get today's attendance and logs for the authenticated employee.
-     *
-     * @return array<string, mixed>
-     *
-     * @throws Exception
-     */
-    public function getTodayAttendance(?Employee $employee): array
+    public function today(Request $request): JsonResponse
     {
+        $employee = $request->user();
+
         if (! $employee instanceof Employee) {
-            throw new Exception('Unauthorized.');
+            return $this->unauthorizedResponse();
         }
 
         try {
             $today = Carbon::now()->toDateString();
 
-            /** @var Attendance|null $attendance */
             $attendance = Attendance::query()
                 ->with('tags')
                 ->where('employee_id', $employee->id)
@@ -197,48 +200,73 @@ class AttendanceApiService
                 ->orderByDesc('timestamp')
                 ->get();
 
-            return [
+            return $this->successResponse([
                 'attendance' => $attendance
                     ? $this->formatAttendanceRow($attendance, $employee)
                     : $this->formatAbsentAttendanceRow($today),
                 'latest_log' => $logs->first() ? $this->formatLogRow($logs->first()) : null,
                 'logs' => $logs->map(fn (AttendanceLog $log): array => $this->formatLogRow($log))->values(),
-            ];
+            ]);
         } catch (Exception $e) {
-            throw new Exception('Failed to retrieve today attendance: '.$e->getMessage(), 0, $e);
+            return $this->errorResponse('Failed to retrieve today attendance: '.$e->getMessage(), 500);
         }
     }
 
-    /**
-     * List all attendance records for the authenticated employee.
-     *
-     * @return array<int, array<string, mixed>>
-     *
-     * @throws Exception
-     */
-    public function listAttendances(?Employee $employee): array
+    public function list(Request $request): JsonResponse|\Illuminate\Contracts\Support\Responsable
     {
+        $employee = $request->user();
+
         if (! $employee instanceof Employee) {
-            throw new Exception('Unauthorized.');
+            return $this->unauthorizedResponse();
         }
 
         try {
-            return Attendance::query()
+            $perPage = $request->input('per_page', 15);
+            $search = $request->input('search');
+            $status = $request->input('status');
+            $dateFrom = $request->input('date_from');
+            $dateTo = $request->input('date_to');
+
+            $query = Attendance::query()
                 ->with('tags')
-                ->where('employee_id', $employee->id)
+                ->where('employee_id', $employee->id);
+
+            if ($status !== null) {
+                $statusIds = is_array($status) ? $status : [$status];
+                $query->whereHas('tags', fn ($q) => $q->whereIn('value', $statusIds));
+            }
+
+            if ($dateFrom !== null) {
+                $query->whereDate('date', '>=', $dateFrom);
+            }
+
+            if ($dateTo !== null) {
+                $query->whereDate('date', '<=', $dateTo);
+            }
+
+            $data = $query
+                ->search($search)
                 ->orderByDesc('date')
                 ->orderByDesc('id')
-                ->get()
+                ->paginate($perPage);
+
+            $formatted = collect($data->items())
                 ->map(fn (Attendance $attendance): array => $this->formatAttendanceRow($attendance, $employee))
                 ->all();
+
+            return $this->buildResponse($formatted, [
+                'current_page' => $data->currentPage(),
+                'last_page' => $data->lastPage(),
+                'per_page' => $data->perPage(),
+                'total' => $data->total(),
+            ]);
         } catch (Exception $e) {
-            throw new Exception('Failed to retrieve attendance list: '.$e->getMessage(), 0, $e);
+            return $this->errorResponse('Failed to retrieve attendance list: '.$e->getMessage(), 500);
         }
     }
 
-    /**
-     * Resolve scheduled start time for the given date.
-     */
+    // ─── Private helpers (unchanged) ──────────────────────────────────
+
     private function resolveScheduledStartTime(Employee $employee, Carbon $now): ?Carbon
     {
         $date = $now->copy()->startOfDay();
@@ -255,9 +283,6 @@ class AttendanceApiService
         return $this->resolveConfiguredDefaultShiftTime($date, 'start');
     }
 
-    /**
-     * Resolve scheduled end time for the given date.
-     */
     private function resolveScheduledEndTime(Employee $employee, Carbon $now): ?Carbon
     {
         $date = $now->copy()->startOfDay();
@@ -274,9 +299,6 @@ class AttendanceApiService
         return $this->resolveConfiguredDefaultShiftTime($date, 'end');
     }
 
-    /**
-     * Resolve active schedule for date using ISO weekday mapping (1-7).
-     */
     private function resolveScheduleForDate(Employee $employee, Carbon $date): ?ShiftSchedule
     {
         if ($employee->relationLoaded('shift')) {
@@ -302,9 +324,6 @@ class AttendanceApiService
             ->first();
     }
 
-    /**
-     * Resolve default shift time from config for weekdays.
-     */
     private function resolveConfiguredDefaultShiftTime(Carbon $date, string $timeType): ?Carbon
     {
         if (! config('attendance.default_shift.enabled', true)) {
@@ -333,9 +352,6 @@ class AttendanceApiService
         return Carbon::parse($date->toDateString().' '.$time);
     }
 
-    /**
-     * Resolve approved overtime request for employee and date.
-     */
     private function resolveApprovedOvertimeRequest(Employee $employee, string $date): ?RequestModel
     {
         return RequestModel::query()
@@ -347,16 +363,6 @@ class AttendanceApiService
             ->first();
     }
 
-    /**
-     * Resolve status for time-out using explicit combination rules.
-     *
-     * - late + overtime (approved request) => overtime
-     * - late + overtime (no approved request) => late
-     * - late only => late
-     * - present => present
-     * - late + early out => early leave
-     * - present + early out => early leave
-     */
     private function resolveStatusForTimeOut(
         bool $isLate,
         bool $isEarlyOut,
@@ -378,11 +384,6 @@ class AttendanceApiService
         return AttendanceStatus::PRESENT;
     }
 
-    /**
-     * Build response payload for attendance summary after time-in/time-out.
-     *
-     * @return array<string, mixed>
-     */
     private function formatAttendanceSummary(Attendance $attendance, AttendanceLog $log): array
     {
         return [
@@ -391,9 +392,6 @@ class AttendanceApiService
         ];
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     private function formatAttendanceRow(Attendance $attendance, ?Employee $employee = null): array
     {
         $status = $this->resolveAttendanceStatus($attendance);
@@ -417,11 +415,6 @@ class AttendanceApiService
         ];
     }
 
-    /**
-     * Build an explicit absent attendance payload when no row exists for the day.
-     *
-     * @return array<string, mixed>
-     */
     private function formatAbsentAttendanceRow(string $date): array
     {
         return [
@@ -442,9 +435,6 @@ class AttendanceApiService
         ];
     }
 
-    /**
-     * Derive business state: absent, present, late, early_out.
-     */
     private function determineAttendanceState(Attendance $attendance, ?Employee $employee = null): string
     {
         $status = $this->resolveAttendanceStatus($attendance);
@@ -483,11 +473,6 @@ class AttendanceApiService
         return 'present';
     }
 
-    /**
-     * Sync exactly one attendance status tag on the attendance.
-     *
-     * @throws Exception
-     */
     private function syncAttendanceStatusTag(Attendance $attendance, AttendanceStatus $status): void
     {
         $tag = AttendanceTag::withTrashed()->firstOrNew([
@@ -502,9 +487,6 @@ class AttendanceApiService
         $attendance->setRelation('tags', collect([$tag]));
     }
 
-    /**
-     * Resolve attendance status enum from pivoted attendance tag.
-     */
     private function resolveAttendanceStatus(Attendance $attendance): ?AttendanceStatus
     {
         $tag = $attendance->relationLoaded('tags')
@@ -522,9 +504,6 @@ class AttendanceApiService
         return AttendanceStatus::tryFrom((int) $tag->value);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     private function formatLogRow(AttendanceLog $log): array
     {
         return [

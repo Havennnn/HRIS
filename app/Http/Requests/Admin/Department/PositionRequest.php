@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin\Department;
 
+use App\Models\Department;
 use App\Models\Position;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -25,7 +26,7 @@ class PositionRequest extends FormRequest
                 : true;
         }
 
-        if ($this->isMethod('put') || $this->isMethod('patch')) {
+        if ($this->isMethod('patch')) {
             return method_exists($user, 'hasPermission')
                 ? (bool) $user->hasPermission('can-update-position')
                 : true;
@@ -46,7 +47,7 @@ class PositionRequest extends FormRequest
         $id = $position?->getKey();
 
         return [
-            'department_id' => ['required', 'exists:departments,id'],
+            'department_id' => ['required', Rule::exists(Department::class, 'id')],
             'name' => ['required', 'string', 'max:255', Rule::unique(Position::class)->ignore($id)],
             'salary' => ['nullable', 'numeric', 'min:0'],
             'allowance' => ['nullable', 'numeric', 'min:0'],

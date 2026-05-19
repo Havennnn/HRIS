@@ -8,23 +8,29 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use PiaCore\Models\Concerns\HasActivityLogs;
 use PiaCore\Models\Concerns\HasArchives;
+use PiaCore\Search\SearchConfig;
 
 class Career extends Model
 {
-    use HasFactory;
-    use HasArchives;
     use HasActivityLogs;
+    use HasArchives;
+    use HasFactory;
+    use SearchConfig;
 
     /**
      * --------------------------------------------------------------------------
      * Attributes
      * --------------------------------------------------------------------------
      */
-    
     protected $fillable = [
         'position_id',
         'description',
         'is_active',
+    ];
+
+    protected array $searchable = [
+        'description',
+        'position.name',
     ];
 
     protected $casts = [
@@ -36,7 +42,6 @@ class Career extends Model
      * Relationships
      * --------------------------------------------------------------------------
      */
-
     public function position(): BelongsTo
     {
         return $this->belongsTo(Position::class);

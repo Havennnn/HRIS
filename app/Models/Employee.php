@@ -21,12 +21,12 @@ use PiaCore\Search\SearchConfig;
 
 class Employee extends Authenticatable
 {
-    use HasApiTokens;
-    use HasFactory;
     use HasActivityLogs;
+    use HasApiTokens;
     use HasArchives;
-    use Notifiable;
+    use HasFactory;
     use HasOptions;
+    use Notifiable;
     use SearchConfig;
 
     /**
@@ -34,7 +34,6 @@ class Employee extends Authenticatable
      * Attributes
      * --------------------------------------------------------------------------
      */
-
     protected $fillable = [
         'position_id',
         'first_name',
@@ -63,7 +62,6 @@ class Employee extends Authenticatable
      * Search Configuration
      * --------------------------------------------------------------------------
      */
-
     protected array $searchable = [
         'first_name',
         'last_name',
@@ -79,7 +77,6 @@ class Employee extends Authenticatable
      * Relationships
      * --------------------------------------------------------------------------
      */
-
     public function position(): BelongsTo
     {
         return $this->belongsTo(Position::class);
@@ -130,16 +127,20 @@ class Employee extends Authenticatable
         return $this->hasMany(Payroll::class);
     }
 
+    public function performanceReviews(): HasMany
+    {
+        return $this->hasMany(PerformanceReview::class);
+    }
+
     /**
      * --------------------------------------------------------------------------
      * Accessors
      * --------------------------------------------------------------------------
      */
-
     public function getFullNameAttribute(): string
     {
         $middleInitial = $this->middle_name
-            ? strtoupper(substr($this->middle_name, 0, 1)) . '.'
+            ? strtoupper(substr($this->middle_name, 0, 1)).'.'
             : null;
 
         return trim("{$this->first_name} {$middleInitial} {$this->last_name}");

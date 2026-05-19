@@ -2,8 +2,9 @@
 
 namespace App\Http\Requests\Admin\Career;
 
-use App\Models\Career;
+use App\Models\Position;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CareerRequest extends FormRequest
 {
@@ -23,7 +24,7 @@ class CareerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'position_id' => ['required', 'exists:positions,id'],
+            'position_id' => ['required', Rule::exists(Position::class, 'id')],
             'description' => ['required', 'string'],
             'is_active' => ['required', 'boolean'],
         ];

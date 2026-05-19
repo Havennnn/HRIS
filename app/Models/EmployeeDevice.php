@@ -15,11 +15,10 @@ class EmployeeDevice extends Model
      * Attributes
      * --------------------------------------------------------------------------
      */
-
     protected $fillable = [
         'employee_id',
         'desktop',
-        'laptop'
+        'laptop',
     ];
 
     protected $casts = [
@@ -32,7 +31,6 @@ class EmployeeDevice extends Model
      * Relationships
      * --------------------------------------------------------------------------
      */
-
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);

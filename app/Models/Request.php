@@ -13,8 +13,8 @@ use PiaCore\Search\SearchConfig;
 
 class Request extends Model
 {
-    use HasFactory;
     use HasArchives;
+    use HasFactory;
     use SearchConfig;
 
     /**
@@ -22,7 +22,6 @@ class Request extends Model
      * Attributes
      * --------------------------------------------------------------------------
      */
-
     protected $fillable = [
         'employee_id',
         'type',
@@ -46,7 +45,6 @@ class Request extends Model
      * Search Configuration
      * --------------------------------------------------------------------------
      */
-
     protected array $searchable = [
         'employee.first_name',
         'employee.last_name',
@@ -59,7 +57,6 @@ class Request extends Model
      * Relationships
      * --------------------------------------------------------------------------
      */
-
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
@@ -75,7 +72,6 @@ class Request extends Model
      * Scopes
      * --------------------------------------------------------------------------
      */
-
     public function scopeLeaves($query)
     {
         return $query->where('type', RequestType::LEAVE);

@@ -4,14 +4,12 @@ namespace App\Http\Responses;
 
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use React\Stream\ThroughStream;
 
 class StreamingJsonResponse implements Responsable
 {
     public function __construct(
         protected mixed $data,
-        protected array|null $meta = null,
+        protected ?array $meta = null,
         protected int $status = 200,
         protected array $headers = []
     ) {}

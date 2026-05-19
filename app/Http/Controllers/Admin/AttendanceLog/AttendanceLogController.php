@@ -45,7 +45,7 @@ final class AttendanceLogController extends ResourceController
             request: $request,
             resource: AttendanceLogIndexResource::class,
             additionalProps: [
-                'type' => AttendanceLogType::options()
+                'type' => AttendanceLogType::options(),
             ]
         ));
     }

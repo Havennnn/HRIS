@@ -13,9 +13,9 @@ use PiaCore\Search\SearchConfig;
 
 class Position extends Model
 {
-    use HasFactory;
-    use HasArchives;
     use HasActivityLogs;
+    use HasArchives;
+    use HasFactory;
     use HasOptions;
     use SearchConfig;
 
@@ -24,7 +24,6 @@ class Position extends Model
      * Attributes
      * --------------------------------------------------------------------------
      */
-
     protected $fillable = [
         'department_id',
         'name',
@@ -38,7 +37,6 @@ class Position extends Model
      * Search Configuration
      * --------------------------------------------------------------------------
      */
-
     protected array $searchable = [
         'name',
         'department.name',
@@ -49,7 +47,6 @@ class Position extends Model
      * Relationships
      * --------------------------------------------------------------------------
      */
-
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);

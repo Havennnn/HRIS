@@ -11,15 +11,14 @@ use PiaCore\Models\Concerns\HasActivityLogs;
 
 class Shift extends Model
 {
-    use HasFactory;
     use HasActivityLogs;
+    use HasFactory;
 
     /**
      * --------------------------------------------------------------------------
      * Attributes
      * --------------------------------------------------------------------------
      */
-
     protected $fillable = [
         'employee_id',
         'type',
@@ -38,7 +37,6 @@ class Shift extends Model
      * Relationships
      * --------------------------------------------------------------------------
      */
-
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);

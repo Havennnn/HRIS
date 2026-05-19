@@ -10,15 +10,14 @@ use PiaCore\Models\Concerns\HasActivityLogs;
 
 class ApplicationInterview extends Model
 {
-    use HasFactory;
     use HasActivityLogs;
+    use HasFactory;
 
     /**
      * --------------------------------------------------------------------------
      * Attributes
      * --------------------------------------------------------------------------
      */
-
     protected $fillable = [
         'application_id',
         'scheduled_at',
@@ -40,7 +39,6 @@ class ApplicationInterview extends Model
      * Relationships
      * --------------------------------------------------------------------------
      */
-
     public function application(): BelongsTo
     {
         return $this->belongsTo(Application::class);
@@ -56,7 +54,6 @@ class ApplicationInterview extends Model
      * Scopes
      * --------------------------------------------------------------------------
      */
-
     public function scopePending($query)
     {
         return $query->where('result', 'pending');
@@ -77,7 +74,6 @@ class ApplicationInterview extends Model
      * Helpers
      * --------------------------------------------------------------------------
      */
-
     public function isPassed(): bool
     {
         return $this->result === 'passed';

@@ -16,7 +16,7 @@ class ApplicationShowResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'position' => $this->career?->position?->name . ' - ' . $this->career?->position?->level,
+            'position' => $this->career?->position?->name.' - '.$this->career?->position?->level,
             'full_name' => $this->full_name,
             'birthdate' => $this->birthdate?->format('M d, Y'),
             'mobile_number' => $this->mobile_number,

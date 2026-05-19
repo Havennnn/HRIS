@@ -15,7 +15,6 @@ class ShiftSchedule extends Model
      * Attributes
      * --------------------------------------------------------------------------
      */
-
     protected $fillable = [
         'shift_id',
         'weekday',
@@ -38,7 +37,6 @@ class ShiftSchedule extends Model
      * Relationships
      * --------------------------------------------------------------------------
      */
-
     public function shift(): BelongsTo
     {
         return $this->belongsTo(Shift::class);

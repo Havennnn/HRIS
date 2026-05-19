@@ -21,13 +21,13 @@ class ApplicationSeeder extends Seeder
             'John', 'Jane', 'Michael', 'Sarah', 'David', 'Emily', 'Robert', 'Lisa', 'James', 'Amanda',
             'Christopher', 'Jessica', 'Daniel', 'Ashley', 'Matthew', 'Nicole', 'Andrew', 'Lauren', 'Joshua', 'Kimberly',
             'Ryan', 'Melissa', 'Kevin', 'Rachel', 'Brian', 'Jennifer', 'Jason', 'Stephanie', 'Jeff', 'Amy',
-            'Carlos', 'Maria', 'Juan', 'Rosa', 'Pedro', 'Ana', 'Luis', 'Sofia', 'Miguel', 'Isabella'
+            'Carlos', 'Maria', 'Juan', 'Rosa', 'Pedro', 'Ana', 'Luis', 'Sofia', 'Miguel', 'Isabella',
         ];
 
         $lastNames = [
             'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez',
             'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin',
-            'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson'
+            'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson',
         ];
 
         for ($i = 0; $i < 50; $i++) {
@@ -36,7 +36,7 @@ class ApplicationSeeder extends Seeder
             $career = $careers->random();
 
             $birthdate = now()->subYears(rand(18, 50))->subDays(rand(0, 365));
-            $mobileNumber = '+63' . str_pad(rand(9000000000, 9999999999), 10, '0', STR_PAD_LEFT);
+            $mobileNumber = '+63'.str_pad(rand(9000000000, 9999999999), 10, '0', STR_PAD_LEFT);
 
             $application = Application::create([
                 'career_id' => $career->id,
@@ -45,7 +45,7 @@ class ApplicationSeeder extends Seeder
                 'middle_name' => rand(0, 1) ? $firstNames[array_rand($firstNames)] : null,
                 'birthdate' => $birthdate,
                 'mobile_number' => $mobileNumber,
-                'email' => strtolower($firstName . '.' . $lastName . rand(1, 9999)) . '@example.com',
+                'email' => strtolower($firstName.'.'.$lastName.rand(1, 9999)).'@example.com',
                 'status' => $this->getRandomStatus(),
             ]);
 
@@ -61,7 +61,7 @@ class ApplicationSeeder extends Seeder
                 $application->interview()->create([
                     'scheduled_at' => $scheduledDate,
                     'location' => $this->getRandomVenue(),
-                    'interviewer_name' => $firstNames[array_rand($firstNames)] . ' ' . $lastNames[array_rand($lastNames)],
+                    'interviewer_name' => $firstNames[array_rand($firstNames)].' '.$lastNames[array_rand($lastNames)],
                     'score' => rand(0, 1) ? rand(50, 100) : null,
                     'feedback' => rand(0, 1) ? $this->getRandomFeedback() : null,
                 ]);

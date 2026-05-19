@@ -25,7 +25,7 @@ class DepartmentRequest extends FormRequest
                 : true;
         }
 
-        if ($this->isMethod('put') || $this->isMethod('patch')) {
+        if ($this->isMethod('patch')) {
             return method_exists($user, 'hasPermission')
                 ? (bool) $user->hasPermission('can-update-department')
                 : true;

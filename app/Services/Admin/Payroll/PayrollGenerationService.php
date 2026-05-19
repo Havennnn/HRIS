@@ -60,7 +60,7 @@ class PayrollGenerationService
                 customAdjustments: $customAdjustments,
             );
 
-            $payroll = $existing ?? new Payroll();
+            $payroll = $existing ?? new Payroll;
 
             $payroll->fill([
                 'employee_id' => $employee->id,
@@ -100,68 +100,31 @@ class PayrollGenerationService
     }
 
     /**
-     * Generate pending payrolls on the 10th.
-     *
-     * Period is Mar 1–15 but days 11–15 are ASSUMED present (weekdays only)
-     * because actual attendance hasn't happened yet.
-     * The 15th command will true-up those assumed days with real data.
+     * Re-calculate using full actual attendance,
+     * update APPROVED payrolls for the given period, and flip them to DISBURSED.
      */
-    public function generatePendingPayrollsForCutoff(?\DateTimeInterface $now = null): Collection
-    {
-        $today = CarbonImmutable::parse($now ?? CarbonImmutable::now())->startOfDay();
-
-        if ($today->day !== 10) {
-            return new Collection();
-        }
-
-        $periodStart = $today->startOfMonth();   // Mar 1
-        $periodEnd   = $today->setDay(15);        // Mar 15 (full period)
-        $assumedFrom = $today->setDay(11);        // Mar 11 onwards is assumed
-
-        return $this->generateForAllEmployeesWithAssumedDays($periodStart, $periodEnd, $assumedFrom);
-    }
-
-    /**
-     * On the 15th: true-up actual attendance for days 11–15,
-     * recalculate APPROVED payrolls, and disburse them.
-     */
-    public function trueUpAndDisburse(?\DateTimeInterface $now = null): int
-    {
-        $today = CarbonImmutable::parse($now ?? CarbonImmutable::now())->startOfDay();
-
-        if ($today->day !== 15) {
-            return 0;
-        }
-
-        return $this->trueUpApprovedPayrollsForReleaseDate($today);
-    }
-
-    /**
-     * Re-calculate using full actual Mar 1–15 attendance,
-     * update APPROVED payrolls, and flip them to DISBURSED.
-     */
-    public function trueUpApprovedPayrollsForReleaseDate(\DateTimeInterface $releaseDate): int
-    {
-        $release     = CarbonImmutable::parse($releaseDate)->startOfDay();
-        $periodStart = $release->startOfMonth();
-        $periodEnd   = $release->setDay(15);
+    public function trueUpApprovedPayrollsForReleaseDate(
+        \DateTimeInterface $periodStart,
+        \DateTimeInterface $periodEnd
+    ): int {
+        $start = CarbonImmutable::parse($periodStart)->startOfDay();
+        $end = CarbonImmutable::parse($periodEnd)->startOfDay();
 
         $payrolls = Payroll::query()
             ->with('employee.position:id,salary,allowance')
             ->where('status', PayrollStatus::APPROVED)
-            ->whereDate('pay_period_start', $periodStart)
-            ->whereDate('pay_period_end', $periodEnd)
+            ->whereDate('pay_period_start', $start)
+            ->whereDate('pay_period_end', $end)
             ->get();
 
         $disbursed = 0;
 
         foreach ($payrolls as $payroll) {
-            DB::transaction(function () use ($payroll, $periodStart, $periodEnd) {
+            DB::transaction(function () use ($payroll, $start, $end) {
                 $employee = $payroll->employee;
 
-                // Full actual attendance Mar 1–15 is now available
-                $attendances = $this->getAttendancesWithHolidayInfo($employee, $periodStart, $periodEnd);
-                $workingDays = $this->calculateWorkingDays($employee, $attendances, $periodStart, $periodEnd);
+                $attendances = $this->getAttendancesWithHolidayInfo($employee, $start, $end);
+                $workingDays = $this->calculateWorkingDays($employee, $attendances, $start, $end);
                 $customAdjustments = $this->getAdminAdjustments($payroll);
 
                 $breakdown = $this->calculatePayrollBreakdown(
@@ -169,26 +132,25 @@ class PayrollGenerationService
                     attendances: $attendances,
                     recordedDays: $workingDays['present_days'],
                     expectedDays: $workingDays['expected_days'],
-                    periodStart: $periodStart,
-                    periodEnd: $periodEnd,
+                    periodStart: $start,
+                    periodEnd: $end,
                     customAdjustments: $customAdjustments,
                 );
 
                 $payroll->fill([
-                    'status'       => PayrollStatus::DISBURSED,
+                    'status' => PayrollStatus::DISBURSED,
                     'basic_salary' => $breakdown['basic_salary'],
-                    'tax'          => $breakdown['tax'],
-                    'sss'          => $breakdown['sss'],
-                    'pagibig'      => $breakdown['pagibig'],
-                    'philhealth'   => $breakdown['philhealth'],
-                    'allowance'    => $breakdown['allowance'],
-                    'gross_pay'    => $breakdown['gross_pay'],
-                    'net_pay'      => $breakdown['net_pay'],
+                    'tax' => $breakdown['tax'],
+                    'sss' => $breakdown['sss'],
+                    'pagibig' => $breakdown['pagibig'],
+                    'philhealth' => $breakdown['philhealth'],
+                    'allowance' => $breakdown['allowance'],
+                    'gross_pay' => $breakdown['gross_pay'],
+                    'net_pay' => $breakdown['net_pay'],
                 ]);
 
                 $payroll->save();
 
-                // Save holiday bonus adjustments
                 $this->saveHolidayBonusAdjustments($payroll, $breakdown['holiday_bonus_details']);
             });
 
@@ -226,8 +188,8 @@ class PayrollGenerationService
         \DateTimeInterface $periodEnd,
         \DateTimeInterface $assumedFrom
     ): Payroll {
-        $start   = CarbonImmutable::parse($periodStart)->startOfDay();
-        $end     = CarbonImmutable::parse($periodEnd)->startOfDay();
+        $start = CarbonImmutable::parse($periodStart)->startOfDay();
+        $end = CarbonImmutable::parse($periodEnd)->startOfDay();
         $assumed = CarbonImmutable::parse($assumedFrom)->startOfDay();
 
         if (CarbonImmutable::now()->startOfDay()->greaterThanOrEqualTo($end)) {
@@ -246,7 +208,7 @@ class PayrollGenerationService
             }
 
             // Only actual data: Mar 1–10
-            $actualEnd   = $assumed->subDay();
+            $actualEnd = $assumed->subDay();
             $attendances = $this->getAttendancesWithHolidayInfo($employee, $start, $actualEnd);
             $workingDays = $this->calculateWorkingDays($employee, $attendances, $start, $actualEnd);
             $customAdjustments = $existing instanceof Payroll
@@ -267,21 +229,21 @@ class PayrollGenerationService
                 customAdjustments: $customAdjustments,
             );
 
-            $payroll = $existing ?? new Payroll();
+            $payroll = $existing ?? new Payroll;
 
             $payroll->fill([
-                'employee_id'      => $employee->id,
-                'status'           => PayrollStatus::PENDING,
-                'basic_salary'     => $breakdown['basic_salary'],
-                'tax'              => $breakdown['tax'],
-                'sss'              => $breakdown['sss'],
-                'pagibig'          => $breakdown['pagibig'],
-                'philhealth'       => $breakdown['philhealth'],
-                'allowance'        => $breakdown['allowance'],
-                'gross_pay'        => $breakdown['gross_pay'],
-                'net_pay'          => $breakdown['net_pay'],
+                'employee_id' => $employee->id,
+                'status' => PayrollStatus::PENDING,
+                'basic_salary' => $breakdown['basic_salary'],
+                'tax' => $breakdown['tax'],
+                'sss' => $breakdown['sss'],
+                'pagibig' => $breakdown['pagibig'],
+                'philhealth' => $breakdown['philhealth'],
+                'allowance' => $breakdown['allowance'],
+                'gross_pay' => $breakdown['gross_pay'],
+                'net_pay' => $breakdown['net_pay'],
                 'pay_period_start' => $start,
-                'pay_period_end'   => $end,
+                'pay_period_end' => $end,
             ]);
 
             $payroll->save();
@@ -299,8 +261,8 @@ class PayrollGenerationService
     protected function countWeekdays(\DateTimeInterface $from, \DateTimeInterface $to): int
     {
         $current = CarbonImmutable::parse($from)->startOfDay();
-        $end     = CarbonImmutable::parse($to)->startOfDay();
-        $count   = 0;
+        $end = CarbonImmutable::parse($to)->startOfDay();
+        $count = 0;
 
         while ($current->lessThanOrEqualTo($end)) {
             if (! $current->isWeekend()) {
@@ -376,107 +338,7 @@ class PayrollGenerationService
     }
 
     // =========================================================================
-    // Second Half: Mar 16–EOM  (generate on 25th, disburse on last day)
-    // =========================================================================
-
-    /**
-     * Generate pending payrolls on the 25th.
-     *
-     * Period is Mar 16–EOM but days 26–EOM are ASSUMED present (weekdays only)
-     * because actual attendance hasn't happened yet.
-     * The last-day command will true-up those assumed days with real data.
-     */
-    public function generateSecondHalfPayrollsForCutoff(?\DateTimeInterface $now = null): Collection
-    {
-        $today = CarbonImmutable::parse($now ?? CarbonImmutable::now())->startOfDay();
-
-        if ($today->day !== 25) {
-            return new Collection();
-        }
-
-        $periodStart = $today->setDay(16);           // Mar 16
-        $periodEnd   = $today->endOfMonth()->startOfDay(); // Mar 31
-        $assumedFrom = $today->setDay(26);           // Mar 26 onwards is assumed
-
-        return $this->generateForAllEmployeesWithAssumedDays($periodStart, $periodEnd, $assumedFrom);
-    }
-
-    /**
-     * On the last day of the month: true-up actual attendance for days 26–EOM,
-     * recalculate APPROVED payrolls, and disburse them.
-     */
-    public function trueUpAndDisburseSecondHalf(?\DateTimeInterface $now = null): int
-    {
-        $today = CarbonImmutable::parse($now ?? CarbonImmutable::now())->startOfDay();
-
-        if (! $today->isLastOfMonth()) {
-            return 0;
-        }
-
-        return $this->trueUpApprovedPayrollsForSecondHalf($today);
-    }
-
-    /**
-     * Re-calculate using full actual Mar 16–EOM attendance,
-     * update APPROVED payrolls, and flip them to DISBURSED.
-     */
-    public function trueUpApprovedPayrollsForSecondHalf(\DateTimeInterface $releaseDate): int
-    {
-        $release     = CarbonImmutable::parse($releaseDate)->startOfDay();
-        $periodStart = $release->setDay(16);                  // Mar 16
-        $periodEnd   = $release->endOfMonth()->startOfDay();  // Mar 31
-
-        $payrolls = Payroll::query()
-            ->with('employee.position:id,salary,allowance')
-            ->where('status', PayrollStatus::APPROVED)
-            ->whereDate('pay_period_start', $periodStart)
-            ->whereDate('pay_period_end', $periodEnd)
-            ->get();
-
-        $disbursed = 0;
-
-        foreach ($payrolls as $payroll) {
-            DB::transaction(function () use ($payroll, $periodStart, $periodEnd) {
-                $employee = $payroll->employee;
-
-                // Full actual attendance Mar 16–EOM is now available
-                $attendances = $this->getAttendancesWithHolidayInfo($employee, $periodStart, $periodEnd);
-                $workingDays = $this->calculateWorkingDays($employee, $attendances, $periodStart, $periodEnd);
-                $customAdjustments = $this->getAdminAdjustments($payroll);
-
-                $breakdown = $this->calculatePayrollBreakdown(
-                    employee: $employee,
-                    attendances: $attendances,
-                    recordedDays: $workingDays['present_days'],
-                    expectedDays: $workingDays['expected_days'],
-                    periodStart: $periodStart,
-                    periodEnd: $periodEnd,
-                    customAdjustments: $customAdjustments,
-                );
-
-                $payroll->fill([
-                    'status'       => PayrollStatus::DISBURSED,
-                    'basic_salary' => $breakdown['basic_salary'],
-                    'tax'          => $breakdown['tax'],
-                    'sss'          => $breakdown['sss'],
-                    'pagibig'      => $breakdown['pagibig'],
-                    'philhealth'   => $breakdown['philhealth'],
-                    'allowance'    => $breakdown['allowance'],
-                    'gross_pay'    => $breakdown['gross_pay'],
-                    'net_pay'      => $breakdown['net_pay'],
-                ]);
-
-                $payroll->save();
-
-                // Save holiday bonus adjustments
-                $this->saveHolidayBonusAdjustments($payroll, $breakdown['holiday_bonus_details']);
-            });
-
-            $disbursed++;
-        }
-
-        return $disbursed;
-    }
+    // Approve / Reject
 
     // =========================================================================
     // Approve / Reject
@@ -597,7 +459,7 @@ class PayrollGenerationService
                     $hasApprovedWorkOnHoliday = $attendance->request?->type === RequestType::WORK_ON_HOLIDAY
                         && $attendance->request?->status === RequestStatus::APPROVED;
 
-                    if (!$hasApprovedWorkOnHoliday) {
+                    if (! $hasApprovedWorkOnHoliday) {
                         return false;
                     }
                 }
@@ -642,7 +504,7 @@ class PayrollGenerationService
         return Holiday::query()
             ->whereBetween('date', [$start, $end])
             ->get()
-            ->filter(fn ($holiday) => !CarbonImmutable::parse($holiday->date)->isWeekend())
+            ->filter(fn ($holiday) => ! CarbonImmutable::parse($holiday->date)->isWeekend())
             ->count();
     }
 
@@ -829,8 +691,7 @@ class PayrollGenerationService
         $overtimeRate = $hourlyRate * config('payroll.hourly_rate_multiplier');
 
         $totalOvertimeMinutes = (int) $attendances
-            ->filter(fn (Attendance $attendance): bool =>
-                $attendance->request?->type === RequestType::OVERTIME
+            ->filter(fn (Attendance $attendance): bool => $attendance->request?->type === RequestType::OVERTIME
                 && $attendance->request?->status === RequestStatus::APPROVED
             )
             ->sum('overtime_minutes');
@@ -996,5 +857,4 @@ class PayrollGenerationService
 
         return (float) ($employee->position?->allowance ?? 0);
     }
-
 }

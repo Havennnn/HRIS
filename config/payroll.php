@@ -114,12 +114,12 @@ return [
     ],
 
     'bir_withholding_monthly' => [
-        ['from' =>        0, 'to' =>  20833, 'base' =>      0, 'rate' => 0.00],
-        ['from' =>    20833, 'to' =>  33333, 'base' =>      0, 'rate' => 0.15],
-        ['from' =>    33333, 'to' =>  66667, 'base' =>   1875, 'rate' => 0.20],
-        ['from' =>    66667, 'to' => 166667, 'base' =>   8541.8, 'rate' => 0.25],
-        ['from' =>   166667, 'to' => 666667, 'base' =>  33541.8, 'rate' => 0.30],
-        ['from' =>   666667, 'to' =>    null, 'base' => 183541.8, 'rate' => 0.35],
+        ['from' => 0, 'to' => 20833, 'base' => 0, 'rate' => 0.00],
+        ['from' => 20833, 'to' => 33333, 'base' => 0, 'rate' => 0.15],
+        ['from' => 33333, 'to' => 66667, 'base' => 1875, 'rate' => 0.20],
+        ['from' => 66667, 'to' => 166667, 'base' => 8541.8, 'rate' => 0.25],
+        ['from' => 166667, 'to' => 666667, 'base' => 33541.8, 'rate' => 0.30],
+        ['from' => 666667, 'to' => null, 'base' => 183541.8, 'rate' => 0.35],
     ],
 
     /*
@@ -136,15 +136,15 @@ return [
     */
 
     'sss_table' => [
-        ['from' =>     0, 'to' =>  5000, 'contribution' =>  200],
-        ['from' =>  5000, 'to' =>  7500, 'contribution' =>  350],
-        ['from' =>  7500, 'to' => 10000, 'contribution' =>  500],
-        ['from' => 10000, 'to' => 12500, 'contribution' =>  650],
-        ['from' => 12500, 'to' => 15000, 'contribution' =>  800],
-        ['from' => 15000, 'to' => 17500, 'contribution' =>  950],
+        ['from' => 0, 'to' => 5000, 'contribution' => 200],
+        ['from' => 5000, 'to' => 7500, 'contribution' => 350],
+        ['from' => 7500, 'to' => 10000, 'contribution' => 500],
+        ['from' => 10000, 'to' => 12500, 'contribution' => 650],
+        ['from' => 12500, 'to' => 15000, 'contribution' => 800],
+        ['from' => 15000, 'to' => 17500, 'contribution' => 950],
         ['from' => 17500, 'to' => 20000, 'contribution' => 1100],
         ['from' => 20000, 'to' => 25000, 'contribution' => 1250],
-        ['from' => 25000, 'to' =>  null, 'contribution' => 1350],
+        ['from' => 25000, 'to' => null, 'contribution' => 1350],
     ],
 
     /*

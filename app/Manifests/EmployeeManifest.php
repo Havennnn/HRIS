@@ -59,8 +59,12 @@ class EmployeeManifest implements ManifestStructure
 
         return [
             'position' => $positions,
-            'type' => EmployeeType::optionsForSelect(),
-            'status' => EmployeeStatus::optionsForSelect(),
+            'type' => collect(EmployeeType::options())->mapWithKeys(
+                fn (array $o) => [$o['label'] => (string) $o['value']],
+            )->all(),
+            'status' => collect(EmployeeStatus::options())->mapWithKeys(
+                fn (array $o) => [$o['label'] => (string) $o['value']],
+            )->all(),
         ];
     }
 

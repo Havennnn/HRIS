@@ -64,7 +64,10 @@ final class AttendanceLogController extends ResourceController
         ]);
 
         return app(ExportAction::class)(
-            new AttendanceLogExport($request->input('start_date'), $request->input('end_date')),
+            $this->exportOptions(
+                new AttendanceLogExport($request->input('start_date'), $request->input('end_date')),
+                'attendance-logs-'.today()->format('Y-m-d'),
+            ),
         );
     }
 }

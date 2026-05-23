@@ -174,13 +174,15 @@ final class EmployeeController extends ResourceController
      */
     public function manifest(): StreamedResponse
     {
-        return app(ManifestAction::class)(new EmployeeManifest());
+        return app(ManifestAction::class)(
+            $this->manifestOptions(EmployeeManifest::class, 'employee-manifest-'.today()->format('Y-m-d')),
+        );
     }
 
     /**
      * Process the uploaded CSV file for employee import.
      */
-    public function import(Request $request): RedirectResponse
+    public function import(EmployeeImportRequest $request): RedirectResponse
     {
         return app(ImportAction::class)(
             request: $request,
@@ -193,6 +195,8 @@ final class EmployeeController extends ResourceController
      */
     public function export(): StreamedResponse
     {
-        return app(ExportAction::class)(new EmployeeExport());
+        return app(ExportAction::class)(
+            $this->exportOptions(EmployeeExport::class, 'employees-'.today()->format('Y-m-d')),
+        );
     }
 }

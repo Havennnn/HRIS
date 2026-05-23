@@ -78,7 +78,10 @@ final class PayrollController extends ResourceController
         ]);
 
         return app(ExportAction::class)(
-            new PayrollExport($request->input('start_date'), $request->input('end_date')),
+            $this->exportOptions(
+                new PayrollExport($request->input('start_date'), $request->input('end_date')),
+                'payroll-'.today()->format('Y-m-d'),
+            ),
         );
     }
 }

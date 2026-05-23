@@ -31,3 +31,6 @@ AGENTS.md
 
 # Generated documentation (auto-regenerated, not committed)
 /docs
+
+# Windows reserved device name (breaks git add -A on this machine)
+/nul

@@ -56,14 +56,14 @@ final class AttendanceLogController extends ResourceController
     /**
      * Download attendance logs as CSV within a date range.
      */
-    public function export(Request $request): StreamedResponse
+    public function export(Request $request, ExportAction $action): StreamedResponse
     {
         $request->validate([
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
         ]);
 
-        return app(ExportAction::class)(
+        return $action(
             $this->exportOptions(
                 new AttendanceLogExport($request->input('start_date'), $request->input('end_date')),
                 'attendance-logs-'.today()->format('Y-m-d'),

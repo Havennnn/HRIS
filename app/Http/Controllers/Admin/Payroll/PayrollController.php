@@ -70,14 +70,14 @@ final class PayrollController extends ResourceController
     /**
      * Download payrolls as CSV within a date range.
      */
-    public function export(HttpRequest $request): StreamedResponse
+    public function export(HttpRequest $request, ExportAction $action): StreamedResponse
     {
         $request->validate([
             'start_date' => ['required', 'date'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
         ]);
 
-        return app(ExportAction::class)(
+        return $action(
             $this->exportOptions(
                 new PayrollExport($request->input('start_date'), $request->input('end_date')),
                 'payroll-'.today()->format('Y-m-d'),

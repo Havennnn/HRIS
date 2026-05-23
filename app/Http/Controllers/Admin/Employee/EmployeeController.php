@@ -172,9 +172,9 @@ final class EmployeeController extends ResourceController
     /**
      * Download a CSV template (manifest) showing required columns for import.
      */
-    public function manifest(): StreamedResponse
+    public function manifest(ManifestAction $action): StreamedResponse
     {
-        return app(ManifestAction::class)(
+        return $action(
             $this->manifestOptions(EmployeeManifest::class, 'employee-manifest-'.today()->format('Y-m-d')),
         );
     }
@@ -193,9 +193,9 @@ final class EmployeeController extends ResourceController
     /**
      * Download employees as CSV.
      */
-    public function export(): StreamedResponse
+    public function export(ExportAction $action): StreamedResponse
     {
-        return app(ExportAction::class)(
+        return $action(
             $this->exportOptions(EmployeeExport::class, 'employees-'.today()->format('Y-m-d')),
         );
     }

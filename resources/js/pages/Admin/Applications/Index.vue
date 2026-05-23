@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Card, CardContent } from '@/components/ui/card';
-import ApplicationIndexResource from '@/Http/Resources/Admin/Application/ApplicationIndexResource';
+import type { ApplicationIndexResource } from './index';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { destroy, index, restore, show } from '@/routes/applications';
 import type { BreadcrumbItem } from '@/types';

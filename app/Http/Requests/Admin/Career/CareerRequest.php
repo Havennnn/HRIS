@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin\Career;
 
+use App\Enums\Status\CareerStatus;
 use App\Models\Position;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -26,7 +27,8 @@ class CareerRequest extends FormRequest
         return [
             'position_id' => ['required', Rule::exists(Position::class, 'id')],
             'description' => ['required', 'string'],
-            'is_active' => ['required', 'boolean'],
+            'salary' => ['nullable', 'string', 'max:50'],
+            'status' => ['nullable', 'integer', Rule::enum(CareerStatus::class)],
         ];
     }
 }

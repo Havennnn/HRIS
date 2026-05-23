@@ -23,12 +23,18 @@ import { edit, index, update } from '@/routes/employees';
 import * as attendanceRoutes from '@/routes/employees/attendance';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
-import { ArrowLeft, Eye, KeyRound, LaptopMinimalCheck, Pencil, Phone, Save } from 'lucide-vue-next';
+import { Eye, KeyRound, LaptopMinimalCheck, MoreHorizontal, Pencil, Phone, Save } from 'lucide-vue-next';
 import ActivityLogTable from 'piacore/components/ActivityLogTable.vue';
 import DataBadge from 'piacore/components/DataBadge.vue';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import DataSelector from 'piacore/components/DataSelector.vue';
 import DataTableControls from 'piacore/components/DataTableControls.vue';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import type { Option } from 'piacore/Interface/Selector';
 import { computed, ref } from 'vue';
 import EmployeeEditResource from './index';
@@ -151,27 +157,16 @@ const contactForm = useForm({
 });
 
 const headerActions = computed(() => [
-    {
-        label: 'Back',
-        href: index().url,
-        icon: ArrowLeft,
-        variant: 'outline' as const,
-        size: 'sm' as const,
-    },
     ...(!isEditing.value && canEditEmployee.value
         ? [
             {
                 label: 'Edit Information',
                 icon: Pencil,
-                variant: 'outline' as const,
-                size: 'sm' as const,
                 onClick: () => (isEditing.value = true),
             },
             {
                 label: 'Edit Device',
                 icon: LaptopMinimalCheck,
-                variant: 'outline' as const,
-                size: 'sm' as const,
                 onClick: () => {
                     deviceForm.desktop = deviceData.value?.desktop ?? '';
                     deviceForm.laptop = deviceData.value?.laptop ?? '';
@@ -180,10 +175,8 @@ const headerActions = computed(() => [
                 },
             },
             {
-                label: 'Contact Person',
+                label: 'Edit Contact',
                 icon: Phone,
-                variant: 'outline' as const,
-                size: 'sm' as const,
                 onClick: () => {
                     contactForm.name = contactPerson.value?.name ?? '';
                     contactForm.type = contactPerson.value?.type_value ?? '';
@@ -193,10 +186,8 @@ const headerActions = computed(() => [
                 },
             },
             {
-                label: 'Reset Password',
+                label: 'Send Reset Password',
                 icon: KeyRound,
-                variant: 'outline' as const,
-                size: 'sm' as const,
                 onClick: handleResetPassword,
             },
         ]
@@ -287,10 +278,24 @@ function handleResetPassword(): void {
                 :title="employeeData?.full_name"
                 subtitle="Employee Profile"
                 :use-avatar="false"
-                :actions="headerActions"
             >
                 <template #badge>
                     <DataBadge :badge="employeeData?.status" />
+                </template>
+                <template #actions>
+                    <DropdownMenu v-if="!isEditing && canEditEmployee">
+                        <DropdownMenuTrigger as-child>
+                            <Button variant="outline" size="sm">
+                                <MoreHorizontal class="size-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" class="min-w-48">
+                            <DropdownMenuItem v-for="(action, i) in headerActions" :key="i" @click="action.onClick">
+                                <component :is="action.icon" class="mr-2 size-4" />
+                                {{ action.label }}
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </template>
             </DataHeader>
 
@@ -316,72 +321,72 @@ function handleResetPassword(): void {
                     <CardContent class="grid gap-6">
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
-                                <Label>Position</Label>
-                                <div class="py-1 text-sm">
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Position</p>
+                                <p class="text-sm">
                                     {{ employeeData?.position }} - {{ employeeData?.position_level }}
-                                </div>
+                                </p>
                             </div>
 
                             <div class="space-y-2">
-                                <Label>Department</Label>
-                                <div class="py-1 text-sm">
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Department</p>
+                                <p class="text-sm">
                                     {{ employeeData?.department }}
-                                </div>
+                                </p>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div class="space-y-2">
-                                <Label>First Name</Label>
-                                <div class="py-1 text-sm">
+                                <p class="text-xs font-medium text-muted-foreground mb-1">First Name</p>
+                                <p class="text-sm">
                                     {{ employeeData?.first_name }}
-                                </div>
+                                </p>
                             </div>
 
                             <div class="space-y-2">
-                                <Label>Middle Name</Label>
-                                <div class="py-1 text-sm">
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Middle Name</p>
+                                <p class="text-sm">
                                     {{ employeeData?.middle_name || '-' }}
-                                </div>
+                                </p>
                             </div>
 
                             <div class="space-y-2">
-                                <Label>Last Name</Label>
-                                <div class="py-1 text-sm">
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Last Name</p>
+                                <p class="text-sm">
                                     {{ employeeData?.last_name }}
-                                </div>
+                                </p>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
-                                <Label>Birthdate</Label>
-                                <div class="py-1 text-sm">
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Birthdate</p>
+                                <p class="text-sm">
                                     {{ employeeData?.birthdate_formatted ?? employeeData?.birthdate ?? '-' }}
-                                </div>
+                                </p>
                             </div>
 
                             <div class="space-y-2">
-                                <Label>Employee Type</Label>
-                                <div class="py-1 text-sm">
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Employee Type</p>
+                                <p class="text-sm">
                                     {{ employeeData?.type }}
-                                </div>
+                                </p>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
-                                <Label>Mobile Number</Label>
-                                <div class="py-1 text-sm">
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Mobile Number</p>
+                                <p class="text-sm">
                                     {{ employeeData?.mobile_number }}
-                                </div>
+                                </p>
                             </div>
 
                             <div class="space-y-2">
-                                <Label>Email</Label>
-                                <div class="py-1 text-sm">
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Email</p>
+                                <p class="text-sm">
                                     {{ employeeData?.email }}
-                                </div>
+                                </p>
                             </div>
                         </div>
                     </CardContent>
@@ -396,24 +401,24 @@ function handleResetPassword(): void {
                     <CardContent>
                         <div v-if="hasContactPerson" class="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <div class="space-y-2">
-                                <Label>Name</Label>
-                                <div class="py-1 text-sm">
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Name</p>
+                                <p class="text-sm">
                                     {{ contactPerson?.name || '-' }}
-                                </div>
+                                </p>
                             </div>
 
                             <div class="space-y-2">
-                                <Label>Type</Label>
-                                <div class="py-1 text-sm">
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Type</p>
+                                <p class="text-sm">
                                     {{ contactPerson?.type || '-' }}
-                                </div>
+                                </p>
                             </div>
 
                             <div class="space-y-2">
-                                <Label>Mobile Number</Label>
-                                <div class="py-1 text-sm">
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Mobile Number</p>
+                                <p class="text-sm">
                                     {{ contactPerson?.mobile_number || '-' }}
-                                </div>
+                                </p>
                             </div>
                         </div>
 
@@ -436,7 +441,7 @@ function handleResetPassword(): void {
                                 :key="item.key"
                                 class="space-y-1.5"
                             >
-                                <Label>{{ item.label }}</Label>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">{{ item.label }}</p>
 
                                 <div class="rounded-lg border border-dashed p-2.5">
                                     <div v-if="item.file?.url" class="flex items-center gap-3">
@@ -508,17 +513,17 @@ function handleResetPassword(): void {
                     <CardContent>
                         <div v-if="hasDeviceInfo" class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
-                                <Label>Desktop</Label>
-                                <div class="py-1 text-sm">
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Desktop</p>
+                                <p class="text-sm">
                                     {{ deviceData?.desktop || '-' }}
-                                </div>
+                                </p>
                             </div>
 
                             <div class="space-y-2">
-                                <Label>Laptop</Label>
-                                <div class="py-1 text-sm">
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Laptop</p>
+                                <p class="text-sm">
                                     {{ deviceData?.laptop || '-' }}
-                                </div>
+                                </p>
                             </div>
                         </div>
 

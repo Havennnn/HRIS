@@ -13,6 +13,7 @@ import { create, index, store } from '@/routes/holidays';
 import type { BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/vue3';
 import { ArrowLeft, Plus } from 'lucide-vue-next';
+import { Checkbox } from '@/components/ui/checkbox';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import DataSelector from 'piacore/components/DataSelector.vue';
 import type { Option } from 'piacore/Interface/Selector';
@@ -33,6 +34,7 @@ const form = useForm({
     name: '',
     date: '',
     type: '',
+    is_paid: true,
     description: '',
 });
 
@@ -139,6 +141,18 @@ function submit(): void {
                                         :error="form.errors.type"
                                     />
                                 </div>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <Checkbox
+                                    id="is_paid"
+                                    :checked="form.is_paid"
+                                    :disabled="form.processing"
+                                    @update:checked="form.is_paid = !!$event"
+                                />
+                                <Label for="is_paid" class="cursor-pointer text-sm font-normal">
+                                    Paid holiday (employees get paid for this day off)
+                                </Label>
                             </div>
 
                             <div class="space-y-2">

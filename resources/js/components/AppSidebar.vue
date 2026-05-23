@@ -7,6 +7,7 @@ import departments from '@/routes/departments/index';
 import employees from '@/routes/employees/index';
 import holidays from '@/routes/holidays/index';
 import { dashboard } from '@/routes/index';
+import pages from '@/routes/pages/index';
 import payrolls from '@/routes/payrolls/index';
 import positions from '@/routes/positions/index';
 import requests from '@/routes/requests/index';
@@ -20,6 +21,7 @@ import {
     Cog,
     DollarSign,
     DoorOpen,
+    FileText,
     LayoutGrid,
     TrendingUp,
     UserCog,
@@ -78,7 +80,7 @@ const sectionItems: SidebarSection[] = [
         label: 'Performance',
         items: [
             { title: 'Performance Reviews', href: '/performance-reviews', icon: TrendingUp, roles: PROJECT_MANAGEMENT_ROLES },
-            { title: 'KPIs tyest', href: '/kpis', icon: ClipboardList, roles: PROJECT_MANAGEMENT_ROLES },
+            { title: 'Pages', href: pages.index(), icon: FileText, roles: PROJECT_MANAGEMENT_ROLES },
         ],
     },
 ];

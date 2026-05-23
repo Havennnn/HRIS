@@ -6,11 +6,16 @@ use App\Enums\Status\RequestStatus;
 use App\Http\Resources\Api\V1\Request\RequestResource;
 use App\Models\Employee;
 use App\Models\Request as RequestModel;
+use App\Notifications\NewRequestSubmitted;
+use App\Notifications\Notifier;
 use App\Traits\BuildsApiResponses;
 use Exception;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use PiaCore\Models\Admin;
+use Throwable;
 
 class RequestApiService
 {
@@ -84,6 +89,19 @@ class RequestApiService
                 'end_date' => $httpRequest->validated('end_date'),
                 'overtime_hours' => $httpRequest->validated('overtime_hours'),
             ]);
+
+            // Notify admins about the new request
+            try {
+                $admins = Admin::all();
+                foreach ($admins as $admin) {
+                    Notifier::notify($admin, new NewRequestSubmitted($request));
+                }
+            } catch (Throwable $e) {
+                Log::warning('Failed to notify admins about new request', [
+                    'request_id' => $request->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
 
             return $this->successResponse(
                 (new RequestResource($request))->resolve($httpRequest),

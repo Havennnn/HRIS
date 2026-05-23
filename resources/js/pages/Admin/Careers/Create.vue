@@ -6,6 +6,8 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { create, index, store } from '@/routes/careers';
@@ -15,7 +17,7 @@ import { ArrowLeft, Plus } from 'lucide-vue-next';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import DataSelector from 'piacore/components/DataSelector.vue';
 import type { Option } from 'piacore/Interface/Selector';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 const props = defineProps<{
     positions?: Option[];
@@ -28,10 +30,20 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
     { title: 'Create', href: create().url },
 ]);
 
+const salaryType = ref<'fixed' | 'range'>('fixed');
+
 const form = useForm({
     position_id: '',
     description: '',
-    is_active: true,
+    salary: '',
+    salary_fixed: '',
+    salary_min: '',
+    salary_max: '',
+    meta_title: '',
+    meta_description: '',
+    og_title: '',
+    og_description: '',
+    og_image: '',
 });
 
 const headerActions = computed(() => [
@@ -44,7 +56,23 @@ const headerActions = computed(() => [
     }
 ]);
 
+function toggleSalaryType(type: 'fixed' | 'range'): void {
+    salaryType.value = type;
+    form.salary_fixed = '';
+    form.salary_min = '';
+    form.salary_max = '';
+    form.salary = '';
+}
+
 function submit(): void {
+    // Format salary value before submit
+    if (salaryType.value === 'fixed' && form.salary_fixed) {
+        form.salary = form.salary_fixed;
+    } else if (salaryType.value === 'range' && form.salary_min && form.salary_max) {
+        form.salary = `${form.salary_min}-${form.salary_max}`;
+    } else {
+        form.salary = '';
+    }
     form.post(store().url);
 }
 </script>
@@ -114,13 +142,136 @@ function submit(): void {
                                 </p>
                             </div>
 
-                            <div class="flex items-center gap-4">
-                                <Label for="is_active">
-                                    Active Status
-                                </Label>
-                                <span class="text-sm text-muted-foreground">
-                                    {{ form.is_active ? 'This career is active and visible' : 'This career is inactive' }}
-                                </span>
+                            <!-- Salary -->
+                            <div class="space-y-3">
+                                <Label>Salary</Label>
+
+                                <!-- Toggle -->
+                                <div class="flex gap-2">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        :class="salaryType === 'fixed' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : ''"
+                                        @click="toggleSalaryType('fixed')"
+                                    >
+                                        Fixed
+                                    </button>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        :class="salaryType === 'range' ? 'bg-primary text-primary-foreground hover:bg-primary/90' : ''"
+                                        @click="toggleSalaryType('range')"
+                                    >
+                                        Range
+                                    </button>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        class="text-muted-foreground"
+                                        @click="form.salary_fixed = ''; form.salary_min = ''; form.salary_max = ''; form.salary = ''"
+                                    >
+                                        Clear
+                                    </button>
+                                </div>
+
+                                <!-- Fixed input -->
+                                <div v-if="salaryType === 'fixed'" class="space-y-1">
+                                    <Input
+                                        v-model="form.salary_fixed"
+                                        type="number"
+                                        min="0"
+                                        placeholder="e.g. 15000"
+                                        :disabled="form.processing"
+                                    />
+                                    <p class="text-xs text-muted-foreground">
+                                        Enter the monthly salary amount.
+                                    </p>
+                                </div>
+
+                                <!-- Range inputs -->
+                                <div v-else class="grid grid-cols-2 gap-3">
+                                    <div class="space-y-1">
+                                        <Input
+                                            v-model="form.salary_min"
+                                            type="number"
+                                            min="0"
+                                            placeholder="Min e.g. 12000"
+                                            :disabled="form.processing"
+                                        />
+                                    </div>
+                                    <div class="space-y-1">
+                                        <Input
+                                            v-model="form.salary_max"
+                                            type="number"
+                                            min="0"
+                                            placeholder="Max e.g. 15000"
+                                            :disabled="form.processing"
+                                        />
+                                    </div>
+                                    <p class="col-span-2 text-xs text-muted-foreground">
+                                        Enter the minimum and maximum monthly salary range.
+                                    </p>
+                                </div>
+
+                                <p
+                                    v-if="form.errors.salary"
+                                    class="text-destructive text-xs font-medium"
+                                >
+                                    {{ form.errors.salary }}
+                                </p>
+                            </div>
+
+                            <!-- SEO Meta -->
+                            <div class="rounded-lg border bg-card p-5">
+                                <h3 class="mb-1 text-sm font-semibold">SEO Meta</h3>
+                                <p class="mb-4 text-xs text-muted-foreground">Search engine optimization and social sharing settings.</p>
+
+                                <div class="grid gap-5">
+                                    <div class="space-y-3">
+                                        <h4 class="text-xs font-medium text-muted-foreground uppercase tracking-wider">Google Search</h4>
+                                        <div class="space-y-1.5">
+                                            <Label for="career_meta_title">Meta Title</Label>
+                                            <Input id="career_meta_title" v-model="form.meta_title" placeholder="Title for search results" :disabled="form.processing" />
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <Label for="career_meta_description">Meta Description</Label>
+                                            <textarea
+                                                id="career_meta_description"
+                                                class="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                                v-model="form.meta_description"
+                                                placeholder="Brief description (150-160 chars)"
+                                                :disabled="form.processing"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-3">
+                                        <h4 class="text-xs font-medium text-muted-foreground uppercase tracking-wider">Social Sharing (Open Graph)</h4>
+                                        <div class="grid gap-4 sm:grid-cols-2">
+                                            <div class="space-y-1.5">
+                                                <Label for="career_og_title">OG Title</Label>
+                                                <Input id="career_og_title" v-model="form.og_title" placeholder="Title for social shares" :disabled="form.processing" />
+                                            </div>
+                                            <div class="space-y-1.5">
+                                                <Label for="career_og_image">OG Image URL</Label>
+                                                <Input id="career_og_image" v-model="form.og_image" placeholder="https://..." :disabled="form.processing" />
+                                            </div>
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <Label for="career_og_description">OG Description</Label>
+                                            <textarea
+                                                id="career_og_description"
+                                                class="flex min-h-[60px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                                v-model="form.og_description"
+                                                placeholder="Description for social shares"
+                                                :disabled="form.processing"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="flex justify-end gap-3">

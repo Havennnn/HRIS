@@ -444,6 +444,34 @@ return [
         ],
     ],
 
+    // Import/Export Permissions
+    'can-list-import-export' => [
+        'label' => 'List Import/Export',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
+        ],
+    ],
+    'can-import-employees' => [
+        'label' => 'Import Employees',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
+        ],
+    ],
+    'can-export-data' => [
+        'label' => 'Export Data',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+            AdminRole::HR_OFFICER,
+            AdminRole::FINANCE_MANAGER,
+            AdminRole::FINANCE_OFFICER,
+        ],
+    ],
+
     // KPI Management Permissions
     'can-list-kpis' => [
         'label' => 'List KPIs',
@@ -530,6 +558,43 @@ return [
     ],
     'can-restore-performance-review' => [
         'label' => 'Restore Performance Review',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+        ],
+    ],
+
+    // Page Management Permissions
+    'can-list-pages' => [
+        'label' => 'List Pages',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+        ],
+    ],
+    'can-create-page' => [
+        'label' => 'Create Page',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+        ],
+    ],
+    'can-update-page' => [
+        'label' => 'Update Page',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+        ],
+    ],
+    'can-archive-page' => [
+        'label' => 'Archive Page',
+        'roles' => [
+            AdminRole::SUPER_ADMIN,
+            AdminRole::HEAD_HR,
+        ],
+    ],
+    'can-restore-page' => [
+        'label' => 'Restore Page',
         'roles' => [
             AdminRole::SUPER_ADMIN,
             AdminRole::HEAD_HR,

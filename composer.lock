@@ -1829,7 +1829,7 @@
             "version": "v1.1.4",
             "source": {
                 "type": "git",
-                "url": "git@github.com:LatsMarbls/piacore.git",
+                "url": "https://github.com/LatsMarbls/piacore.git",
                 "reference": "9c96da7e2dd0419f7ffb286d9ecb2445fcb3420a"
             },
             "dist": {

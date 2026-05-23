@@ -158,40 +158,40 @@ function handleComplete(): void {
                             <!-- Employee Information -->
                             <div class="grid gap-4 md:grid-cols-2">
                                 <div class="space-y-2">
-                                    <Label class="text-muted-foreground">Employee Name</Label>
-                                    <p class="font-medium">{{ requestData?.full_name }}</p>
+                                    <p class="text-xs font-medium text-muted-foreground mb-1">Employee Name</p>
+                                    <p class="text-sm">{{ requestData?.full_name }}</p>
                                 </div>
                                 <div class="space-y-2">
-                                    <Label class="text-muted-foreground">Position</Label>
-                                    <p class="font-medium">{{ requestData?.position }}</p>
+                                    <p class="text-xs font-medium text-muted-foreground mb-1">Position</p>
+                                    <p class="text-sm">{{ requestData?.position }}</p>
                                 </div>
                                 <div class="space-y-2">
-                                    <Label class="text-muted-foreground">Level</Label>
-                                    <p class="font-medium">{{ requestData?.position_level }}</p>
+                                    <p class="text-xs font-medium text-muted-foreground mb-1">Level</p>
+                                    <p class="text-sm">{{ requestData?.position_level }}</p>
                                 </div>
                                 <div class="space-y-2">
-                                    <Label class="text-muted-foreground">Department</Label>
-                                    <p class="font-medium">{{ requestData?.department }}</p>
+                                    <p class="text-xs font-medium text-muted-foreground mb-1">Department</p>
+                                    <p class="text-sm">{{ requestData?.department }}</p>
                                 </div>
                                 <div class="space-y-2">
-                                    <Label class="text-muted-foreground">Request Type</Label>
-                                    <p class="font-medium">{{ requestData?.type }}</p>
+                                    <p class="text-xs font-medium text-muted-foreground mb-1">Request Type</p>
+                                    <p class="text-sm">{{ requestData?.type }}</p>
                                 </div>
                             </div>
 
                             <!-- Date Information -->
                             <div class="grid gap-4 md:grid-cols-2">
                                 <div class="space-y-2">
-                                    <Label class="text-muted-foreground">Requested Date</Label>
-                                    <p class="font-medium">{{ requestData?.requested_date }}</p>
+                                    <p class="text-xs font-medium text-muted-foreground mb-1">Requested Date</p>
+                                    <p class="text-sm">{{ requestData?.requested_date }}</p>
                                 </div>
                                 <div v-if="requestData?.end_date" class="space-y-2">
-                                    <Label class="text-muted-foreground">End Date</Label>
-                                    <p class="font-medium">{{ requestData?.end_date }}</p>
+                                    <p class="text-xs font-medium text-muted-foreground mb-1">End Date</p>
+                                    <p class="text-sm">{{ requestData?.end_date }}</p>
                                 </div>
                                 <div class="space-y-2">
-                                    <Label class="text-muted-foreground">Days / Hours</Label>
-                                    <p class="font-medium">
+                                    <p class="text-xs font-medium text-muted-foreground mb-1">Days / Hours</p>
+                                    <p class="text-sm">
                                         {{ requestData?.days ? `${requestData.days} day(s)` : (requestData?.overtime_hours ? `${requestData.overtime_hours} hour(s)` : '-') }}
                                     </p>
                                 </div>
@@ -199,8 +199,8 @@ function handleComplete(): void {
 
                             <!-- Message -->
                             <div class="space-y-2">
-                                <Label class="text-muted-foreground">Message / Reason</Label>
-                                <p class="rounded-md border p-3 bg-muted/50">
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Message / Reason</p>
+                                <p class="rounded-md border p-3 bg-muted/50 text-sm">
                                     {{ requestData?.message || 'No message provided' }}
                                 </p>
                             </div>

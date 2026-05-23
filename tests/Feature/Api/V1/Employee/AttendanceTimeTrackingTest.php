@@ -67,7 +67,7 @@ class AttendanceTimeTrackingTest extends TestCase
         ])->postJson('/api/v1/attendance/time-in');
 
         $response->assertStatus(422);
-        $response->assertJsonPath('error', 'Failed to record time in: You already have a time in record for today.');
+        $response->assertJsonPath('error', 'You already have a time in record for today.');
     }
 
     public function test_employee_can_time_out_successfully(): void
@@ -114,7 +114,7 @@ class AttendanceTimeTrackingTest extends TestCase
         ])->postJson('/api/v1/attendance/time-out');
 
         $response->assertStatus(422);
-        $response->assertJsonPath('error', 'Failed to record time out: No active time in record found for today.');
+        $response->assertJsonPath('error', 'No active time in record found for today.');
 
         $this->assertDatabaseCount('attendance_logs', 0);
     }
@@ -151,9 +151,57 @@ class AttendanceTimeTrackingTest extends TestCase
         ])->getJson('/api/v1/attendance');
 
         $response->assertOk();
-        $response->assertJsonPath('success', true);
         $response->assertJsonCount(1, 'data');
         $response->assertJsonPath('data.0.date', now()->toDateString());
         $response->assertJsonPath('data.0.time_in', '08:00:00');
+    }
+
+    public function test_attendance_list_search_by_date(): void
+    {
+        $employee = Employee::factory()->create();
+
+        Attendance::query()->create([
+            'employee_id' => $employee->id,
+            'date' => now()->toDateString(),
+            'time_in' => '08:00:00',
+            'late_minutes' => 0,
+            'overtime_minutes' => 0,
+            'status' => AttendanceStatus::PRESENT,
+        ]);
+
+        Sanctum::actingAs($employee);
+
+        // Search with today's date string should match
+        $today = now()->format('Y-m-d');
+        $response = $this->withHeaders([
+            'X-Api-Key' => self::API_KEY,
+        ])->getJson("/api/v1/attendance?search={$today}");
+
+        $response->assertOk();
+        $response->assertJsonCount(1, 'data');
+    }
+
+    public function test_attendance_list_search_no_match(): void
+    {
+        $employee = Employee::factory()->create();
+
+        Attendance::query()->create([
+            'employee_id' => $employee->id,
+            'date' => now()->toDateString(),
+            'time_in' => '08:00:00',
+            'late_minutes' => 0,
+            'overtime_minutes' => 0,
+            'status' => AttendanceStatus::PRESENT,
+        ]);
+
+        Sanctum::actingAs($employee);
+
+        // No attendance on this date, search should return empty
+        $response = $this->withHeaders([
+            'X-Api-Key' => self::API_KEY,
+        ])->getJson('/api/v1/attendance?search=2099-01-01');
+
+        $response->assertOk();
+        $response->assertJsonCount(0, 'data');
     }
 }

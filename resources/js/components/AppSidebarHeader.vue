@@ -1,5 +1,6 @@
 <script  setup  lang="ts">
 import NavUser from '@/components/NavUser.vue';
+import NotificationBell from '@/components/NotificationBell.vue';
 import type { BreadcrumbItem } from '@/types';
 import AppSidebarHeaderDefault from 'piacore/components/AppSidebarHeaderDefault.vue';
 import type { Component } from 'vue';
@@ -87,6 +88,7 @@ withDefaults(
 					</span>
 				</button>
 			    </template>
+			    <NotificationBell />
 			    <NavUser  v-if="showUserMenu" />
 			</div>
 		</template>

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\Status\EmployeeStatus;
 use App\Enums\Type\EmployeeType;
+use App\Notifications\Concerns\HasNotificationRoutes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -25,6 +26,7 @@ class Employee extends Authenticatable
     use HasApiTokens;
     use HasArchives;
     use HasFactory;
+    use HasNotificationRoutes;
     use HasOptions;
     use Notifiable;
     use SearchConfig;
@@ -45,7 +47,6 @@ class Employee extends Authenticatable
         'email',
         'status',
         'type',
-        'password',
     ];
 
     protected $casts = [

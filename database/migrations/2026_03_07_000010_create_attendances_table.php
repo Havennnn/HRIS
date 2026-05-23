@@ -25,6 +25,7 @@ return new class extends Migration
             $table->integer('late_minutes')->default(0);
             $table->integer('overtime_minutes')->default(0);
             $table->date('date');
+            $table->integer('status')->nullable();
             $table->timestamps();
 
             $table->index('employee_id');

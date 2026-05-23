@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpstan configfile="phpstan.neon" ignoreErrors>
+    <finder>
+        <directory>app</directory>
+    </finder>
+    <rule ref="vendor/phpstan/phpstan/rules/level0">
+        <exclude>
+            <rule ref="vendor/phpstan/phpstan/rules/tooWide/TooWideReturnTypeRule"/>
+        </exclude>
+    </rule>
+</phpstan>

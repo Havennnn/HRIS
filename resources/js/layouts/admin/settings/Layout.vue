@@ -15,7 +15,7 @@ import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import payoutConfigurations from '@/routes/settings/payout-configurations/index';
 import type { BreadcrumbItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { Cog, DollarSign } from 'lucide-vue-next';
+import { Cog, DollarSign, ClipboardList } from 'lucide-vue-next';
 
 type NavItem = {
     title: string;
@@ -31,6 +31,12 @@ defineProps<{
 const { isCurrentOrParentUrl } = useCurrentUrl();
 
 const settingsNavItems: NavItem[] = [
+    {
+        title: 'KPIs',
+        href: '/settings/kpis',
+        icon: ClipboardList,
+        description: 'Define Key Performance Indicators used in performance reviews.',
+    },
     {
         title: 'Payout Configurations',
         href: payoutConfigurations.index(),

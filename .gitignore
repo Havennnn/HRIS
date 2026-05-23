@@ -28,3 +28,6 @@ yarn-error.log
 /.zed
 /Package
 AGENTS.md
+
+# Generated documentation (auto-regenerated, not committed)
+/docs

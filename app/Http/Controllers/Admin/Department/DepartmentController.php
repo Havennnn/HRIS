@@ -6,10 +6,10 @@ use App\Http\Requests\Admin\Department\DepartmentRequest;
 use App\Http\Resources\Admin\Department\DepartmentResource;
 use App\Models\Department;
 use App\Services\Admin\Department\DepartmentService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use PiaCore\Actions\Resource\CreateAction;
+use Illuminate\Support\Facades\Redirect;
 use PiaCore\Actions\Resource\DeleteAction;
-use PiaCore\Actions\Resource\EditAction;
 use PiaCore\Actions\Resource\ListAction;
 use PiaCore\Actions\Resource\RestoreAction;
 use PiaCore\Actions\Resource\StoreAction;
@@ -60,20 +60,17 @@ final class DepartmentController extends ResourceController
     /**
      * Show the create page.
      */
-    public function create(Request $request, CreateAction $action)
+    public function create(): RedirectResponse
     {
-        return $action($this->createOptions(request: $request));
+        return Redirect::route('departments.index');
     }
 
     /**
      * Show the form for editing the specified department.
      */
-    public function edit(Department $department, EditAction $action, Request $request)
+    public function edit(): RedirectResponse
     {
-        return $action($this->editOptions(
-            record: $department,
-            request: $request,
-        ));
+        return Redirect::route('departments.index');
     }
 
     /**

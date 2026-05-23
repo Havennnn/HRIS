@@ -22,6 +22,7 @@ class HolidayEditResource extends JsonResource
             'type_value' => $this->type?->value,
             'type' => $this->type?->label(),
             'type_badge' => $this->type?->badge(),
+            'is_paid' => $this->is_paid,
             'description' => $this->description,
             'created_at' => $this->created_at?->format('M d, Y'),
         ];

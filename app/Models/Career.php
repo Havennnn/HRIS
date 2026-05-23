@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\Status\CareerStatus;
+use PiaCore\Models\Concerns\HasSeoMeta;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,17 +17,14 @@ class Career extends Model
     use HasActivityLogs;
     use HasArchives;
     use HasFactory;
+    use HasSeoMeta;
     use SearchConfig;
 
-    /**
-     * --------------------------------------------------------------------------
-     * Attributes
-     * --------------------------------------------------------------------------
-     */
     protected $fillable = [
         'position_id',
         'description',
-        'is_active',
+        'salary',
+        'status',
     ];
 
     protected array $searchable = [
@@ -34,14 +33,9 @@ class Career extends Model
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'status' => CareerStatus::class,
     ];
 
-    /**
-     * --------------------------------------------------------------------------
-     * Relationships
-     * --------------------------------------------------------------------------
-     */
     public function position(): BelongsTo
     {
         return $this->belongsTo(Position::class);

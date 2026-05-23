@@ -16,14 +16,14 @@ Route::prefix('auth')
     ->controller(AuthController::class)
     ->group(function (): void {
         // Guest routes
-        Route::post('/login', 'login')->name('login');
-        Route::post('/password/forgot', 'forgotPassword')->name('password.forgot');
+        Route::post('/login', 'login')->name('login')->middleware('throttle:10,1');
+        Route::post('/password/forgot', 'forgotPassword')->name('password.forgot')->middleware('throttle:3,30');
         Route::get('/password/reset/{token}', 'verifyResetToken')->name('password.reset');
-        Route::post('/password/reset', 'updatePassword')->name('password.update');
+        Route::post('/password/reset', 'updatePassword')->name('password.update')->middleware('throttle:5,30');
         Route::post('/logout', 'logout')->middleware('auth:sanctum')->name('logout');
     });
 
-Route::middleware('auth:sanctum')->group(function (): void {
+Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function (): void {
     // Attendance Route
     Route::prefix('attendance')
         ->name('attendance.')

@@ -105,28 +105,28 @@ const totalDeductions = computed(() => {
                     <CardContent>
                         <div class="grid gap-4 md:grid-cols-2">
                             <div class="space-y-1">
-                                <Label class="text-muted-foreground">Employee</Label>
-                                <p class="font-medium">{{ payrollData.employee?.full_name }}</p>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Employee</p>
+                                <p class="text-sm">{{ payrollData.employee?.full_name }}</p>
                             </div>
                             <div class="space-y-1">
-                                <Label class="text-muted-foreground">Email</Label>
-                                <p class="font-medium">{{ payrollData.employee?.email }}</p>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Email</p>
+                                <p class="text-sm">{{ payrollData.employee?.email }}</p>
                             </div>
                             <div class="space-y-1">
-                                <Label class="text-muted-foreground">Position</Label>
-                                <p class="font-medium">{{ payrollData.employee?.position }}</p>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Position</p>
+                                <p class="text-sm">{{ payrollData.employee?.position }}</p>
                             </div>
                             <div class="space-y-1">
-                                <Label class="text-muted-foreground">Department</Label>
-                                <p class="font-medium">{{ payrollData.employee?.department }}</p>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Department</p>
+                                <p class="text-sm">{{ payrollData.employee?.department }}</p>
                             </div>
                             <div class="space-y-1">
-                                <Label class="text-muted-foreground">Pay Period Start</Label>
-                                <p class="font-medium">{{ payrollData.pay_period_start }}</p>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Pay Period Start</p>
+                                <p class="text-sm">{{ payrollData.pay_period_start }}</p>
                             </div>
                             <div class="space-y-1">
-                                <Label class="text-muted-foreground">Pay Period End</Label>
-                                <p class="font-medium">{{ payrollData.pay_period_end }}</p>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Pay Period End</p>
+                                <p class="text-sm">{{ payrollData.pay_period_end }}</p>
                             </div>
                         </div>
                     </CardContent>

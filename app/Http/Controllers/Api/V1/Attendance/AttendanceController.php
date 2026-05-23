@@ -14,7 +14,7 @@ class AttendanceController extends Controller
         protected AttendanceApiService $service
     ) {}
 
-    public function list(Request $request): Responsable
+    public function list(Request $request): JsonResponse|\Illuminate\Contracts\Support\Responsable
     {
         return $this->service->list($request);
     }

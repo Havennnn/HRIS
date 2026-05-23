@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Admin\AttendanceLog;
 
 use App\Enums\Type\AttendanceLogType;
+use App\Exports\AttendanceLogExport;
 use App\Http\Resources\Admin\AttendanceLog\AttendanceLogIndexResource;
 use App\Models\AttendanceLog;
 use App\Services\Admin\AttendanceLog\AttendanceLogService;
 use Illuminate\Http\Request;
+use PiaCore\Actions\Import\ExportAction;
 use PiaCore\Actions\Resource\ListAction;
 use PiaCore\Http\Controllers\ResourceController;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class AttendanceLogController extends ResourceController
 {
@@ -48,5 +51,20 @@ final class AttendanceLogController extends ResourceController
                 'type' => AttendanceLogType::options(),
             ]
         ));
+    }
+
+    /**
+     * Download attendance logs as CSV within a date range.
+     */
+    public function export(Request $request): StreamedResponse
+    {
+        $request->validate([
+            'start_date' => ['required', 'date'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+        ]);
+
+        return app(ExportAction::class)(
+            new AttendanceLogExport($request->input('start_date'), $request->input('end_date')),
+        );
     }
 }

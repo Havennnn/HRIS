@@ -26,12 +26,14 @@ class Attendance extends Model
         'overtime_minutes',
         'date',
         'request_id',
+        'status',
     ];
 
     protected $casts = [
         'time_in' => 'datetime:H:i',
         'time_out' => 'datetime:H:i',
         'date' => 'date',
+        'status' => \App\Enums\Status\AttendanceStatus::class,
     ];
 
     protected array $searchable = [

@@ -197,66 +197,52 @@ function handleHire(): void {
                     <CardContent class="grid gap-6">
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
-                                <Label>Applicant Name</Label>
-                                <div class="py-1 text-sm">
-                                    {{ applicationData?.full_name || '-' }}
-                                </div>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Applicant Name</p>
+                                <p class="text-sm">{{ applicationData?.full_name || '-' }}</p>
                             </div>
 
                             <div class="space-y-2">
-                                <Label>Position Applied</Label>
-                                <div class="py-1 text-sm">
-                                    {{ applicationData?.position || '-' }}
-                                </div>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Position Applied</p>
+                                <p class="text-sm">{{ applicationData?.position || '-' }}</p>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
-                                <Label>Birthdate</Label>
-                                <div class="py-1 text-sm">
-                                    {{ applicationData?.birthdate || '-' }}
-                                </div>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Birthdate</p>
+                                <p class="text-sm">{{ applicationData?.birthdate || '-' }}</p>
                             </div>
 
                             <div class="space-y-2">
-                                <Label>Applied At</Label>
-                                <div class="py-1 text-sm">
-                                    {{ applicationData?.created_at || '-' }}
-                                </div>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Applied At</p>
+                                <p class="text-sm">{{ applicationData?.created_at || '-' }}</p>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
-                                <Label>Mobile Number</Label>
-                                <div class="py-1 text-sm">
-                                    {{ applicationData?.mobile_number || '-' }}
-                                </div>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Mobile Number</p>
+                                <p class="text-sm">{{ applicationData?.mobile_number || '-' }}</p>
                             </div>
 
                             <div class="space-y-2">
-                                <Label>Email</Label>
-                                <div class="py-1 text-sm">
-                                    {{ applicationData?.email || '-' }}
-                                </div>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Email</p>
+                                <p class="text-sm">{{ applicationData?.email || '-' }}</p>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
-                                <Label>Current Status</Label>
-                                <div class="py-1 text-sm">
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Current Status</p>
+                                <p class="text-sm">
                                     <DataBadge v-if="applicationData?.status" :badge="applicationData.status" />
                                     <span v-else>-</span>
-                                </div>
+                                </p>
                             </div>
 
                             <div class="space-y-2">
-                                <Label>Last Updated</Label>
-                                <div class="py-1 text-sm">
-                                    {{ applicationData?.updated_at || '-' }}
-                                </div>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Last Updated</p>
+                                <p class="text-sm">{{ applicationData?.updated_at || '-' }}</p>
                             </div>
                         </div>
                     </CardContent>

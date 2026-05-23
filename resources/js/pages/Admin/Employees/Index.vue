@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useRoleAccess } from '@/composables/useRoleAccess';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { create, destroy, edit, index, restore } from '@/routes/employees';
 import type { BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { ArrowUpDown, Badge, Briefcase, IdCardIcon } from 'lucide-vue-next';
+import { ArrowUpDown, Badge, Briefcase, Download, IdCardIcon, Upload } from 'lucide-vue-next';
 import DataBadge from 'piacore/components/DataBadge.vue';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import type { DataTableActionsConfig, DataTableColumn } from 'piacore/components/DataTable.vue';
@@ -185,6 +186,43 @@ function handlePageChange(url: string | null): void {
         router.visit(url, { preserveState: true });
     }
 }
+
+// Import/Export
+const showImportDialog = ref(false);
+const importFile = ref<File | null>(null);
+const importing = ref(false);
+
+function onImportFileChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    importFile.value = target.files?.[0] ?? null;
+}
+
+async function submitImport(): Promise<void> {
+    if (!importFile.value) return;
+
+    importing.value = true;
+    try {
+        router.post(
+            '/employees/import',
+            { file: importFile.value },
+            {
+                preserveState: true,
+                onSuccess: () => {
+                    showImportDialog.value = false;
+                    importFile.value = null;
+                },
+                onFinish: () => {
+                    importing.value = false;
+                },
+            },
+        );
+    } catch {
+        importing.value = false;
+    }
+}
+
+const canImport = computed(() => hasPermission('can-import-employees'));
+const canExport = computed(() => hasPermission('can-export-data'));
 </script>
 
 <template>
@@ -198,6 +236,16 @@ function handlePageChange(url: string | null): void {
                     description="Manage employees within the organization."
                 >
                     <template #actions>
+                        <Button v-if="canImport" variant="outline" @click="showImportDialog = true">
+                            <Upload class="mr-2 h-4 w-4" />
+                            Import
+                        </Button>
+                        <Button v-if="canExport" variant="outline" as-child>
+                            <a href="/employees/export" download>
+                                <Download class="mr-2 h-4 w-4" />
+                                Export
+                            </a>
+                        </Button>
                         <Button v-if="canCreateEmployee" as-child>
                             <Link :href="create().url">Add Employee</Link>
                         </Button>
@@ -224,6 +272,49 @@ function handlePageChange(url: string | null): void {
                     />
                 </CardContent>
             </Card>
+
+            <!-- Import Dialog -->
+            <Dialog :open="showImportDialog" @update:open="showImportDialog = $event">
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Import Employees</DialogTitle>
+                        <DialogDescription>
+                            Upload a CSV file to import employees. Rows are matched by email — existing records are updated, new ones are created.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div class="space-y-4">
+                        <div class="rounded-lg border border-dashed p-6 text-center">
+                            <Upload class="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+                            <p class="mb-1 text-sm font-medium">Choose a CSV file</p>
+                            <p class="mb-3 text-xs text-muted-foreground">.csv or .txt, max 5MB</p>
+                            <input
+                                type="file"
+                                accept=".csv,.txt"
+                                class="block w-full text-sm file:mr-4 file:rounded file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:text-primary-foreground hover:file:bg-primary/90"
+                                @change="onImportFileChange"
+                            />
+                        </div>
+
+                        <div class="text-center">
+                            <a
+                                href="/employees/manifest"
+                                class="text-sm text-primary underline-offset-4 hover:underline"
+                                download
+                            >
+                                Download template CSV
+                            </a>
+                        </div>
+                    </div>
+
+                    <DialogFooter>
+                        <Button variant="outline" @click="showImportDialog = false">Cancel</Button>
+                        <Button :disabled="!importFile || importing" @click="submitImport">
+                            {{ importing ? 'Importing...' : 'Import' }}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     </AppLayout>
 </template>

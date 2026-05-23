@@ -160,30 +160,30 @@ function submit(): void {
 
                     <CardContent class="grid gap-6">
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <div class="space-y-2">
-                                <Label>Employee</Label>
-                                <div class="py-1 text-sm">Employee #{{ reviewData?.employee_id }}</div>
+                            <div>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Employee</p>
+                                <p class="text-sm">Employee #{{ reviewData?.employee_id }}</p>
                             </div>
-                            <div class="space-y-2">
-                                <Label>Reviewer</Label>
-                                <div class="py-1 text-sm">Reviewer #{{ reviewData?.reviewer_id }}</div>
+                            <div>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Reviewer</p>
+                                <p class="text-sm">Reviewer #{{ reviewData?.reviewer_id }}</p>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <div class="space-y-2">
-                                <Label>Review Date</Label>
-                                <div class="py-1 text-sm">{{ reviewData?.review_date }}</div>
+                            <div>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Review Date</p>
+                                <p class="text-sm">{{ reviewData?.review_date }}</p>
                             </div>
-                            <div class="space-y-2">
-                                <Label>Overall Score</Label>
-                                <div class="py-1 text-sm">{{ reviewData?.overall_score ?? '-' }}</div>
+                            <div>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Overall Score</p>
+                                <p class="text-sm">{{ reviewData?.overall_score ?? '-' }}</p>
                             </div>
                         </div>
 
-                        <div v-if="reviewData?.scores && reviewData.scores.length > 0" class="space-y-2">
-                            <Label>Scores</Label>
-                            <div class="py-1 text-sm space-y-1">
+                        <div v-if="reviewData?.scores && reviewData.scores.length > 0">
+                            <p class="text-xs font-medium text-muted-foreground mb-1">Scores</p>
+                            <div class="text-sm space-y-1">
                                 <div v-for="score in reviewData.scores" :key="score.id" class="flex gap-2">
                                     <span class="text-muted-foreground">KPI #{{ score.kpi_id }}:</span>
                                     <span class="font-medium">{{ score.score }}</span>
@@ -191,9 +191,9 @@ function submit(): void {
                             </div>
                         </div>
 
-                        <div v-if="reviewData?.feedback && reviewData.feedback.length > 0" class="space-y-2">
-                            <Label>Feedback</Label>
-                            <div class="py-1 text-sm space-y-2">
+                        <div v-if="reviewData?.feedback && reviewData.feedback.length > 0">
+                            <p class="text-xs font-medium text-muted-foreground mb-1">Feedback</p>
+                            <div class="text-sm space-y-2">
                                 <div v-for="item in reviewData.feedback" :key="item.id" class="border rounded p-2">
                                     <span class="text-xs text-muted-foreground">Type #{{ item.type }}</span>
                                     <p class="mt-1">{{ item.feedback }}</p>

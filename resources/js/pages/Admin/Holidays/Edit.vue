@@ -14,6 +14,7 @@ import { edit, index, update } from '@/routes/holidays';
 import type { BreadcrumbItem } from '@/types';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { ArrowLeft, Pencil, Save } from 'lucide-vue-next';
+import { Checkbox } from '@/components/ui/checkbox';
 import ActivityLogTable from 'piacore/components/ActivityLogTable.vue';
 import DataBadge from 'piacore/components/DataBadge.vue';
 import DataHeader from 'piacore/components/DataHeader.vue';
@@ -47,6 +48,7 @@ const form = useForm({
     name: holidayData.value?.name ?? '',
     date: holidayData.value?.date ?? '',
     type: holidayData.value?.type_value ?? '',
+    is_paid: holidayData.value?.is_paid ?? true,
     description: holidayData.value?.description ?? '',
 });
 
@@ -140,41 +142,31 @@ function submit(): void {
                     <CardContent class="grid gap-6">
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
-                                <Label>Holiday Name</Label>
-                                <div class="py-1 text-sm">
-                                    {{ holidayData?.name }}
-                                </div>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Holiday Name</p>
+                                <p class="text-sm">{{ holidayData?.name }}</p>
                             </div>
 
                             <div class="space-y-2">
-                                <Label>Date</Label>
-                                <div class="py-1 text-sm">
-                                    {{ holidayData?.date }}
-                                </div>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Date</p>
+                                <p class="text-sm">{{ holidayData?.date }}</p>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
-                                <Label>Type</Label>
-                                <div class="py-1 text-sm">
-                                    {{ holidayData?.type }}
-                                </div>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Type</p>
+                                <p class="text-sm">{{ holidayData?.type }}</p>
                             </div>
 
                             <div class="space-y-2">
-                                <Label>Created Date</Label>
-                                <div class="py-1 text-sm">
-                                    {{ holidayData?.created_at }}
-                                </div>
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Paid Holiday</p>
+                                <p class="text-sm">{{ holidayData?.is_paid ? 'Yes' : 'No' }}</p>
                             </div>
                         </div>
 
                         <div class="space-y-2">
-                            <Label>Description</Label>
-                            <div class="py-1 text-sm">
-                                {{ holidayData?.description || '-' }}
-                            </div>
+                            <p class="text-xs font-medium text-muted-foreground mb-1">Description</p>
+                            <p class="text-sm">{{ holidayData?.description || '-' }}</p>
                         </div>
                     </CardContent>
                 </Card>
@@ -247,6 +239,18 @@ function submit(): void {
                                         :error="form.errors.type"
                                     />
                                 </div>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <Checkbox
+                                    id="is_paid"
+                                    :checked="form.is_paid"
+                                    :disabled="form.processing"
+                                    @update:checked="form.is_paid = !!$event"
+                                />
+                                <Label for="is_paid" class="cursor-pointer text-sm font-normal">
+                                    Paid holiday (employees get paid for this day off)
+                                </Label>
                             </div>
 
                             <div class="space-y-2">

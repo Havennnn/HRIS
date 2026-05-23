@@ -118,17 +118,13 @@ function submit(): void {
 
                     <CardContent class="grid gap-6">
                         <div class="space-y-2">
-                            <Label>KPI Name</Label>
-                            <div class="py-1 text-sm font-medium">
-                                {{ kpiData?.name }}
-                            </div>
+                            <p class="text-xs font-medium text-muted-foreground mb-1">KPI Name</p>
+                            <p class="text-sm">{{ kpiData?.name }}</p>
                         </div>
 
                         <div class="space-y-2">
-                            <Label>Description</Label>
-                            <div class="py-1 text-sm">
-                                {{ kpiData?.description || '-' }}
-                            </div>
+                            <p class="text-xs font-medium text-muted-foreground mb-1">Description</p>
+                            <p class="text-sm">{{ kpiData?.description || '-' }}</p>
                         </div>
                     </CardContent>
                 </Card>

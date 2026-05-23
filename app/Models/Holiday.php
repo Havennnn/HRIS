@@ -16,12 +16,14 @@ class Holiday extends Model
         'name',
         'date',
         'type',
+        'is_paid',
         'description',
     ];
 
     protected $casts = [
         'date' => 'date',
         'type' => HolidayType::class,
+        'is_paid' => 'boolean',
     ];
 
     public function scopeRegular($query)

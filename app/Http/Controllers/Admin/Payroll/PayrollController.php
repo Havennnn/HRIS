@@ -3,14 +3,17 @@
 namespace App\Http\Controllers\Admin\Payroll;
 
 use App\Enums\Status\PayrollStatus;
+use App\Exports\PayrollExport;
 use App\Http\Resources\Admin\Payroll\PayrollIndexResource;
 use App\Http\Resources\Admin\Payroll\PayrollShowResource;
 use App\Models\Payroll;
 use App\Services\Admin\Payroll\PayrollService;
 use Illuminate\Http\Request as HttpRequest;
+use PiaCore\Actions\Import\ExportAction;
 use PiaCore\Actions\Resource\ListAction;
 use PiaCore\Actions\Resource\ShowAction;
 use PiaCore\Http\Controllers\ResourceController;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class PayrollController extends ResourceController
 {
@@ -62,5 +65,20 @@ final class PayrollController extends ResourceController
             request: $request,
             resource: PayrollShowResource::class
         ));
+    }
+
+    /**
+     * Download payrolls as CSV within a date range.
+     */
+    public function export(HttpRequest $request): StreamedResponse
+    {
+        $request->validate([
+            'start_date' => ['required', 'date'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+        ]);
+
+        return app(ExportAction::class)(
+            new PayrollExport($request->input('start_date'), $request->input('end_date')),
+        );
     }
 }

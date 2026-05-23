@@ -2,15 +2,16 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { create, destroy, edit, index, restore } from '@/routes/careers';
+import { create, destroy, draft as draftRoute, edit, index, publish as publishRoute, restore } from '@/routes/careers';
 import type { BreadcrumbItem } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/vue3';
-import { ArrowUpDown, Badge } from 'lucide-vue-next';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { ArrowUpDown, Badge, Globe, Lock } from 'lucide-vue-next';
+import DataBadge from 'piacore/components/DataBadge.vue';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import type { DataTableActionsConfig, DataTableColumn } from 'piacore/components/DataTable.vue';
 import DataTablePanel from 'piacore/components/DataTablePanel.vue';
 import type { PaginatedData } from 'piacore/Interface/Pagination';
-import { Option } from 'piacore/Interface/Selector';
+import type { Option } from 'piacore/Interface/Selector';
 import { computed, h, ref } from 'vue';
 import type { CareerIndexResource } from './index';
 
@@ -78,14 +79,42 @@ const sorts = [
     },
 ];
 
-const tableActions = computed<DataTableActionsConfig>(() => ({
-    editRoute: (row) => edit({ career: (row as CareerIndexResource).id }).url,
-    deleteRoute: (row) => destroy({ career: (row as CareerIndexResource).id }).url,
-    restoreRoute: (row) => restore({ career: (row as CareerIndexResource).id }).url,
-    destructiveAction: activeTab.value === 'archived' ? 'restore' : 'delete',
-    deleteConfirmMessage: 'Are you sure you want to delete this career?',
-    restoreConfirmMessage: 'Are you sure you want to restore this career?',
-}));
+const tableActions = computed<DataTableActionsConfig | undefined>(() => {
+    const archivedTab = activeTab.value === 'archived';
+
+    if (archivedTab) {
+        return {
+            variant: 'menu',
+            restoreRoute: (row) => restore({ career: (row as CareerIndexResource).id }).url,
+            destructiveAction: 'restore' as const,
+            restoreConfirmMessage: 'Are you sure you want to restore this career?',
+        };
+    }
+
+    return {
+        variant: 'menu',
+        editRoute: (row) => edit({ career: (row as CareerIndexResource).id }).url,
+        deleteRoute: (row) => destroy({ career: (row as CareerIndexResource).id }).url,
+        destructiveAction: 'delete',
+        deleteConfirmMessage: 'Are you sure you want to delete this career?',
+        customActions: [
+            {
+                key: 'publish',
+                label: 'Publish',
+                icon: Globe,
+                onClick: (row) => router.post(publishRoute({ career: (row as CareerIndexResource).id }).url, {}, { preserveScroll: true }),
+                showWhen: (row) => (row as CareerIndexResource).status?.label === 'Draft' && !archivedTab,
+            },
+            {
+                key: 'draft',
+                label: 'Draft',
+                icon: Lock,
+                onClick: (row) => router.post(draftRoute({ career: (row as CareerIndexResource).id }).url, {}, { preserveScroll: true }),
+                showWhen: (row) => (row as CareerIndexResource).status?.label === 'Published' && !archivedTab,
+            },
+        ],
+    };
+});
 
 const columns: DataTableColumn[] = [
     {
@@ -96,13 +125,25 @@ const columns: DataTableColumn[] = [
         cell: ({ row }) => (row as CareerIndexResource).position?.name ?? '-',
     },
     {
-        key: 'description',
-        label: 'Description',
-        headerClass: 'min-w-80',
+        key: 'salary',
+        label: 'Salary',
+        cellClass: 'text-muted-foreground',
         cell: ({ row }) => {
-            const career = row as CareerIndexResource;
-            return h('div', { class: 'truncate max-w-xs' }, career.description || '-');
+            const val = (row as CareerIndexResource).salary;
+            if (!val) return '-';
+            const parts = val.split('-');
+            if (parts.length === 2) {
+                return `₱${Number(parts[0]).toLocaleString()} - ₱${Number(parts[1]).toLocaleString()}`;
+            }
+            return `₱${Number(val).toLocaleString()}`;
         },
+    },
+    {
+        key: 'status',
+        label: 'Status',
+        cell: ({ row }) => h(DataBadge, {
+            badge: (row as CareerIndexResource).status,
+        }),
     },
     {
         key: 'created_at',

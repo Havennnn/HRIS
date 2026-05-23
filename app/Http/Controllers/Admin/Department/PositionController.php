@@ -7,10 +7,10 @@ use App\Http\Resources\Admin\Department\PositionResource;
 use App\Models\Department;
 use App\Models\Position;
 use App\Services\Admin\Department\PositionService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use PiaCore\Actions\Resource\CreateAction;
+use Illuminate\Support\Facades\Redirect;
 use PiaCore\Actions\Resource\DeleteAction;
-use PiaCore\Actions\Resource\EditAction;
 use PiaCore\Actions\Resource\ListAction;
 use PiaCore\Actions\Resource\RestoreAction;
 use PiaCore\Actions\Resource\StoreAction;
@@ -66,28 +66,17 @@ final class PositionController extends ResourceController
     /**
      * Show the create page.
      */
-    public function create(Request $request, CreateAction $action)
+    public function create(): RedirectResponse
     {
-        return $action($this->createOptions(
-            request: $request,
-            additionalProps: [
-                'departments' => Department::options(),
-            ]
-        ));
+        return Redirect::route('positions.index');
     }
 
     /**
      * Show the form for editing the specified position.
      */
-    public function edit(Position $position, EditAction $action, Request $request)
+    public function edit(): RedirectResponse
     {
-        return $action($this->editOptions(
-            record: $position,
-            request: $request,
-            additionalProps: [
-                'departments' => Department::options(),
-            ]
-        ));
+        return Redirect::route('positions.index');
     }
 
     /**

@@ -9,6 +9,7 @@ export interface HolidayIndexResource {
         label: string;
         variant: string;
     };
+    is_paid: boolean;
     description: string | null;
     created_at: string;
 }
@@ -25,6 +26,7 @@ export interface HolidayEditResource {
             label: string;
             variant: string;
         };
+        is_paid: boolean;
         description: string | null;
         created_at: string;
     };

@@ -21,9 +21,9 @@ final class KpiController extends ResourceController
 
     protected ?string $serviceClass = KpiService::class;
 
-    protected ?string $routeBase = 'kpis';
+    protected ?string $routeBase = 'settings.kpis';
 
-    protected ?string $viewBase = 'Admin/Kpis';
+    protected ?string $viewBase = 'Admin/Settings/Kpis';
 
     public function index(Request $request, ListAction $action)
     {

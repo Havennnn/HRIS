@@ -12,8 +12,16 @@ use App\Http\Resources\Admin\Employee\EmployeeEditResource;
 use App\Http\Resources\Admin\Employee\EmployeeIndexResource;
 use App\Models\Employee;
 use App\Models\Position;
+use App\Exports\EmployeeExport;
+use App\Imports\EmployeeImport;
+use App\Manifests\EmployeeManifest;
 use App\Services\Admin\Employee\EmployeeService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
+use PiaCore\Actions\Import\ExportAction;
+use PiaCore\Actions\Import\ImportAction;
+use PiaCore\Actions\Import\ManifestAction;
 use PiaCore\Actions\Resource\CreateAction;
 use PiaCore\Actions\Resource\DeleteAction;
 use PiaCore\Actions\Resource\EditAction;
@@ -22,13 +30,14 @@ use PiaCore\Actions\Resource\RestoreAction;
 use PiaCore\Actions\Resource\StoreAction;
 use PiaCore\Actions\Resource\UpdateAction;
 use PiaCore\Http\Controllers\ResourceController;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class EmployeeController extends ResourceController
 {
     /**
      * The model class associated with the resource.
      *
-     * @var class-string<\App\Models\Employee>
+     * @var class-string<Employee>
      */
     protected string $modelClass = Employee::class;
 
@@ -52,7 +61,7 @@ final class EmployeeController extends ResourceController
     /**
      * Display a listing of the employees.
      */
-    public function index(Request $request, ListAction $action)
+    public function index(Request $request, ListAction $action): mixed
     {
         return $action($this->listOptions(
             request: $request,
@@ -67,7 +76,7 @@ final class EmployeeController extends ResourceController
     /**
      * Show the create page.
      */
-    public function create(Request $request, CreateAction $action)
+    public function create(Request $request, CreateAction $action): mixed
     {
         return $action($this->createOptions(
             request: $request,
@@ -81,7 +90,7 @@ final class EmployeeController extends ResourceController
     /**
      * Show the form for editing the specified employee.
      */
-    public function edit(Employee $employee, EditAction $action, Request $request)
+    public function edit(Employee $employee, EditAction $action, Request $request): mixed
     {
         return $action($this->editOptions(
             record: $employee->load([
@@ -105,7 +114,7 @@ final class EmployeeController extends ResourceController
     /**
      * Store a newly created employee in storage.
      */
-    public function store(EmployeeRequest $request, StoreAction $action)
+    public function store(EmployeeRequest $request, StoreAction $action): mixed
     {
         return $action($this->storeOptions($request));
     }
@@ -113,7 +122,7 @@ final class EmployeeController extends ResourceController
     /**
      * Update the specified employee in storage.
      */
-    public function update(EmployeeRequest $request, Employee $employee, UpdateAction $action)
+    public function update(EmployeeRequest $request, Employee $employee, UpdateAction $action): mixed
     {
         return $action($this->updateOptions($employee, $request));
     }
@@ -121,7 +130,7 @@ final class EmployeeController extends ResourceController
     /**
      * Remove the specified employee from storage.
      */
-    public function destroy(Employee $employee, DeleteAction $action, Request $request)
+    public function destroy(Employee $employee, DeleteAction $action, Request $request): mixed
     {
         return $action($this->deleteOptions($employee, $request));
     }
@@ -129,7 +138,7 @@ final class EmployeeController extends ResourceController
     /**
      * Restore the specified soft-deleted employee.
      */
-    public function restore(Employee $employee, RestoreAction $action, Request $request)
+    public function restore(Employee $employee, RestoreAction $action, Request $request): mixed
     {
         return $action($this->restoreOptions($employee, $request));
     }
@@ -137,7 +146,7 @@ final class EmployeeController extends ResourceController
     /**
      * Send a password reset link to the employee's email.
      */
-    public function resetPassword(Employee $employee)
+    public function resetPassword(Employee $employee): RedirectResponse
     {
         return $this->service()->resetPassword($employee);
     }
@@ -145,7 +154,7 @@ final class EmployeeController extends ResourceController
     /**
      * Update the device information for the specified employee.
      */
-    public function updateDevice(EmployeeDeviceRequest $request, Employee $employee)
+    public function updateDevice(EmployeeDeviceRequest $request, Employee $employee): RedirectResponse
     {
         return $this->service()->updateDevice($employee, $request);
     }
@@ -153,8 +162,37 @@ final class EmployeeController extends ResourceController
     /**
      * Update the contact person information for the specified employee.
      */
-    public function updateContactPerson(EmployeeContactRequest $request, Employee $employee)
+    public function updateContactPerson(EmployeeContactRequest $request, Employee $employee): RedirectResponse
     {
         return $this->service()->updateContactPerson($employee, $request);
+    }
+
+    // ─── Import / Export ─────────────────────────────────────────────
+
+    /**
+     * Download a CSV template (manifest) showing required columns for import.
+     */
+    public function manifest(): StreamedResponse
+    {
+        return app(ManifestAction::class)(new EmployeeManifest());
+    }
+
+    /**
+     * Process the uploaded CSV file for employee import.
+     */
+    public function import(Request $request): RedirectResponse
+    {
+        return app(ImportAction::class)(
+            request: $request,
+            handler: new EmployeeImport(),
+        );
+    }
+
+    /**
+     * Download employees as CSV.
+     */
+    public function export(): StreamedResponse
+    {
+        return app(ExportAction::class)(new EmployeeExport());
     }
 }

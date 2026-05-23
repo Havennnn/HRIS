@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers\Admin\Career;
 
+use App\Enums\Status\CareerStatus;
 use App\Http\Requests\Admin\Career\CareerRequest;
 use App\Http\Resources\Admin\Career\CareerEditResource;
 use App\Http\Resources\Admin\Career\CareerIndexResource;
 use App\Models\Career;
 use App\Models\Position;
 use App\Services\Admin\Career\CareerService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Redirect;
 use PiaCore\Actions\Resource\CreateAction;
 use PiaCore\Actions\Resource\DeleteAction;
 use PiaCore\Actions\Resource\EditAction;
@@ -100,6 +103,20 @@ final class CareerController extends ResourceController
     public function update(CareerRequest $request, Career $career, UpdateAction $action)
     {
         return $action($this->updateOptions($career, $request));
+    }
+
+    public function publish(Career $career): RedirectResponse
+    {
+        $career->update(['status' => CareerStatus::PUBLISHED]);
+
+        return Redirect::back()->with('success', 'Career published successfully.');
+    }
+
+    public function draft(Career $career): RedirectResponse
+    {
+        $career->update(['status' => CareerStatus::DRAFT]);
+
+        return Redirect::back()->with('success', 'Career moved to draft.');
     }
 
     /**

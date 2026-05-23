@@ -7,11 +7,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class CareerIndexResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
         return [
@@ -21,7 +16,8 @@ class CareerIndexResource extends JsonResource
                 'name' => $this->position?->name,
             ],
             'description' => $this->description,
-            'is_active' => $this->is_active,
+            'salary' => $this->salary,
+            'status' => $this->status?->badge(),
             'created_at' => $this->created_at?->format('M d, Y'),
         ];
     }

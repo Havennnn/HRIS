@@ -29,6 +29,7 @@ class HolidayRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'date' => ['required', 'date'],
             'type' => ['required', 'integer', Rule::enum(HolidayType::class)],
+            'is_paid' => ['boolean'],
             'description' => ['nullable', 'string', 'max:1000'],
         ];
     }

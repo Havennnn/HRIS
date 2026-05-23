@@ -227,6 +227,7 @@ async function submitImport(): Promise<void> {
 
 const canImport = computed(() => hasPermission('can-import-employees'));
 const canExport = computed(() => hasPermission('can-export-data'));
+const validationErrors = computed(() => (page.props as any).errors ?? {});
 </script>
 
 <template>
@@ -291,13 +292,21 @@ const canExport = computed(() => hasPermission('can-export-data'));
                         <div v-if="importResult" class="rounded-lg border p-4" :class="importResult.errors?.length ? 'border-red-200 bg-red-50' : 'border-green-200 bg-green-50'">
                             <p class="text-sm font-medium" :class="importResult.errors?.length ? 'text-red-800' : 'text-green-800'">
                                 Imported {{ importResult.success }} record(s).
-                                <span v-if="importResult.errors?.length"> {{ importResult.errors.length }} error(s).</span>
+                                <span v-if="importResult.errors?.length"> {{ Object.keys(importResult.errors).length }} error(s).</span>
                             </p>
                             <div v-if="importResult.errors?.length" class="mt-2 max-h-32 overflow-y-auto space-y-1">
                                 <p v-for="(msg, row) in importResult.errors" class="text-xs text-red-700">
                                     Row {{ row }}: {{ msg }}
                                 </p>
                             </div>
+                        </div>
+                        <div v-if="Object.keys(validationErrors).length" class="rounded-lg border border-red-200 bg-red-50 p-4">
+                            <p class="text-sm font-medium text-red-800">Validation errors:</p>
+                            <ul class="mt-1 list-inside list-disc space-y-0.5">
+                                <li v-for="(msgs, field) in validationErrors" class="text-xs text-red-700">
+                                    {{ Array.isArray(msgs) ? msgs.join(', ') : msgs }}
+                                </li>
+                            </ul>
                         </div>
                         <div class="rounded-lg border border-dashed p-6 text-center">
                             <Upload class="mx-auto mb-2 h-8 w-8 text-muted-foreground" />

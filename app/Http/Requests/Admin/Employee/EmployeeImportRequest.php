@@ -21,10 +21,20 @@ class EmployeeImportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // Uploaded file validation
+            // Uploaded file validation (applied by Laravel automatically)
             'file' => ['required', 'file', 'mimes:csv,xlsx', 'max:5120'],
+        ];
+    }
 
-            // Per-row validation (applied by ImportAction to each CSV row)
+    /**
+     * Validation rules applied to each CSV/XLSX row during background import.
+     *
+     * These are NOT checked by Laravel's automatic validation — they're used
+     * by ImportJob to validate each row during queued processing.
+     */
+    public function rowRules(): array
+    {
+        return [
             'first_name' => ['required', 'string', 'max:255'],
             'last_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
@@ -41,6 +51,16 @@ class EmployeeImportRequest extends FormRequest
             'file.required' => 'Please select a CSV file to upload.',
             'file.mimes' => 'The file must be a CSV or Excel (.xlsx) file.',
             'file.max' => 'The file size must not exceed 5MB.',
+        ];
+    }
+
+    /**
+     * Custom error messages for row-level validation.
+     * Used by ImportJob during background processing.
+     */
+    public function rowMessages(): array
+    {
+        return [
             'first_name.required' => 'First name is required.',
             'last_name.required' => 'Last name is required.',
             'email.required' => 'Email address is required.',

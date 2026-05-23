@@ -51,6 +51,9 @@ class HandleInertiaRequests extends Middleware
                 'role' => $permissionPayload['role'],
                 'permissions' => $permissionPayload['permissions'],
             ],
+            'notifications' => [
+                'unread_count' => $admin?->unreadNotifications()->count() ?? 0,
+            ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

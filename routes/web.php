@@ -9,6 +9,8 @@ use App\Http\Controllers\Admin\Employee\AttendanceController;
 use App\Http\Controllers\Admin\Employee\EmployeeController;
 use App\Http\Controllers\Admin\Holiday\HolidayController;
 use App\Http\Controllers\Admin\Kpi\KpiController;
+use App\Http\Controllers\Admin\NotificationController;
+use App\Http\Controllers\Admin\Page\PageController;
 use App\Http\Controllers\Admin\Payroll\PayrollController;
 use App\Http\Controllers\Admin\PerformanceReview\PerformanceReviewController;
 use App\Http\Controllers\Admin\Request\RequestController;
@@ -70,6 +72,11 @@ Route::middleware(['auth:admin'])->group(function (): void {
             Route::delete('/{employee}', 'destroy')->middleware('can-archive-employee')->name('destroy');
             Route::patch('/{employee}/restore', 'restore')->middleware('can-restore-employee')->name('restore')->withTrashed();
 
+            // Import / Export
+            Route::get('/export', 'export')->middleware('can-export-data')->name('export');
+            Route::get('/manifest', 'manifest')->middleware('can-import-employees')->name('manifest');
+            Route::post('/import', 'import')->middleware('can-import-employees')->name('import');
+
             // Employee Device Routes
             Route::prefix('/{employee}/device')
                 ->name('device.')
@@ -101,6 +108,7 @@ Route::middleware(['auth:admin'])->group(function (): void {
         ->controller(AttendanceLogController::class)
         ->group(function (): void {
             Route::get('/', 'index')->middleware('can-list-attendance-logs')->name('index');
+            Route::get('/export', 'export')->middleware('can-export-data')->name('export');
         });
 
     // Career Management Routes
@@ -113,6 +121,8 @@ Route::middleware(['auth:admin'])->group(function (): void {
             Route::post('/', 'store')->middleware('can-create-career')->name('store');
             Route::get('/{career}/edit', 'edit')->middleware('can-update-career')->name('edit');
             Route::patch('/{career}', 'update')->middleware('can-update-career')->name('update');
+            Route::post('/{career}/publish', 'publish')->middleware('can-update-career')->name('publish');
+            Route::post('/{career}/draft', 'draft')->middleware('can-update-career')->name('draft');
             Route::delete('/{career}', 'destroy')->middleware('can-archive-career')->name('destroy');
             Route::patch('/{career}/restore', 'restore')->middleware('can-restore-career')->name('restore')->withTrashed();
         });
@@ -153,6 +163,7 @@ Route::middleware(['auth:admin'])->group(function (): void {
         ->group(function (): void {
             Route::get('/', 'index')->middleware('can-list-payrolls')->name('index');
             Route::get('/{payroll}', 'show')->middleware('can-list-payrolls')->name('show');
+            Route::get('/export', 'export')->middleware('can-export-data')->name('export');
         });
 
     // Holiday Management Routes
@@ -169,18 +180,32 @@ Route::middleware(['auth:admin'])->group(function (): void {
             Route::patch('/{holiday}/restore', 'restore')->middleware('can-restore-holiday')->name('restore')->withTrashed();
         });
 
-    // KPI Management Routes
-    Route::prefix('kpis')
-        ->name('kpis.')
-        ->controller(KpiController::class)
+    // Settings Routes
+    Route::prefix('settings')
+        ->name('settings.')
         ->group(function (): void {
-            Route::get('/', 'index')->middleware('can-list-kpis')->name('index');
-            Route::get('/create', 'create')->middleware('can-create-kpi')->name('create');
-            Route::post('/', 'store')->middleware('can-create-kpi')->name('store');
-            Route::get('/{kpi}/edit', 'edit')->middleware('can-update-kpi')->name('edit');
-            Route::patch('/{kpi}', 'update')->middleware('can-update-kpi')->name('update');
-            Route::delete('/{kpi}', 'destroy')->middleware('can-archive-kpi')->name('destroy');
-            Route::patch('/{kpi}/restore', 'restore')->middleware('can-restore-kpi')->name('restore')->withTrashed();
+            // KPI Management (selection for performance reviews)
+            Route::prefix('kpis')
+                ->name('kpis.')
+                ->controller(KpiController::class)
+                ->group(function (): void {
+                    Route::get('/', 'index')->middleware('can-list-kpis')->name('index');
+                    Route::get('/create', 'create')->middleware('can-create-kpi')->name('create');
+                    Route::post('/', 'store')->middleware('can-create-kpi')->name('store');
+                    Route::get('/{kpi}/edit', 'edit')->middleware('can-update-kpi')->name('edit');
+                    Route::patch('/{kpi}', 'update')->middleware('can-update-kpi')->name('update');
+                    Route::delete('/{kpi}', 'destroy')->middleware('can-archive-kpi')->name('destroy');
+                    Route::patch('/{kpi}/restore', 'restore')->middleware('can-restore-kpi')->name('restore')->withTrashed();
+                });
+
+            Route::prefix('payout-configurations')
+                ->name('payout-configurations.')
+                ->controller(PayoutConfigurationController::class)
+                ->group(function (): void {
+                    Route::get('/', 'index')->middleware('can-list-payout-configurations')->name('index');
+                    Route::patch('/{payoutConfiguration}', 'update')->middleware('can-update-payout-configuration')->name('update');
+                    Route::post('/reset', 'reset')->middleware('can-update-payout-configuration')->name('reset');
+                });
         });
 
     // Performance Review Management Routes
@@ -197,17 +222,13 @@ Route::middleware(['auth:admin'])->group(function (): void {
             Route::patch('/{performanceReview}/restore', 'restore')->middleware('can-restore-performance-review')->name('restore')->withTrashed();
         });
 
-    // Settings Routes
-    Route::prefix('settings')
-        ->name('settings.')
+    // Notification Routes
+    Route::prefix('notifications')
+        ->name('notifications.')
+        ->controller(NotificationController::class)
         ->group(function (): void {
-            Route::prefix('payout-configurations')
-                ->name('payout-configurations.')
-                ->controller(PayoutConfigurationController::class)
-                ->group(function (): void {
-                    Route::get('/', 'index')->middleware('can-list-payout-configurations')->name('index');
-                    Route::patch('/{payoutConfiguration}', 'update')->middleware('can-update-payout-configuration')->name('update');
-                    Route::post('/reset', 'reset')->middleware('can-update-payout-configuration')->name('reset');
-                });
+            Route::get('/', 'index')->name('index');
+            Route::post('/{id}/read', 'read')->name('read');
+            Route::post('/read-all', 'readAll')->name('read-all');
         });
 });

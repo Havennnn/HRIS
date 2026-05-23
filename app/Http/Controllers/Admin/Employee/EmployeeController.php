@@ -177,7 +177,7 @@ final class EmployeeController extends ResourceController
     public function manifest(ManifestAction $action): StreamedResponse
     {
         return $action(
-            $this->manifestOptions(EmployeeManifest::class, 'employee-manifest-'.today()->format('Y-m-d')),
+            $this->manifestOptions(EmployeeManifest::class, 'employee-manifest-'.today()->format('Y-m-d'), ExportType::XLSX),
         );
     }
 

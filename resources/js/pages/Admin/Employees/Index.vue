@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useRoleAccess } from '@/composables/useRoleAccess';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { create, destroy, edit, exportMethod, index, manifest, restore } from '@/routes/employees';
+import { create, destroy, edit, exportMethod, index, importMethod, manifest, restore } from '@/routes/employees';
 import type { BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { ArrowUpDown, Badge, Briefcase, Download, IdCardIcon, Upload } from 'lucide-vue-next';
@@ -191,6 +191,7 @@ function handlePageChange(url: string | null): void {
 const showImportDialog = ref(false);
 const importFile = ref<File | null>(null);
 const importing = ref(false);
+const importResult = computed(() => (page.props as any).importResult ?? null);
 
 function onImportFileChange(event: Event): void {
     const target = event.target as HTMLInputElement;
@@ -203,13 +204,16 @@ async function submitImport(): Promise<void> {
     importing.value = true;
     try {
         router.post(
-            '/employees/import',
+            importMethod().url,
             { file: importFile.value },
             {
                 preserveState: true,
                 onSuccess: () => {
                     showImportDialog.value = false;
                     importFile.value = null;
+                },
+                onError: () => {
+                    // FormRequest validation errors handled by Inertia
                 },
                 onFinish: () => {
                     importing.value = false;
@@ -284,6 +288,17 @@ const canExport = computed(() => hasPermission('can-export-data'));
                     </DialogHeader>
 
                     <div class="space-y-4">
+                        <div v-if="importResult" class="rounded-lg border p-4" :class="importResult.errors?.length ? 'border-red-200 bg-red-50' : 'border-green-200 bg-green-50'">
+                            <p class="text-sm font-medium" :class="importResult.errors?.length ? 'text-red-800' : 'text-green-800'">
+                                Imported {{ importResult.success }} record(s).
+                                <span v-if="importResult.errors?.length"> {{ importResult.errors.length }} error(s).</span>
+                            </p>
+                            <div v-if="importResult.errors?.length" class="mt-2 max-h-32 overflow-y-auto space-y-1">
+                                <p v-for="(msg, row) in importResult.errors" class="text-xs text-red-700">
+                                    Row {{ row }}: {{ msg }}
+                                </p>
+                            </div>
+                        </div>
                         <div class="rounded-lg border border-dashed p-6 text-center">
                             <Upload class="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
                             <p class="mb-1 text-sm font-medium">Choose a CSV file</p>

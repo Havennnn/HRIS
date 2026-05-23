@@ -191,17 +191,19 @@ function handlePageChange(url: string | null): void {
 const showImportDialog = ref(false);
 const importFile = ref<File | null>(null);
 const importing = ref(false);
-const importResult = computed(() => (page.props as any).importResult ?? null);
+const importQueued = ref(false);
 
 function onImportFileChange(event: Event): void {
     const target = event.target as HTMLInputElement;
     importFile.value = target.files?.[0] ?? null;
+    importQueued.value = false;
 }
 
 async function submitImport(): Promise<void> {
     if (!importFile.value) return;
 
     importing.value = true;
+    importQueued.value = false;
     try {
         router.post(
             importMethod().url,
@@ -209,7 +211,7 @@ async function submitImport(): Promise<void> {
             {
                 preserveState: true,
                 onSuccess: () => {
-                    showImportDialog.value = false;
+                    importQueued.value = true;
                     importFile.value = null;
                 },
                 onError: () => {
@@ -289,18 +291,12 @@ const validationErrors = computed(() => (page.props as any).errors ?? {});
                     </DialogHeader>
 
                     <div class="space-y-4">
-                        <div v-if="importResult" class="rounded-lg border p-4" :class="importResult.errors?.length ? 'border-red-200 bg-red-50' : 'border-green-200 bg-green-50'">
-                            <p class="text-sm font-medium" :class="importResult.errors?.length ? 'text-red-800' : 'text-green-800'">
-                                Imported {{ importResult.success }} record(s).
-                                <span v-if="importResult.errors?.length"> {{ Object.keys(importResult.errors).length }} error(s).</span>
+                        <div v-if="importQueued" class="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                            <p class="text-sm font-medium text-blue-800">
+                                Import queued! You'll receive a notification when it's done.
                             </p>
-                            <div v-if="importResult.errors?.length" class="mt-2 max-h-32 overflow-y-auto space-y-1">
-                                <p v-for="(msg, row) in importResult.errors" class="text-xs text-red-700">
-                                    Row {{ row }}: {{ msg }}
-                                </p>
-                            </div>
                         </div>
-                        <div v-if="Object.keys(validationErrors).length" class="rounded-lg border border-red-200 bg-red-50 p-4">
+                        <div v-if="Object.keys(validationErrors).length && !importQueued" class="rounded-lg border border-red-200 bg-red-50 p-4">
                             <p class="text-sm font-medium text-red-800">Validation errors:</p>
                             <ul class="mt-1 list-inside list-disc space-y-0.5">
                                 <li v-for="(msgs, field) in validationErrors" class="text-xs text-red-700">

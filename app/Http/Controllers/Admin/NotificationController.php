@@ -26,8 +26,8 @@ class NotificationController extends Controller
             ->map(fn ($n) => [
                 'id' => $n->id,
                 'type' => $n->type,
-                'title' => $n->data['title'] ?? 'Notification',
-                'message' => $n->data['message'] ?? '',
+                'subject' => $n->data['subject'] ?? 'Notification',
+                'body' => $n->data['body'] ?? '',
                 'action_url' => $n->data['action_url'] ?? null,
                 'created_at' => $n->created_at->diffForHumans(),
                 'created_at_raw' => $n->created_at->toISOString(),

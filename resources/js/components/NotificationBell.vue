@@ -15,8 +15,8 @@ import {
 type NotificationItem = {
     id: string;
     type: string;
-    title: string;
-    message: string;
+    subject: string;
+    body: string;
     action_url: string | null;
     created_at: string;
     created_at_raw: string;
@@ -158,11 +158,11 @@ onUnmounted(() => {
                         @click="handleNotificationClick(n)"
                     >
                         <div class="flex w-full items-start justify-between gap-2">
-                            <span class="text-sm font-medium leading-tight">{{ n.title }}</span>
+                            <span class="text-sm font-medium leading-tight">{{ n.subject }}</span>
                             <span class="shrink-0 text-[10px] text-muted-foreground">{{ n.created_at }}</span>
                         </div>
                         <p class="line-clamp-2 text-xs leading-relaxed text-muted-foreground">
-                            {{ n.message }}
+                            {{ n.body }}
                         </p>
                         <div v-if="n.action_url" class="mt-1 flex items-center gap-1 text-[10px] font-medium text-primary">
                             View details

@@ -56,4 +56,9 @@ class PayrollExport implements ExportStructure
     {
         return $this->name() . '.' . $this->extension();
     }
+
+    public function mimeType(): string
+    {
+        return 'text/csv; charset=utf-8';
+    }
 }

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class NotificationController extends Controller
 {
@@ -23,20 +25,48 @@ class NotificationController extends Controller
             ->latest()
             ->take(10)
             ->get()
-            ->map(fn ($n) => [
-                'id' => $n->id,
-                'type' => $n->type,
-                'subject' => $n->data['subject'] ?? 'Notification',
-                'body' => $n->data['body'] ?? '',
-                'action_url' => $n->data['action_url'] ?? null,
-                'created_at' => $n->created_at->diffForHumans(),
-                'created_at_raw' => $n->created_at->toISOString(),
-            ]);
+            ->map(fn ($n) => $this->formatNotification($n));
 
         return response()->json([
             'notifications' => $notifications,
             'unread_count' => $admin->unreadNotifications()->count(),
         ]);
+    }
+
+    /**
+     * Show all notifications page (read + unread, paginated).
+     */
+    public function all(Request $request): Response
+    {
+        $admin = $request->user('admin');
+
+        $notifications = $admin->notifications()
+            ->latest()
+            ->paginate(20)
+            ->through(fn ($n) => $this->formatNotification($n));
+
+        return Inertia::render('Admin/Notifications/Index', [
+            'notifications' => $notifications,
+            'unread_count' => $admin->unreadNotifications()->count(),
+        ]);
+    }
+
+    /**
+     * Format a notification record for API/Inertia response.
+     */
+    private function formatNotification($n): array
+    {
+        return [
+            'id' => $n->id,
+            'type' => $n->type,
+            'subject' => $n->data['subject'] ?? 'Notification',
+            'body' => $n->data['body'] ?? '',
+            'action_url' => $n->data['action_url'] ?? null,
+            'read_at' => $n->read_at?->diffForHumans() ?? null,
+            'is_read' => $n->read_at !== null,
+            'created_at' => $n->created_at->diffForHumans(),
+            'created_at_raw' => $n->created_at->toISOString(),
+        ];
     }
 
     /**

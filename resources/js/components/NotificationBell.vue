@@ -158,8 +158,8 @@ onUnmounted(() => {
                         @click="handleNotificationClick(n)"
                     >
                         <div class="flex w-full items-start justify-between gap-2">
-                            <span class="text-sm font-medium leading-tight">{{ n.subject }}</span>
-                            <span class="shrink-0 text-[10px] text-muted-foreground">{{ n.created_at }}</span>
+                            <span class="line-clamp-1 text-sm font-semibold leading-tight">{{ n.subject }}</span>
+                            <span class="shrink-0 whitespace-nowrap text-[10px] text-muted-foreground">{{ n.created_at }}</span>
                         </div>
                         <p class="line-clamp-2 text-xs leading-relaxed text-muted-foreground">
                             {{ n.body }}
@@ -171,6 +171,17 @@ onUnmounted(() => {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator v-if="i < notifications.length - 1" />
                 </template>
+            </div>
+
+            <DropdownMenuSeparator />
+            <div class="px-3 py-2">
+                <a
+                    :href="'/notifications/all'"
+                    class="flex items-center justify-center gap-1 text-center text-xs font-medium text-muted-foreground hover:text-foreground"
+                >
+                    View all notifications
+                    <ExternalLink class="h-3 w-3" />
+                </a>
             </div>
         </DropdownMenuContent>
     </DropdownMenu>

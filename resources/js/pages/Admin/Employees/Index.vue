@@ -284,7 +284,7 @@ const validationErrors = computed(() => (page.props as any).errors ?? {});
                     <DialogHeader>
                         <DialogTitle>Import Employees</DialogTitle>
                         <DialogDescription>
-                            Upload a CSV file to import employees. Rows are matched by email — existing records are updated, new ones are created.
+                            Upload a .csv or .xlsx file. Download the template first to see the required columns. Rows are matched by email — existing records are updated, new ones are created.
                         </DialogDescription>
                     </DialogHeader>
 
@@ -310,7 +310,7 @@ const validationErrors = computed(() => (page.props as any).errors ?? {});
                         </div>
                         <div class="rounded-lg border border-dashed p-6 text-center">
                             <Upload class="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-                            <p class="mb-1 text-sm font-medium">Choose a CSV file</p>
+                            <p class="mb-1 text-sm font-medium">Choose a CSV or Excel file</p>
                             <p class="mb-3 text-xs text-muted-foreground">.csv or .xlsx, max 5MB</p>
                             <input
                                 type="file"
@@ -326,7 +326,7 @@ const validationErrors = computed(() => (page.props as any).errors ?? {});
                                 class="text-sm text-primary underline-offset-4 hover:underline"
                                 download
                             >
-                                Download template CSV
+                                Download template (.xlsx)
                             </a>
                         </div>
                     </div>

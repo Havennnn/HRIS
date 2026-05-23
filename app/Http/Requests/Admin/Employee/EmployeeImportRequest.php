@@ -22,7 +22,7 @@ class EmployeeImportRequest extends FormRequest
     {
         return [
             // Uploaded file validation
-            'file' => ['required', 'file', 'mimes:csv,txt', 'max:5120'],
+            'file' => ['required', 'file', 'mimes:csv,xlsx', 'max:5120'],
 
             // Per-row validation (applied by ImportAction to each CSV row)
             'first_name' => ['required', 'string', 'max:255'],
@@ -39,7 +39,7 @@ class EmployeeImportRequest extends FormRequest
     {
         return [
             'file.required' => 'Please select a CSV file to upload.',
-            'file.mimes' => 'The file must be a CSV file.',
+            'file.mimes' => 'The file must be a CSV or Excel (.xlsx) file.',
             'file.max' => 'The file size must not exceed 5MB.',
             'first_name.required' => 'First name is required.',
             'last_name.required' => 'Last name is required.',

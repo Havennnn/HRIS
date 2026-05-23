@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useRoleAccess } from '@/composables/useRoleAccess';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { create, destroy, edit, index, restore } from '@/routes/employees';
+import { create, destroy, edit, exportMethod, index, manifest, restore } from '@/routes/employees';
 import type { BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { ArrowUpDown, Badge, Briefcase, Download, IdCardIcon, Upload } from 'lucide-vue-next';
@@ -241,7 +241,7 @@ const canExport = computed(() => hasPermission('can-export-data'));
                             Import
                         </Button>
                         <Button v-if="canExport" variant="outline" as-child>
-                            <a href="/employees/export" download>
+                            <a :href="exportMethod().url" download>
                                 <Download class="mr-2 h-4 w-4" />
                                 Export
                             </a>
@@ -287,10 +287,10 @@ const canExport = computed(() => hasPermission('can-export-data'));
                         <div class="rounded-lg border border-dashed p-6 text-center">
                             <Upload class="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
                             <p class="mb-1 text-sm font-medium">Choose a CSV file</p>
-                            <p class="mb-3 text-xs text-muted-foreground">.csv or .txt, max 5MB</p>
+                            <p class="mb-3 text-xs text-muted-foreground">.csv or .xlsx, max 5MB</p>
                             <input
                                 type="file"
-                                accept=".csv,.txt"
+                                accept=".csv,.xlsx"
                                 class="block w-full text-sm file:mr-4 file:rounded file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:text-primary-foreground hover:file:bg-primary/90"
                                 @change="onImportFileChange"
                             />
@@ -298,7 +298,7 @@ const canExport = computed(() => hasPermission('can-export-data'));
 
                         <div class="text-center">
                             <a
-                                href="/employees/manifest"
+                                :href="manifest().url"
                                 class="text-sm text-primary underline-offset-4 hover:underline"
                                 download
                             >

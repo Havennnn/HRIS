@@ -5,16 +5,17 @@ namespace App\Http\Controllers\Admin\Employee;
 use App\Enums\Status\EmployeeStatus;
 use App\Enums\Type\EmployeeContactType;
 use App\Enums\Type\EmployeeType;
+use App\Exports\EmployeeExport;
 use App\Http\Requests\Admin\Employee\EmployeeContactRequest;
 use App\Http\Requests\Admin\Employee\EmployeeDeviceRequest;
+use App\Http\Requests\Admin\Employee\EmployeeImportRequest;
 use App\Http\Requests\Admin\Employee\EmployeeRequest;
 use App\Http\Resources\Admin\Employee\EmployeeEditResource;
 use App\Http\Resources\Admin\Employee\EmployeeIndexResource;
-use App\Models\Employee;
-use App\Models\Position;
-use App\Exports\EmployeeExport;
 use App\Imports\EmployeeImport;
 use App\Manifests\EmployeeManifest;
+use App\Models\Employee;
+use App\Models\Position;
 use App\Services\Admin\Employee\EmployeeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,6 +30,7 @@ use PiaCore\Actions\Resource\ListAction;
 use PiaCore\Actions\Resource\RestoreAction;
 use PiaCore\Actions\Resource\StoreAction;
 use PiaCore\Actions\Resource\UpdateAction;
+use PiaCore\Enums\ExportType;
 use PiaCore\Http\Controllers\ResourceController;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -170,7 +172,7 @@ final class EmployeeController extends ResourceController
     // ─── Import / Export ─────────────────────────────────────────────
 
     /**
-     * Download a CSV template (manifest) showing required columns for import.
+     * Download a XLSX template (manifest) showing required columns for import.
      */
     public function manifest(ManifestAction $action): StreamedResponse
     {
@@ -191,12 +193,12 @@ final class EmployeeController extends ResourceController
     }
 
     /**
-     * Download employees as CSV.
+     * Download employees as XLSX.
      */
     public function export(ExportAction $action): StreamedResponse
     {
         return $action(
-            $this->exportOptions(EmployeeExport::class, 'employees-'.today()->format('Y-m-d')),
+            $this->exportOptions(EmployeeExport::class, 'employees-'.today()->format('Y-m-d'), ExportType::XLSX),
         );
     }
 }

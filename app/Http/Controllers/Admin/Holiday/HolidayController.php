@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin\Holiday;
 
 use App\Enums\Type\HolidayType;
+use App\Http\Requests\Admin\Holiday\HolidayImportRequest;
 use App\Http\Requests\Admin\Holiday\HolidayRequest;
 use App\Http\Resources\Admin\Holiday\HolidayEditResource;
 use App\Http\Resources\Admin\Holiday\HolidayIndexResource;
+use App\Imports\HolidayImport;
 use App\Models\Holiday;
 use App\Services\Admin\Holiday\HolidayService;
 use Illuminate\Http\Request;
@@ -15,8 +17,15 @@ use PiaCore\Actions\Resource\EditAction;
 use PiaCore\Actions\Resource\ListAction;
 use PiaCore\Actions\Resource\RestoreAction;
 use PiaCore\Actions\Resource\StoreAction;
+use App\Manifests\HolidayManifest;
+use PiaCore\Actions\Import\ExportAction;
+use PiaCore\Actions\Import\ImportAction;
+use PiaCore\Actions\Import\ManifestAction;
 use PiaCore\Actions\Resource\UpdateAction;
+use PiaCore\Enums\ExportType;
 use PiaCore\Http\Controllers\ResourceController;
+use PiaCore\Http\Requests\ImportRequest;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class HolidayController extends ResourceController
 {
@@ -115,5 +124,35 @@ final class HolidayController extends ResourceController
     public function restore(Holiday $holiday, RestoreAction $action, Request $request)
     {
         return $action($this->restoreOptions($holiday, $request));
+    }
+
+    // ─── Import / Export ─────────────────────────────────────────────
+
+    public function manifest(ManifestAction $action): StreamedResponse
+    {
+        return $action(
+            $this->manifestOptions(HolidayManifest::class, 'holiday-manifest-'.today()->format('Y-m-d'), ExportType::XLSX),
+        );
+    }
+
+    public function import(ImportRequest $request): RedirectResponse
+    {
+        return app(ImportAction::class)($this->importOptions(
+            request: $request,
+            handler: new HolidayImport(),
+            rule: HolidayImportRequest::class,
+        ));
+    }
+
+    public function export(Request $request, ExportAction $action): StreamedResponse
+    {
+        return $action(
+            $this->exportOptions(
+                resource: HolidayIndexResource::class,
+                filename: 'holidays-'.today()->format('Y-m-d'),
+                type: ExportType::XLSX,
+                request: $request,
+            ),
+        );
     }
 }

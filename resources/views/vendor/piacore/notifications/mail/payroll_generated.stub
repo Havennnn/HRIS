@@ -1,0 +1,6 @@
+<p>Payroll generated for <strong>{{period}}</strong>.</p>
+<p>Net pay: <strong>{{net_pay}}</strong></p>
+
+<p style="text-align: center; margin-top: 24px;">
+    <a href="{{url}}/payrolls" class="btn">View Payslip</a>
+</p>

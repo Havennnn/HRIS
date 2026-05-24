@@ -35,6 +35,7 @@ class NotificationController extends Controller
 
     /**
      * Show all notifications page (read + unread, paginated).
+     * Optionally selects a specific notification to view in detail.
      */
     public function all(Request $request): Response
     {
@@ -45,9 +46,27 @@ class NotificationController extends Controller
             ->paginate(20)
             ->through(fn ($n) => $this->formatNotification($n));
 
+        $selectedNotification = null;
+        $selectedId = $request->route('notification');
+
+        if ($selectedId) {
+            $n = $admin->notifications()->where('id', $selectedId)->first();
+            if ($n) {
+                $selectedNotification = $this->formatNotification($n);
+
+                // Mark as read when viewing
+                if ($selectedNotification['read_at'] === null) {
+                    $n->update(['read_at' => now()]);
+                    $selectedNotification['read_at'] = now()->diffForHumans();
+                    $selectedNotification['is_read'] = true;
+                }
+            }
+        }
+
         return Inertia::render('Admin/Notifications/Index', [
             'notifications' => $notifications,
             'unread_count' => $admin->unreadNotifications()->count(),
+            'selected_notification' => $selectedNotification,
         ]);
     }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\PerformanceReview;
 
 use App\Enums\Status\PerformanceReviewStatus;
 use App\Http\Requests\Admin\PerformanceReview\PerformanceReviewRequest;
+use App\Http\Resources\Admin\PerformanceReview\PerformanceReviewIndexResource;
 use App\Models\Employee;
 use App\Models\Kpi;
 use App\Models\PerformanceReview;
@@ -14,7 +15,10 @@ use PiaCore\Actions\Resource\EditAction;
 use PiaCore\Actions\Resource\ListAction;
 use PiaCore\Actions\Resource\StoreAction;
 use PiaCore\Actions\Resource\UpdateAction;
+use PiaCore\Actions\Import\ExportAction;
+use PiaCore\Enums\ExportType;
 use PiaCore\Http\Controllers\ResourceController;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class PerformanceReviewController extends ResourceController
 {
@@ -68,5 +72,22 @@ final class PerformanceReviewController extends ResourceController
     public function update(PerformanceReviewRequest $request, PerformanceReview $performanceReview, UpdateAction $action)
     {
         return $action($this->updateOptions($performanceReview, $request));
+    }
+
+    // ─── Export ─────────────────────────────────────────────────────
+
+    /**
+     * Download performance reviews as CSV.
+     */
+    public function export(Request $request, ExportAction $action): StreamedResponse
+    {
+        return $action(
+            $this->exportOptions(
+                resource: PerformanceReviewIndexResource::class,
+                filename: 'performance-reviews-'.today()->format('Y-m-d'),
+                type: ExportType::CSV,
+                request: $request,
+            ),
+        );
     }
 }

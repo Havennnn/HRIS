@@ -12,19 +12,20 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use PiaCore\Actions\Options\ListConfig;
 use PiaCore\Contracts\CrudService\ListsRecords;
 use PiaCore\Contracts\CrudService\StoresRecords;
 use PiaCore\Contracts\CrudService\UpdatesRecords;
 
 class EmployeeService implements ListsRecords, StoresRecords, UpdatesRecords
 {
-    public function list(Model|string|Relation $model, Request $request): array
+    public function list(Model|string|Relation $model, Request $request): ListConfig
     {
-        return [
-            'baseQuery' => function (Builder $query): Builder {
+        return (new ListConfig)
+            ->baseQuery(function (Builder $query): Builder {
                 return $query->with(['position', 'position.department', 'device']);
-            },
-            'tabs' => [
+            })
+            ->tabs([
                 'default' => [
                     'countKey' => 'defaultCount',
                 ],
@@ -32,17 +33,16 @@ class EmployeeService implements ListsRecords, StoresRecords, UpdatesRecords
                     'countKey' => 'archivedCount',
                     'scope' => fn (Builder $query) => $query->onlyTrashed(),
                 ],
-            ],
-            'filters' => [
+            ])
+            ->filters([
                 'position' => fn (Builder $query, $value) => $query->whereIn('position_id', $value),
                 'status' => fn (Builder $query, $value) => $query->whereIn('status', $value),
                 'type' => fn (Builder $query, $value) => $query->whereIn('type', $value),
-            ],
-            'sorts' => [
+            ])
+            ->sorts([
                 'name' => 'first_name',
                 'created' => 'created_at',
-            ],
-        ];
+            ]);
     }
 
     public function store(string $modelClass, array $payload, ?FormRequest $request = null): Model

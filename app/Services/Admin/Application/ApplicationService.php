@@ -13,6 +13,7 @@ use InvalidArgumentException;
 use PiaCore\Contracts\CrudService\DeletesRecords;
 use PiaCore\Contracts\CrudService\ListsRecords;
 use PiaCore\Contracts\CrudService\RestoresRecords;
+use PiaCore\Actions\Options\ListConfig;
 use PiaCore\Contracts\CrudService\ShowsRecords;
 
 class ApplicationService implements DeletesRecords, ListsRecords, RestoresRecords, ShowsRecords
@@ -24,11 +25,11 @@ class ApplicationService implements DeletesRecords, ListsRecords, RestoresRecord
      *   sorts: array<string, string|array{column?: string}>
      * }
      */
-    public function list(Model|string|Relation $model, HttpRequest $request): array
+    public function list(Model|string|Relation $model, HttpRequest $request): ListConfig
     {
-        return [
-            'baseQuery' => fn (Builder $query) => $query->with(['career']),
-            'tabs' => [
+        return (new ListConfig)
+            ->baseQuery(fn (Builder $query) => $query->with(['career']))
+            ->tabs([
                 'default' => [
                     'countKey' => 'defaultCount',
                 ],
@@ -36,18 +37,17 @@ class ApplicationService implements DeletesRecords, ListsRecords, RestoresRecord
                     'countKey' => 'archivedCount',
                     'scope' => fn (Builder $query) => $query->onlyTrashed(),
                 ],
-            ],
-            'filters' => [
+            ])
+            ->filters([
                 'status' => fn (Builder $query, $value) => $query->whereIn('status', $value),
                 'position' => fn (Builder $query, $value) => $query->whereIn('career_id', $value),
-            ],
-            'sorts' => [
+            ])
+            ->sorts([
                 'created' => 'created_at',
-            ],
-            'range' => [
+            ])
+            ->range([
                 'created' => 'created_at',
-            ],
-        ];
+            ]);
     }
 
     /**

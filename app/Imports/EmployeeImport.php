@@ -1,56 +1,55 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Imports;
 
+use App\Enums\Status\EmployeeStatus;
+use App\Enums\Type\EmployeeType;
 use App\Models\Employee;
 use App\Models\Position;
-use App\Notifications\ImportCompleted;
-use App\Notifications\ImportFailed;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use PiaCore\Contracts\Import\ImportHandler;
 
 class EmployeeImport implements ImportHandler
 {
-    /** @var array<string, int> Cached position name → ID mapping */
-    private array $positionMap = [];
-
     /**
      * Transform display values to DB values.
-     * e.g. "Software Engineer (Engineering)" → position_id = 5
-     *      "Active" → status = 1
-     *      "Regular" → type = 1
+     * Maps file headers (display names) to DB fields.
      */
     public function prepareRow(array $row): array
     {
-        if (! empty($row['position'])) {
-            $row['position_id'] = $this->resolvePositionId($row['position']);
-        }
-        unset($row['position']);
+        $data = [
+            'first_name' => $row['First Name'] ?? '',
+            'last_name' => $row['Last Name'] ?? '',
+            'email' => $row['Email'] ?? '',
+            'mobile_number' => $row['Mobile Number'] ?? '',
+            'birthdate' => $row['Birthdate'] ?? '',
+            'position' => $row['Position'] ?? '',
+            'type' => $row['Type'] ?? '',
+            'status' => $row['Status'] ?? '',
+        ];
 
-        if (! empty($row['status'])) {
-            $row['status'] = match (strtolower($row['status'])) {
-                'active' => 1,
-                'inactive' => 2,
-                'resigned' => 3,
-                'terminated' => 4,
-                default => (int) $row['status'],
-            };
+        // Position: display name → ID
+        if (! empty($data['position'])) {
+            $data['position_id'] = $this->resolvePositionId($data['position']);
+        }
+        unset($data['position']);
+
+        // Birthdate: normalize to Y-m-d
+        if (! empty($data['birthdate'])) {
+            foreach (['Y-m-d', 'm/d/Y', 'm-d-Y', 'Y/m/d'] as $format) {
+                $d = \DateTime::createFromFormat($format, $data['birthdate']);
+                if ($d) {
+                    $data['birthdate'] = $d->format('Y-m-d');
+                    break;
+                }
+            }
         }
 
-        if (! empty($row['type'])) {
-            $row['type'] = match (strtolower($row['type'])) {
-                'regular' => 1,
-                'probationary' => 2,
-                'contractual' => 3,
-                'part-time' => 4,
-                default => (int) $row['type'],
-            };
-        }
+        // Status & Type: label (or raw value) → integer
+        $data['status'] = $this->resolveEnum($data['status'] ?? null, EmployeeStatus::class, EmployeeStatus::ACTIVE->value);
+        $data['type'] = $this->resolveEnum($data['type'] ?? null, EmployeeType::class, EmployeeType::REGULAR->value);
 
-        return $row;
+        return $data;
     }
 
     /**
@@ -80,8 +79,10 @@ class EmployeeImport implements ImportHandler
                 'last_name' => $data['last_name'],
                 'email' => $data['email'],
                 'mobile_number' => $data['mobile_number'] ?? null,
+                'birthdate' => $data['birthdate'] ?? null,
                 'position_id' => ! empty($data['position_id']) ? (int) $data['position_id'] : null,
-                'status' => $data['status'] ?? 1,
+                'type' => $data['type'] ?? EmployeeType::REGULAR->value,
+                'status' => $data['status'] ?? EmployeeStatus::ACTIVE->value,
             ];
 
             if ($employee) {
@@ -103,37 +104,38 @@ class EmployeeImport implements ImportHandler
     }
 
     /**
-     * Notify the admin with details of what succeeded and what failed.
+     * Resolve an enum from either a label ("Regular") or a raw value ("1").
      */
-    public function notify(Request $request, array $result): void
+    private function resolveEnum(mixed $value, string $enumClass, int $default): int
     {
-        try {
-            $admin = $request->user('admin');
-            if (! $admin) {
-                return;
-            }
-
-            if (! empty($result['errors'])) {
-                $admin->notify(new ImportFailed(
-                    errorCount: count($result['errors']),
-                    errors: $result['errors'],
-                    source: 'logic',
-                ));
-            } else {
-                $admin->notify(new ImportCompleted(
-                    success: $result['success'],
-                    errors: [],
-                ));
-            }
-        } catch (\Exception $e) {
-            Log::warning('Failed to send import notification: ' . $e->getMessage());
+        if ($value === null || $value === '') {
+            return $default;
         }
+
+        if (is_int($value) || (is_numeric($value) && (int) $value > 0)) {
+            return (int) $value;
+        }
+
+        static $maps = [];
+        if (! isset($maps[$enumClass])) {
+            $maps[$enumClass] = collect($enumClass::options())
+                ->mapWithKeys(fn (array $o) => [strtolower($o['label']) => $o['value']])
+                ->all();
+        }
+
+        return $maps[$enumClass][strtolower(trim((string) $value))] ?? $default;
     }
 
+    /**
+     * Resolve a position display name to its DB ID.
+     * Cached via static so position names are only fetched once per job.
+     */
     private function resolvePositionId(string $displayName): ?int
     {
-        if (empty($this->positionMap)) {
-            $this->positionMap = Position::query()
+        static $positions = [];
+
+        if (empty($positions)) {
+            $positions = Position::query()
                 ->with('department')
                 ->get()
                 ->mapWithKeys(fn ($p) => [
@@ -142,6 +144,6 @@ class EmployeeImport implements ImportHandler
                 ->all();
         }
 
-        return $this->positionMap[$displayName] ?? null;
+        return $positions[$displayName] ?? null;
     }
 }

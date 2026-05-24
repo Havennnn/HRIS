@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Admin\AttendanceLog;
 
 use App\Enums\Type\AttendanceLogType;
-use App\Exports\AttendanceLogExport;
 use App\Http\Resources\Admin\AttendanceLog\AttendanceLogIndexResource;
 use App\Models\AttendanceLog;
 use App\Services\Admin\AttendanceLog\AttendanceLogService;
 use Illuminate\Http\Request;
 use PiaCore\Actions\Import\ExportAction;
+use PiaCore\Enums\ExportType;
 use PiaCore\Actions\Resource\ListAction;
 use PiaCore\Http\Controllers\ResourceController;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -65,8 +65,10 @@ final class AttendanceLogController extends ResourceController
 
         return $action(
             $this->exportOptions(
-                new AttendanceLogExport($request->input('start_date'), $request->input('end_date')),
-                'attendance-logs-'.today()->format('Y-m-d'),
+                resource: AttendanceLogIndexResource::class,
+                filename: 'attendance-logs-'.today()->format('Y-m-d'),
+                type: ExportType::CSV,
+                request: $request,
             ),
         );
     }

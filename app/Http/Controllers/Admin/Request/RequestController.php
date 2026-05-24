@@ -6,16 +6,19 @@ use App\Enums\Status\RequestStatus;
 use App\Enums\Type\RequestType;
 use App\Http\Resources\Admin\Request\RequestIndexResource;
 use App\Http\Resources\Admin\Request\RequestShowResource;
-use App\Models\Request;
+use App\Models\Request as RequestModel;
 use App\Services\Admin\Request\RequestService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request as HttpRequest;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use PiaCore\Actions\Resource\DeleteAction;
 use PiaCore\Actions\Resource\ListAction;
 use PiaCore\Actions\Resource\RestoreAction;
 use PiaCore\Actions\Resource\ShowAction;
+use PiaCore\Actions\Import\ExportAction;
+use PiaCore\Enums\ExportType;
 use PiaCore\Http\Controllers\ResourceController;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class RequestController extends ResourceController
 {
@@ -24,7 +27,7 @@ final class RequestController extends ResourceController
      *
      * @var class-string<\App\Models\Request>
      */
-    protected string $modelClass = Request::class;
+    protected string $modelClass = RequestModel::class;
 
     /**
      * Service class for request resource operations.
@@ -46,7 +49,7 @@ final class RequestController extends ResourceController
     /**
      * Display a listing of the requests.
      */
-    public function index(HttpRequest $request, ListAction $action)
+    public function index(Request $request, ListAction $action)
     {
         return $action($this->listOptions(
             request: $request,
@@ -61,7 +64,7 @@ final class RequestController extends ResourceController
     /**
      * Display the specified request.
      */
-    public function show(Request $request, ShowAction $action, HttpRequest $httpRequest)
+    public function show(RequestModel $request, ShowAction $action, Request $httpRequest)
     {
         return $action($this->showOptions(
             record: $request,
@@ -73,7 +76,7 @@ final class RequestController extends ResourceController
     /**
      * Approve the specified request.
      */
-    public function approve(Request $request): RedirectResponse|Redirector
+    public function approve(RequestModel $request): RedirectResponse|Redirector
     {
         try {
             $service = app(RequestService::class);
@@ -88,7 +91,7 @@ final class RequestController extends ResourceController
     /**
      * Reject the specified request.
      */
-    public function reject(Request $request): RedirectResponse|Redirector
+    public function reject(RequestModel $request): RedirectResponse|Redirector
     {
         try {
             $service = app(RequestService::class);
@@ -103,7 +106,7 @@ final class RequestController extends ResourceController
     /**
      * Cancel the specified request.
      */
-    public function cancel(Request $request): RedirectResponse|Redirector
+    public function cancel(RequestModel $request): RedirectResponse|Redirector
     {
         try {
             $service = app(RequestService::class);
@@ -118,7 +121,7 @@ final class RequestController extends ResourceController
     /**
      * Complete the specified approved request.
      */
-    public function complete(Request $request): RedirectResponse|Redirector
+    public function complete(RequestModel $request): RedirectResponse|Redirector
     {
         try {
             $service = app(RequestService::class);
@@ -130,10 +133,27 @@ final class RequestController extends ResourceController
         }
     }
 
+    // ─── Export ─────────────────────────────────────────────────────
+
+    /**
+     * Download requests as CSV.
+     */
+    public function export(Request $request, ExportAction $action): StreamedResponse
+    {
+        return $action(
+            $this->exportOptions(
+                resource: RequestIndexResource::class,
+                filename: 'requests-'.today()->format('Y-m-d'),
+                type: ExportType::CSV,
+                request: $request,
+            ),
+        );
+    }
+
     /**
      * Remove the specified request from storage (archive).
      */
-    public function destroy(Request $request, DeleteAction $action, HttpRequest $httpRequest)
+    public function destroy(RequestModel $request, DeleteAction $action, Request $httpRequest)
     {
         return $action($this->deleteOptions($request, $httpRequest));
     }
@@ -141,7 +161,7 @@ final class RequestController extends ResourceController
     /**
      * Restore the specified soft-deleted request.
      */
-    public function restore(Request $request, RestoreAction $action, HttpRequest $httpRequest)
+    public function restore(RequestModel $request, RestoreAction $action, Request $httpRequest)
     {
         return $action($this->restoreOptions($request, $httpRequest));
     }

@@ -79,10 +79,10 @@ function handleOpenChange(val: boolean) {
 }
 
 function handleNotificationClick(n: NotificationItem) {
-    if (n.action_url) {
-        router.visit(n.action_url);
-    }
-    markAsRead(n.id);
+    // Navigate to the detail view — backend will mark as read
+    router.visit(`/notifications/all/${n.id}`, {
+        preserveState: false,
+    });
 }
 
 onMounted(() => {

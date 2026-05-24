@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Admin\Payroll;
 
 use App\Enums\Status\PayrollStatus;
-use App\Exports\PayrollExport;
 use App\Http\Resources\Admin\Payroll\PayrollIndexResource;
 use App\Http\Resources\Admin\Payroll\PayrollShowResource;
 use App\Models\Payroll;
 use App\Services\Admin\Payroll\PayrollService;
-use Illuminate\Http\Request as HttpRequest;
+use Illuminate\Http\Request;
 use PiaCore\Actions\Import\ExportAction;
+use PiaCore\Enums\ExportType;
 use PiaCore\Actions\Resource\ListAction;
 use PiaCore\Actions\Resource\ShowAction;
 use PiaCore\Http\Controllers\ResourceController;
@@ -44,7 +44,7 @@ final class PayrollController extends ResourceController
     /**
      * Display a listing of payrolls.
      */
-    public function index(HttpRequest $request, ListAction $action)
+    public function index(Request $request, ListAction $action)
     {
         return $action($this->listOptions(
             request: $request,
@@ -58,7 +58,7 @@ final class PayrollController extends ResourceController
     /**
      * Display the specified payroll.
      */
-    public function show(Payroll $payroll, ShowAction $action, HttpRequest $request)
+    public function show(Payroll $payroll, ShowAction $action, Request $request)
     {
         return $action($this->showOptions(
             record: $payroll,
@@ -70,7 +70,7 @@ final class PayrollController extends ResourceController
     /**
      * Download payrolls as CSV within a date range.
      */
-    public function export(HttpRequest $request, ExportAction $action): StreamedResponse
+    public function export(Request $request, ExportAction $action): StreamedResponse
     {
         $request->validate([
             'start_date' => ['required', 'date'],
@@ -79,8 +79,10 @@ final class PayrollController extends ResourceController
 
         return $action(
             $this->exportOptions(
-                new PayrollExport($request->input('start_date'), $request->input('end_date')),
-                'payroll-'.today()->format('Y-m-d'),
+                resource: PayrollIndexResource::class,
+                filename: 'payroll-'.today()->format('Y-m-d'),
+                type: ExportType::CSV,
+                request: $request,
             ),
         );
     }

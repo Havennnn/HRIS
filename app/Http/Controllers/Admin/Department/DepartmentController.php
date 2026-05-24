@@ -2,19 +2,28 @@
 
 namespace App\Http\Controllers\Admin\Department;
 
+use App\Http\Requests\Admin\Department\DepartmentImportRequest;
 use App\Http\Requests\Admin\Department\DepartmentRequest;
 use App\Http\Resources\Admin\Department\DepartmentResource;
+use App\Imports\DepartmentImport;
+use App\Manifests\DepartmentManifest;
 use App\Models\Department;
 use App\Services\Admin\Department\DepartmentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
+use PiaCore\Actions\Import\ExportAction;
+use PiaCore\Actions\Import\ImportAction;
+use PiaCore\Actions\Import\ManifestAction;
 use PiaCore\Actions\Resource\DeleteAction;
 use PiaCore\Actions\Resource\ListAction;
 use PiaCore\Actions\Resource\RestoreAction;
 use PiaCore\Actions\Resource\StoreAction;
 use PiaCore\Actions\Resource\UpdateAction;
+use PiaCore\Enums\ExportType;
 use PiaCore\Http\Controllers\ResourceController;
+use PiaCore\Http\Requests\ImportRequest;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class DepartmentController extends ResourceController
 {
@@ -103,5 +112,35 @@ final class DepartmentController extends ResourceController
     public function restore(Department $department, RestoreAction $action, Request $request)
     {
         return $action($this->restoreOptions($department, $request));
+    }
+
+    // ─── Import / Export ─────────────────────────────────────────────
+
+    public function manifest(ManifestAction $action): StreamedResponse
+    {
+        return $action(
+            $this->manifestOptions(DepartmentManifest::class, 'department-manifest-'.today()->format('Y-m-d'), ExportType::XLSX),
+        );
+    }
+
+    public function import(ImportRequest $request): RedirectResponse
+    {
+        return app(ImportAction::class)($this->importOptions(
+            request: $request,
+            handler: new DepartmentImport(),
+            rule: DepartmentImportRequest::class,
+        ));
+    }
+
+    public function export(Request $request, ExportAction $action): StreamedResponse
+    {
+        return $action(
+            $this->exportOptions(
+                resource: DepartmentResource::class,
+                filename: 'departments-'.today()->format('Y-m-d'),
+                type: ExportType::XLSX,
+                request: $request,
+            ),
+        );
     }
 }

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
+use PiaCore\Actions\Options\ListConfig;
 use PiaCore\Contracts\CrudService\ListsRecords;
 
 class AttendanceLogService implements ListsRecords
@@ -17,23 +18,27 @@ class AttendanceLogService implements ListsRecords
      *   sorts: array<string, string|array{column?: string}>
      * }
      */
-    public function list(Model|string|Relation $model, Request $request): array
+    public function list(Model|string|Relation $model, Request $request): ListConfig
     {
-        return [
-            'tabs' => [
+        return (new ListConfig)
+            ->baseQuery(function (Builder $query, Request $request): Builder {
+                return $query
+                    ->when($request->filled('start_date'), fn ($q) => $q->where('date', '>=', $request->input('start_date')))
+                    ->when($request->filled('end_date'), fn ($q) => $q->where('date', '<=', $request->input('end_date')));
+            })
+            ->tabs([
                 'default' => [
                     'countKey' => 'defaultCount',
                 ],
-            ],
-            'filters' => [
+            ])
+            ->filters([
                 'employee' => fn (Builder $query, $value) => $query->where('employee_id', $value),
                 'type' => fn (Builder $query, $value) => $query->where('type', $value),
-            ],
-            'sorts' => [
+            ])
+            ->sorts([
                 'timestamp' => 'timestamp',
                 'type' => 'type',
                 'created' => 'created_at',
-            ],
-        ];
+            ]);
     }
 }

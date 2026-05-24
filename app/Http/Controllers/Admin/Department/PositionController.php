@@ -2,20 +2,29 @@
 
 namespace App\Http\Controllers\Admin\Department;
 
+use App\Http\Requests\Admin\Department\PositionImportRequest;
 use App\Http\Requests\Admin\Department\PositionRequest;
 use App\Http\Resources\Admin\Department\PositionResource;
+use App\Imports\PositionImport;
+use App\Manifests\PositionManifest;
 use App\Models\Department;
 use App\Models\Position;
 use App\Services\Admin\Department\PositionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
+use PiaCore\Actions\Import\ExportAction;
+use PiaCore\Actions\Import\ImportAction;
+use PiaCore\Actions\Import\ManifestAction;
 use PiaCore\Actions\Resource\DeleteAction;
 use PiaCore\Actions\Resource\ListAction;
 use PiaCore\Actions\Resource\RestoreAction;
 use PiaCore\Actions\Resource\StoreAction;
 use PiaCore\Actions\Resource\UpdateAction;
+use PiaCore\Enums\ExportType;
 use PiaCore\Http\Controllers\ResourceController;
+use PiaCore\Http\Requests\ImportRequest;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class PositionController extends ResourceController
 {
@@ -109,5 +118,35 @@ final class PositionController extends ResourceController
     public function restore(Position $position, RestoreAction $action, Request $request)
     {
         return $action($this->restoreOptions($position, $request));
+    }
+
+    // ─── Import / Export ─────────────────────────────────────────────
+
+    public function manifest(ManifestAction $action): StreamedResponse
+    {
+        return $action(
+            $this->manifestOptions(PositionManifest::class, 'position-manifest-'.today()->format('Y-m-d'), ExportType::XLSX),
+        );
+    }
+
+    public function import(ImportRequest $request): RedirectResponse
+    {
+        return app(ImportAction::class)($this->importOptions(
+            request: $request,
+            handler: new PositionImport(),
+            rule: PositionImportRequest::class,
+        ));
+    }
+
+    public function export(Request $request, ExportAction $action): StreamedResponse
+    {
+        return $action(
+            $this->exportOptions(
+                resource: PositionResource::class,
+                filename: 'positions-'.today()->format('Y-m-d'),
+                type: ExportType::XLSX,
+                request: $request,
+            ),
+        );
     }
 }

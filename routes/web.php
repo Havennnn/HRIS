@@ -228,7 +228,7 @@ Route::middleware(['auth:admin'])->group(function (): void {
         ->controller(NotificationController::class)
         ->group(function (): void {
             Route::get('/', 'index')->name('index');
-            Route::get('/all', 'all')->name('all');
+            Route::get('/all/{notification?}', 'all')->name('all');
             Route::post('/{id}/read', 'read')->name('read');
             Route::post('/read-all', 'readAll')->name('read-all');
         });

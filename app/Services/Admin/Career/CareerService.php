@@ -8,17 +8,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
+use PiaCore\Actions\Options\ListConfig;
 use PiaCore\Contracts\CrudService\ListsRecords;
 use PiaCore\Contracts\CrudService\StoresRecords;
 use PiaCore\Contracts\CrudService\UpdatesRecords;
 
 class CareerService implements ListsRecords, StoresRecords, UpdatesRecords
 {
-    public function list(Model|string|Relation $model, Request $request): array
+    public function list(Model|string|Relation $model, Request $request): ListConfig
     {
-        return [
-            'baseQuery' => fn (Builder $query) => $query->with(['position']),
-            'tabs' => [
+        return (new ListConfig)
+            ->baseQuery(fn (Builder $query) => $query->with(['position']))
+            ->tabs([
                 'default' => [
                     'countKey' => 'defaultCount',
                 ],
@@ -26,18 +27,17 @@ class CareerService implements ListsRecords, StoresRecords, UpdatesRecords
                     'countKey' => 'archivedCount',
                     'scope' => fn (Builder $query) => $query->onlyTrashed(),
                 ],
-            ],
-            'filters' => [
+            ])
+            ->filters([
                 'position' => fn (Builder $query, $value) => $query->whereIn('position_id', $value),
                 'status' => fn (Builder $query, $value) => $query->whereIn('status', $value),
-            ],
-            'sorts' => [
+            ])
+            ->sorts([
                 'created' => 'created_at',
-            ],
-            'range' => [
+            ])
+            ->range([
                 'created' => 'created_at',
-            ],
-        ];
+            ]);
     }
 
     public function store(string $modelClass, array $payload, ?FormRequest $request = null): Model

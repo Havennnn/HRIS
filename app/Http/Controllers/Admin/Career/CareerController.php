@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin\Career;
 
 use App\Enums\Status\CareerStatus;
+use App\Http\Requests\Admin\Career\CareerImportRequest;
 use App\Http\Requests\Admin\Career\CareerRequest;
 use App\Http\Resources\Admin\Career\CareerEditResource;
 use App\Http\Resources\Admin\Career\CareerIndexResource;
+use App\Imports\CareerImport;
 use App\Models\Career;
 use App\Models\Position;
 use App\Services\Admin\Career\CareerService;
@@ -19,7 +21,14 @@ use PiaCore\Actions\Resource\ListAction;
 use PiaCore\Actions\Resource\RestoreAction;
 use PiaCore\Actions\Resource\StoreAction;
 use PiaCore\Actions\Resource\UpdateAction;
+use App\Manifests\CareerManifest;
+use PiaCore\Actions\Import\ExportAction;
+use PiaCore\Actions\Import\ImportAction;
+use PiaCore\Actions\Import\ManifestAction;
+use PiaCore\Enums\ExportType;
 use PiaCore\Http\Controllers\ResourceController;
+use PiaCore\Http\Requests\ImportRequest;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class CareerController extends ResourceController
 {
@@ -133,5 +142,35 @@ final class CareerController extends ResourceController
     public function restore(Career $career, RestoreAction $action, Request $request)
     {
         return $action($this->restoreOptions($career, $request));
+    }
+
+    // ─── Import / Export ─────────────────────────────────────────────
+
+    public function manifest(ManifestAction $action): StreamedResponse
+    {
+        return $action(
+            $this->manifestOptions(CareerManifest::class, 'career-manifest-'.today()->format('Y-m-d'), ExportType::XLSX),
+        );
+    }
+
+    public function import(ImportRequest $request): RedirectResponse
+    {
+        return app(ImportAction::class)($this->importOptions(
+            request: $request,
+            handler: new CareerImport(),
+            rule: CareerImportRequest::class,
+        ));
+    }
+
+    public function export(Request $request, ExportAction $action): StreamedResponse
+    {
+        return $action(
+            $this->exportOptions(
+                resource: CareerIndexResource::class,
+                filename: 'careers-'.today()->format('Y-m-d'),
+                type: ExportType::XLSX,
+                request: $request,
+            ),
+        );
     }
 }

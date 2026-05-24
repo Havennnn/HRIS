@@ -15,7 +15,10 @@ use PiaCore\Actions\Resource\DeleteAction;
 use PiaCore\Actions\Resource\ListAction;
 use PiaCore\Actions\Resource\RestoreAction;
 use PiaCore\Actions\Resource\ShowAction;
+use PiaCore\Actions\Import\ExportAction;
+use PiaCore\Enums\ExportType;
 use PiaCore\Http\Controllers\ResourceController;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 final class ApplicationController extends ResourceController
 {
@@ -69,6 +72,25 @@ final class ApplicationController extends ResourceController
             resource: ApplicationShowResource::class,
         ));
     }
+
+    // ─── Export ─────────────────────────────────────────────────────
+
+    /**
+     * Download applications as CSV.
+     */
+    public function export(Request $request, ExportAction $action): StreamedResponse
+    {
+        return $action(
+            $this->exportOptions(
+                resource: ApplicationIndexResource::class,
+                filename: 'applications-'.today()->format('Y-m-d'),
+                type: ExportType::CSV,
+                request: $request,
+            ),
+        );
+    }
+
+    // ─── Status Transitions ─────────────────────────────────────────
 
     public function interview(Application $application): RedirectResponse|Redirector
     {

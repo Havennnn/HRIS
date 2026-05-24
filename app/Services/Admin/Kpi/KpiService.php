@@ -6,25 +6,25 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
+use PiaCore\Actions\Options\ListConfig;
 use PiaCore\Contracts\CrudService\ListsRecords;
 
 class KpiService implements ListsRecords
 {
-    public function list(Model|string|Relation $model, Request $request): array
+    public function list(Model|string|Relation $model, Request $request): ListConfig
     {
-        return [
-            'tabs' => [
+        return (new ListConfig)
+            ->tabs([
                 'default' => [
                     'countKey' => 'defaultCount',
                 ],
-            ],
-            'filters' => [
+            ])
+            ->filters([
                 'name' => fn (Builder $query, $value) => $query->where('name', 'like', "%{$value}%"),
-            ],
-            'sorts' => [
+            ])
+            ->sorts([
                 'name' => 'name',
                 'created' => 'created_at',
-            ],
-        ];
+            ]);
     }
 }

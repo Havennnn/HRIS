@@ -1,0 +1,6 @@
+<p><strong>{{employee_name}}</strong> submitted a {{request_type}} request for {{date}}.</p>
+<p>{{message}}</p>
+
+<p style="text-align: center; margin-top: 24px;">
+    <a href="{{url}}/requests/{{request_id}}" class="btn">Review Request</a>
+</p>

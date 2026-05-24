@@ -8,35 +8,35 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use PiaCore\Actions\Options\ListConfig;
 use PiaCore\Contracts\CrudService\ListsRecords;
 use PiaCore\Contracts\CrudService\StoresRecords;
 use PiaCore\Contracts\CrudService\UpdatesRecords;
 
 class PerformanceReviewService implements ListsRecords, StoresRecords, UpdatesRecords
 {
-    public function list(Model|string|Relation $model, Request $request): array
+    public function list(Model|string|Relation $model, Request $request): ListConfig
     {
-        return [
-            'baseQuery' => fn (Builder $query) => $query->with(['employee', 'reviewer']),
-            'tabs' => [
+        return (new ListConfig)
+            ->baseQuery(fn (Builder $query) => $query->with(['employee', 'reviewer']))
+            ->tabs([
                 'default' => [
                     'countKey' => 'defaultCount',
                 ],
-            ],
-            'filters' => [
+            ])
+            ->filters([
                 'employee' => fn (Builder $query, $value) => $query->whereIn('employee_id', $value),
                 'reviewer' => fn (Builder $query, $value) => $query->whereIn('reviewer_id', $value),
                 'status' => fn (Builder $query, $value) => $query->whereIn('status', $value),
-            ],
-            'sorts' => [
+            ])
+            ->sorts([
                 'review_date' => 'review_date',
                 'status' => 'status',
                 'created' => 'created_at',
-            ],
-            'range' => [
+            ])
+            ->range([
                 'review_date' => 'review_date',
-            ],
-        ];
+            ]);
     }
 
     public function store(string $modelClass, array $payload, ?FormRequest $request = null): Model

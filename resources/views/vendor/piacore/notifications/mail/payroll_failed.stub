@@ -1,0 +1,6 @@
+<p>Payroll generation failed for period <strong>{{period_start}}</strong> to <strong>{{period_end}}</strong>.</p>
+<p>{{error_message}}</p>
+
+<p style="text-align: center; margin-top: 24px;">
+    <a href="{{url}}/payrolls" class="btn">View Payrolls</a>
+</p>

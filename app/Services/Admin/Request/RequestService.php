@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\DB;
+use PiaCore\Actions\Options\ListConfig;
 use PiaCore\Contracts\CrudService\ListsRecords;
 use PiaCore\Contracts\CrudService\ShowsRecords;
 
@@ -25,13 +26,13 @@ class RequestService implements ListsRecords, ShowsRecords
      *   range: array<string, string|array{startColumn?: string, endColumn?: string}>
      * }
      */
-    public function list(Model|string|Relation $model, HttpRequest $request): array
+    public function list(Model|string|Relation $model, HttpRequest $request): ListConfig
     {
-        return [
-            'baseQuery' => function (Builder $query): Builder {
+        return (new ListConfig)
+            ->baseQuery(function (Builder $query): Builder {
                 return $query->with(['employee', 'employee.position']);
-            },
-            'tabs' => [
+            })
+            ->tabs([
                 'default' => [
                     'countKey' => 'defaultCount',
                 ],
@@ -47,19 +48,18 @@ class RequestService implements ListsRecords, ShowsRecords
                     'countKey' => 'archivedCount',
                     'scope' => fn (Builder $query) => $query->onlyTrashed(),
                 ],
-            ],
-            'filters' => [
+            ])
+            ->filters([
                 'type' => fn (Builder $query, $value) => $query->whereIn('type', $value),
                 'status' => fn (Builder $query, $value) => $query->whereIn('status', $value),
-            ],
-            'sorts' => [
+            ])
+            ->sorts([
                 'date' => 'requested_date',
                 'created' => 'created_at',
-            ],
-            'range' => [
+            ])
+            ->range([
                 'requested' => 'requested_date',
-            ],
-        ];
+            ]);
     }
 
     /**

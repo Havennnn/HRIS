@@ -10,6 +10,7 @@ import DataBadge from 'piacore/components/DataBadge.vue';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import type { DataTableActionsConfig, DataTableColumn } from 'piacore/components/DataTable.vue';
 import DataTablePanel from 'piacore/components/DataTablePanel.vue';
+import ImportExportDialog from 'piacore/components/ImportExportDialog.vue';
 import type { PaginatedData } from 'piacore/Interface/Pagination';
 import type { Option } from 'piacore/Interface/Selector';
 import { computed, h, ref } from 'vue';
@@ -176,6 +177,7 @@ function handlePageChange(url: string | null): void {
                     description="Manage career positions within the organization."
                 >
                     <template #actions>
+                        <ImportExportDialog />
                         <Button as-child>
                             <Link :href="create().url">Add Career</Link>
                         </Button>

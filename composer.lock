@@ -830,7 +830,7 @@
                     "homepage": "https://github.com/Nyholm"
                 },
                 {
-                    "name": "Márk Sági-Kazár",
+                    "name": "M\u00e1rk S\u00e1gi-Kaz\u00e1r",
                     "email": "mark.sagikazar@gmail.com",
                     "homepage": "https://github.com/sagikazarmark"
                 },
@@ -1025,7 +1025,7 @@
                     "homepage": "https://github.com/Nyholm"
                 },
                 {
-                    "name": "Márk Sági-Kazár",
+                    "name": "M\u00e1rk S\u00e1gi-Kaz\u00e1r",
                     "email": "mark.sagikazar@gmail.com",
                     "homepage": "https://github.com/sagikazarmark"
                 },
@@ -1035,7 +1035,7 @@
                     "homepage": "https://github.com/Tobion"
                 },
                 {
-                    "name": "Márk Sági-Kazár",
+                    "name": "M\u00e1rk S\u00e1gi-Kaz\u00e1r",
                     "email": "mark.sagikazar@gmail.com",
                     "homepage": "https://sagikazarmark.hu"
                 }
@@ -1826,16 +1826,16 @@
         },
         {
             "name": "latsmarbls/piacore",
-            "version": "v1.1.4",
+            "version": "v1.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/LatsMarbls/piacore.git",
-                "reference": "9c96da7e2dd0419f7ffb286d9ecb2445fcb3420a"
+                "reference": "23b9ca63f28996dd7248b627372431964438fcf9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/LatsMarbls/piacore/zipball/9c96da7e2dd0419f7ffb286d9ecb2445fcb3420a",
-                "reference": "9c96da7e2dd0419f7ffb286d9ecb2445fcb3420a",
+                "url": "https://api.github.com/repos/LatsMarbls/piacore/zipball/23b9ca63f28996dd7248b627372431964438fcf9",
+                "reference": "23b9ca63f28996dd7248b627372431964438fcf9",
                 "shasum": ""
             },
             "require": {
@@ -1865,7 +1865,10 @@
             "autoload": {
                 "psr-4": {
                     "PiaCore\\": "src/"
-                }
+                },
+                "files": [
+                    "src/Notifications/helpers.php"
+                ]
             },
             "autoload-dev": {
                 "psr-4": {
@@ -1888,10 +1891,10 @@
             ],
             "description": "Reusable CRUD action core for Laravel + Inertia admin panels.",
             "support": {
-                "source": "https://github.com/LatsMarbls/piacore/tree/v1.1.4",
+                "source": "https://github.com/LatsMarbls/piacore/tree/v1.2.0",
                 "issues": "https://github.com/LatsMarbls/piacore/issues"
             },
-            "time": "2026-03-29T00:20:33+00:00"
+            "time": "2026-05-25T05:55:00+00:00"
         },
         {
             "name": "league/commonmark",
@@ -2715,7 +2718,7 @@
                     "homepage": "https://nette.org/contributors"
                 }
             ],
-            "description": "📐 Nette Schema: validating data structures against a given Schema.",
+            "description": "\ud83d\udcd0 Nette Schema: validating data structures against a given Schema.",
             "homepage": "https://nette.org",
             "keywords": [
                 "config",
@@ -2794,7 +2797,7 @@
                     "homepage": "https://nette.org/contributors"
                 }
             ],
-            "description": "🛠  Nette Utils: lightweight utilities for string & array manipulation, image handling, safe JSON encoding/decoding, validation, slug or strong password generating etc.",
+            "description": "\ud83d\udee0  Nette Utils: lightweight utilities for string & array manipulation, image handling, safe JSON encoding/decoding, validation, slug or strong password generating etc.",
             "homepage": "https://nette.org",
             "keywords": [
                 "array",
@@ -4259,7 +4262,7 @@
                     "email": "fabien@symfony.com"
                 },
                 {
-                    "name": "Jean-François Simon",
+                    "name": "Jean-Fran\u00e7ois Simon",
                     "email": "jeanfrancois.simon@sensiolabs.com"
                 },
                 {
@@ -5834,7 +5837,7 @@
             ],
             "authors": [
                 {
-                    "name": "Grégoire Pineau",
+                    "name": "Gr\u00e9goire Pineau",
                     "email": "lyrixx@lyrixx.info"
                 },
                 {
@@ -6419,7 +6422,7 @@
             ],
             "authors": [
                 {
-                    "name": "Grégoire Pineau",
+                    "name": "Gr\u00e9goire Pineau",
                     "email": "lyrixx@lyrixx.info"
                 },
                 {
@@ -6811,7 +6814,7 @@
             ],
             "authors": [
                 {
-                    "name": "François Zaninotto"
+                    "name": "Fran\u00e7ois Zaninotto"
                 }
             ],
             "description": "Faker is a PHP library that generates fake data for you.",
@@ -7200,7 +7203,7 @@
             ],
             "authors": [
                 {
-                    "name": "Pádraic Brady",
+                    "name": "P\u00e1draic Brady",
                     "email": "padraic.brady@gmail.com",
                     "homepage": "https://github.com/padraic",
                     "role": "Author"

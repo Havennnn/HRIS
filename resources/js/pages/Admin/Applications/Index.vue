@@ -10,6 +10,7 @@ import DataBadge from 'piacore/components/DataBadge.vue';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import type { DataTableActionsConfig, DataTableColumn } from 'piacore/components/DataTable.vue';
 import DataTablePanel from 'piacore/components/DataTablePanel.vue';
+import ImportExportDialog from 'piacore/components/ImportExportDialog.vue';
 import { createDateRangeHandler } from 'piacore/helpers/date-range';
 import type { PaginatedData } from 'piacore/Interface/Pagination';
 import type { Option } from 'piacore/Interface/Selector';
@@ -166,6 +167,10 @@ function handlePageChange(url: string | null): void {
                     variant="card"
                     title="Applications"
                     description="Manage job applications within the organization."
+                >
+                    <template #actions>
+                        <ImportExportDialog />
+                    </template>
                 />
 
                 <CardContent class="space-y-4 -mt-3">

@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { index } from '@/routes/attendance-logs';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { ArrowUpDown, Clock, Download } from 'lucide-vue-next';
+import { ArrowUpDown, Clock } from 'lucide-vue-next';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import type { DataTableColumn } from 'piacore/components/DataTable.vue';
 import DataTablePanel from 'piacore/components/DataTablePanel.vue';
+import ImportExportDialog from 'piacore/components/ImportExportDialog.vue';
 import type { PaginatedData } from 'piacore/Interface/Pagination';
 import type { Option } from 'piacore/Interface/Selector';
 import { h, ref } from 'vue';
@@ -104,12 +104,7 @@ function handlePageChange(url: string | null): void {
                     description="Manage employee attendance logs"
                 >
                     <template #actions>
-                        <Button variant="outline" as-child>
-                            <a href="/attendance-logs/export" download>
-                                <Download class="mr-2 h-4 w-4" />
-                                Export
-                            </a>
-                        </Button>
+                        <ImportExportDialog />
                     </template>
                 </DataHeader>
 

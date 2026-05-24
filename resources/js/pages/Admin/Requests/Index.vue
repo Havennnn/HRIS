@@ -9,6 +9,7 @@ import DataBadge from 'piacore/components/DataBadge.vue';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import type { DataTableActionsConfig, DataTableColumn } from 'piacore/components/DataTable.vue';
 import DataTablePanel from 'piacore/components/DataTablePanel.vue';
+import ImportExportDialog from 'piacore/components/ImportExportDialog.vue';
 import { createDateRangeHandler } from 'piacore/helpers/date-range';
 import type { PaginatedData } from 'piacore/Interface/Pagination';
 import { computed, h, ref } from 'vue';
@@ -244,6 +245,10 @@ function handlePageChange(url: string | null): void {
                     variant="card"
                     title="Leave Requests"
                     description="Manage employee leave and overtime requests."
+                >
+                    <template #actions>
+                        <ImportExportDialog />
+                    </template>
                 />
 
                 <CardContent class="space-y-4 -mt-3">

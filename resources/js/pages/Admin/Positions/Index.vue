@@ -20,6 +20,7 @@ import { ArrowUpDown, Briefcase, Pencil, Plus } from 'lucide-vue-next';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import type { DataTableActionsConfig, DataTableColumn } from 'piacore/components/DataTable.vue';
 import DataTablePanel from 'piacore/components/DataTablePanel.vue';
+import ImportExportDialog from 'piacore/components/ImportExportDialog.vue';
 import DataSelector from 'piacore/components/DataSelector.vue';
 import { useAuth } from 'piacore/composables/useAuth';
 import type { PaginatedData } from 'piacore/Interface/Pagination';
@@ -256,6 +257,10 @@ function handlePageChange(url: string | null): void {
                     description="Manage positions within the organization."
                 >
                     <template #actions>
+                        <ImportExportDialog
+                            :can-import="hasPermission('can-import-positions')"
+                            :can-export="hasPermission('can-export-data')"
+                        />
                         <Button v-if="canCreatePosition" @click="openCreateModal">
                             <Plus class="mr-1 h-4 w-4" />
                             Add Position

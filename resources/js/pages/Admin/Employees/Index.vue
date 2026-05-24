@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useRoleAccess } from '@/composables/useRoleAccess';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { create, destroy, edit, exportMethod, index, importMethod, manifest, restore } from '@/routes/employees';
+import { create, destroy, edit, index, restore } from '@/routes/employees';
 import type { BreadcrumbItem } from '@/types';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
-import { ArrowUpDown, Badge, Briefcase, Download, IdCardIcon, Upload } from 'lucide-vue-next';
+import { ArrowUpDown, Badge, Briefcase, IdCardIcon } from 'lucide-vue-next';
 import DataBadge from 'piacore/components/DataBadge.vue';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import type { DataTableActionsConfig, DataTableColumn } from 'piacore/components/DataTable.vue';
 import DataTablePanel from 'piacore/components/DataTablePanel.vue';
+import ImportExportDialog from 'piacore/components/ImportExportDialog.vue';
 import { useAuth } from 'piacore/composables/useAuth';
 import type { PaginatedData } from 'piacore/Interface/Pagination';
 import type { Option } from 'piacore/Interface/Selector';
@@ -186,50 +186,6 @@ function handlePageChange(url: string | null): void {
         router.visit(url, { preserveState: true });
     }
 }
-
-// Import/Export
-const showImportDialog = ref(false);
-const importFile = ref<File | null>(null);
-const importing = ref(false);
-const importQueued = ref(false);
-
-function onImportFileChange(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    importFile.value = target.files?.[0] ?? null;
-    importQueued.value = false;
-}
-
-async function submitImport(): Promise<void> {
-    if (!importFile.value) return;
-
-    importing.value = true;
-    importQueued.value = false;
-    try {
-        router.post(
-            importMethod().url,
-            { file: importFile.value },
-            {
-                preserveState: true,
-                onSuccess: () => {
-                    importQueued.value = true;
-                    importFile.value = null;
-                },
-                onError: () => {
-                    // FormRequest validation errors handled by Inertia
-                },
-                onFinish: () => {
-                    importing.value = false;
-                },
-            },
-        );
-    } catch {
-        importing.value = false;
-    }
-}
-
-const canImport = computed(() => hasPermission('can-import-employees'));
-const canExport = computed(() => hasPermission('can-export-data'));
-const validationErrors = computed(() => (page.props as any).errors ?? {});
 </script>
 
 <template>
@@ -243,16 +199,12 @@ const validationErrors = computed(() => (page.props as any).errors ?? {});
                     description="Manage employees within the organization."
                 >
                     <template #actions>
-                        <Button v-if="canImport" variant="outline" @click="showImportDialog = true">
-                            <Upload class="mr-2 h-4 w-4" />
-                            Import
-                        </Button>
-                        <Button v-if="canExport" variant="outline" as-child>
-                            <a :href="exportMethod().url" download>
-                                <Download class="mr-2 h-4 w-4" />
-                                Export
-                            </a>
-                        </Button>
+                        <ImportExportDialog
+                            title="Import Employees"
+                            description="Upload a .csv or .xlsx file. Download the template first to see the required columns. Rows are matched by email — existing records are updated, new ones are created."
+                            :can-import="hasPermission('can-import-employees')"
+                            :can-export="hasPermission('can-export-data')"
+                        />
                         <Button v-if="canCreateEmployee" as-child>
                             <Link :href="create().url">Add Employee</Link>
                         </Button>
@@ -279,62 +231,6 @@ const validationErrors = computed(() => (page.props as any).errors ?? {});
                     />
                 </CardContent>
             </Card>
-
-            <!-- Import Dialog -->
-            <Dialog :open="showImportDialog" @update:open="showImportDialog = $event">
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Import Employees</DialogTitle>
-                        <DialogDescription>
-                            Upload a .csv or .xlsx file. Download the template first to see the required columns. Rows are matched by email — existing records are updated, new ones are created.
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <div class="space-y-4">
-                        <div v-if="importQueued" class="rounded-lg border border-blue-200 bg-blue-50 p-4">
-                            <p class="text-sm font-medium text-blue-800">
-                                Import queued! You'll receive a notification when it's done.
-                            </p>
-                        </div>
-                        <div v-if="Object.keys(validationErrors).length && !importQueued" class="rounded-lg border border-red-200 bg-red-50 p-4">
-                            <p class="text-sm font-medium text-red-800">Validation errors:</p>
-                            <ul class="mt-1 list-inside list-disc space-y-0.5">
-                                <li v-for="(msgs, field) in validationErrors" class="text-xs text-red-700">
-                                    {{ Array.isArray(msgs) ? msgs.join(', ') : msgs }}
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="rounded-lg border border-dashed p-6 text-center">
-                            <Upload class="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-                            <p class="mb-1 text-sm font-medium">Choose a CSV or Excel file</p>
-                            <p class="mb-3 text-xs text-muted-foreground">.csv or .xlsx, max 5MB</p>
-                            <input
-                                type="file"
-                                accept=".csv,.xlsx"
-                                class="block w-full text-sm file:mr-4 file:rounded file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:text-primary-foreground hover:file:bg-primary/90"
-                                @change="onImportFileChange"
-                            />
-                        </div>
-
-                        <div class="text-center">
-                            <a
-                                :href="manifest().url"
-                                class="text-sm text-primary underline-offset-4 hover:underline"
-                                download
-                            >
-                                Download template (.xlsx)
-                            </a>
-                        </div>
-                    </div>
-
-                    <DialogFooter>
-                        <Button variant="outline" @click="showImportDialog = false">Cancel</Button>
-                        <Button :disabled="!importFile || importing" @click="submitImport">
-                            {{ importing ? 'Importing...' : 'Import' }}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </div>
     </AppLayout>
 </template>

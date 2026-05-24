@@ -10,6 +10,7 @@ import DataBadge from 'piacore/components/DataBadge.vue';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import type { DataTableActionsConfig, DataTableColumn } from 'piacore/components/DataTable.vue';
 import DataTablePanel from 'piacore/components/DataTablePanel.vue';
+import ImportExportDialog from 'piacore/components/ImportExportDialog.vue';
 import { useAuth } from 'piacore/composables/useAuth';
 import type { PaginatedData } from 'piacore/Interface/Pagination';
 import { computed, h, ref } from 'vue';
@@ -167,6 +168,7 @@ function handlePageChange(url: string | null): void {
                     description="Manage employee performance reviews with KPI scores and feedback."
                 >
                     <template #actions>
+                        <ImportExportDialog />
                         <Button v-if="canCreate" as-child>
                             <Link :href="create().url">Add Review</Link>
                         </Button>

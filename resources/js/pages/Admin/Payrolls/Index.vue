@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { index, show } from '@/routes/payrolls';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router, usePage } from '@inertiajs/vue3';
-import { ArrowUpDown, BadgeDollarSign, Download } from 'lucide-vue-next';
+import { ArrowUpDown, BadgeDollarSign } from 'lucide-vue-next';
 import DataBadge from 'piacore/components/DataBadge.vue';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import type { DataTableActionsConfig, DataTableColumn } from 'piacore/components/DataTable.vue';
 import DataTablePanel from 'piacore/components/DataTablePanel.vue';
+import ImportExportDialog from 'piacore/components/ImportExportDialog.vue';
 import { createDateRangeHandler } from 'piacore/helpers/date-range';
 import type { PaginatedData } from 'piacore/Interface/Pagination';
 import type { Option } from 'piacore/Interface/Selector';
@@ -182,12 +182,7 @@ function handlePageChange(url: string | null): void {
                     description="Review generated payrolls and payout statuses."
                 >
                     <template #actions>
-                        <Button variant="outline" as-child>
-                            <a href="/payrolls/export" download>
-                                <Download class="mr-2 h-4 w-4" />
-                                Export
-                            </a>
-                        </Button>
+                        <ImportExportDialog />
                     </template>
                 </DataHeader>
 

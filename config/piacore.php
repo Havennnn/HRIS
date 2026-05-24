@@ -26,6 +26,18 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | CMS Module
+    |--------------------------------------------------------------------------
+    |
+    | Enable or disable the CMS module (pages, blocks, public API).
+    |
+    */
+    'cms' => [
+        'enabled' => env('PIACORE_CMS_ENABLED', true),
+    ],
+
     'model_services' => [
         // App\Models\Product::class => App\Services\ProductService::class,
     ],

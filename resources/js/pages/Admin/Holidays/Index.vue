@@ -9,6 +9,7 @@ import { Filter } from 'lucide-vue-next';
 import type { DataCalendarActionsConfig, DataCalendarEventDisplay } from 'piacore/components/DataCalendar.vue';
 import DataCalendar from 'piacore/components/DataCalendar.vue';
 import DataHeader from 'piacore/components/DataHeader.vue';
+import ImportExportDialog from 'piacore/components/ImportExportDialog.vue';
 import type { PaginatedData } from 'piacore/Interface/Pagination';
 import { Option } from 'piacore/Interface/Selector';
 import { computed, ref } from 'vue';
@@ -109,6 +110,7 @@ const calendarActions: DataCalendarActionsConfig = {
                     description="Manage holidays within the organization."
                 >
                     <template #actions>
+                        <ImportExportDialog />
                         <Button as-child>
                             <Link :href="create().url">Add Holiday</Link>
                         </Button>

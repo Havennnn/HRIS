@@ -19,6 +19,7 @@ import { ArrowUpDown, Plus, Pencil } from 'lucide-vue-next';
 import DataHeader from 'piacore/components/DataHeader.vue';
 import type { DataTableActionsConfig, DataTableColumn } from 'piacore/components/DataTable.vue';
 import DataTablePanel from 'piacore/components/DataTablePanel.vue';
+import ImportExportDialog from 'piacore/components/ImportExportDialog.vue';
 import { useAuth } from 'piacore/composables/useAuth';
 import type { PaginatedData } from 'piacore/Interface/Pagination';
 import { computed, h, ref } from 'vue';
@@ -205,6 +206,10 @@ function handlePageChange(url: string | null): void {
                     description="Manage departments within the organization."
                 >
                     <template #actions>
+                        <ImportExportDialog
+                            :can-import="hasPermission('can-import-departments')"
+                            :can-export="hasPermission('can-export-data')"
+                        />
                         <Button v-if="canCreateDepartment" @click="openCreateModal">
                             <Plus class="mr-1 h-4 w-4" />
                             Add Department

@@ -42,6 +42,9 @@ Route::middleware(['auth:admin'])->group(function (): void {
             Route::patch('/{department}', 'update')->middleware('can-update-department')->name('update');
             Route::delete('/{department}', 'destroy')->middleware('can-archive-department')->name('destroy');
             Route::patch('/{department}/restore', 'restore')->middleware('can-restore-department')->name('restore')->withTrashed();
+            Route::get('/export', 'export')->middleware('can-export-data')->name('export');
+            Route::get('/manifest', 'manifest')->middleware('can-import-departments')->name('manifest');
+            Route::post('/import', 'import')->middleware('can-import-departments')->name('import');
         });
 
     // Position Management Routes
@@ -56,6 +59,9 @@ Route::middleware(['auth:admin'])->group(function (): void {
             Route::patch('/{position}', 'update')->middleware('can-update-position')->name('update');
             Route::delete('/{position}', 'destroy')->middleware('can-archive-position')->name('destroy');
             Route::patch('/{position}/restore', 'restore')->middleware('can-restore-position')->name('restore')->withTrashed();
+            Route::get('/export', 'export')->middleware('can-export-data')->name('export');
+            Route::get('/manifest', 'manifest')->middleware('can-import-positions')->name('manifest');
+            Route::post('/import', 'import')->middleware('can-import-positions')->name('import');
         });
 
     // Employee Management Routes
@@ -125,6 +131,9 @@ Route::middleware(['auth:admin'])->group(function (): void {
             Route::post('/{career}/draft', 'draft')->middleware('can-update-career')->name('draft');
             Route::delete('/{career}', 'destroy')->middleware('can-archive-career')->name('destroy');
             Route::patch('/{career}/restore', 'restore')->middleware('can-restore-career')->name('restore')->withTrashed();
+            Route::get('/export', 'export')->middleware('can-export-data')->name('export');
+            Route::get('/manifest', 'manifest')->middleware('can-import-careers')->name('manifest');
+            Route::post('/import', 'import')->middleware('can-import-careers')->name('import');
         });
 
     // Application Management Routes
@@ -139,6 +148,7 @@ Route::middleware(['auth:admin'])->group(function (): void {
             Route::post('/{application}/hire', 'hire')->middleware('can-hire-application')->name('hire');
             Route::delete('/{application}', 'destroy')->middleware('can-archive-application')->name('destroy');
             Route::patch('/{application}/restore', 'restore')->middleware('can-restore-application')->name('restore')->withTrashed();
+            Route::get('/export', 'export')->middleware('can-export-data')->name('export');
         });
 
     // Request Management Routes
@@ -154,6 +164,7 @@ Route::middleware(['auth:admin'])->group(function (): void {
             Route::post('/{request}/complete', 'complete')->middleware('can-complete-request')->name('complete');
             Route::delete('/{request}', 'destroy')->middleware('can-archive-request')->name('destroy');
             Route::patch('/{request}/restore', 'restore')->middleware('can-restore-request')->name('restore')->withTrashed();
+            Route::get('/export', 'export')->middleware('can-export-data')->name('export');
         });
 
     // Payroll Management Routes
@@ -178,6 +189,9 @@ Route::middleware(['auth:admin'])->group(function (): void {
             Route::patch('/{holiday}', 'update')->middleware('can-update-holiday')->name('update');
             Route::delete('/{holiday}', 'destroy')->middleware('can-archive-holiday')->name('destroy');
             Route::patch('/{holiday}/restore', 'restore')->middleware('can-restore-holiday')->name('restore')->withTrashed();
+            Route::get('/export', 'export')->middleware('can-export-data')->name('export');
+            Route::get('/manifest', 'manifest')->middleware('can-import-holidays')->name('manifest');
+            Route::post('/import', 'import')->middleware('can-import-holidays')->name('import');
         });
 
     // Settings Routes
@@ -220,6 +234,7 @@ Route::middleware(['auth:admin'])->group(function (): void {
             Route::patch('/{performanceReview}', 'update')->middleware('can-update-performance-review')->name('update');
             Route::delete('/{performanceReview}', 'destroy')->middleware('can-archive-performance-review')->name('destroy');
             Route::patch('/{performanceReview}/restore', 'restore')->middleware('can-restore-performance-review')->name('restore')->withTrashed();
+            Route::get('/export', 'export')->middleware('can-export-data')->name('export');
         });
 
     // Notification Routes

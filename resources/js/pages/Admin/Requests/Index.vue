@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Card, CardContent } from '@/components/ui/card';
 import AppLayout from '@/layouts/AppLayout.vue';
-import { approve, cancel, destroy, index, reject, restore, show } from '@/routes/requests';
+import { approve, cancel, complete, destroy, index, reject, restore, show } from '@/routes/requests';
 import type { BreadcrumbItem } from '@/types';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { ArrowUpDown, Badge, Ban, Check, Filter, X } from 'lucide-vue-next';
@@ -249,7 +249,7 @@ function handlePageChange(url: string | null): void {
                     <template #actions>
                         <ImportExportDialog />
                     </template>
-                />
+                </DataHeader>
 
                 <CardContent class="space-y-4 -mt-3">
                     <DataTablePanel
@@ -273,8 +273,6 @@ function handlePageChange(url: string | null): void {
         </div>
     </AppLayout>
 </template>
-
-
 
 
 

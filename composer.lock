@@ -1830,12 +1830,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/LatsMarbls/piacore.git",
-                "reference": "c2cf75985971245de55ba48b20204b437422c003"
+                "reference": "29da656a79c5c45ecd765693275f973cadb50efe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/LatsMarbls/piacore/zipball/c2cf75985971245de55ba48b20204b437422c003",
-                "reference": "c2cf75985971245de55ba48b20204b437422c003",
+                "url": "https://api.github.com/repos/LatsMarbls/piacore/zipball/29da656a79c5c45ecd765693275f973cadb50efe",
+                "reference": "29da656a79c5c45ecd765693275f973cadb50efe",
                 "shasum": ""
             },
             "require": {

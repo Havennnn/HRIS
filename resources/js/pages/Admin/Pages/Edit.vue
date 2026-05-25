@@ -2,8 +2,8 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import DynamicForm from '@/Components/Cms/DynamicForm.vue';
-import ViewFields from '@/Components/Cms/ViewFields.vue';
+import DynamicForm from '@/components/Cms/DynamicForm.vue';
+import ViewFields from '@/components/Cms/ViewFields.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { edit, index, update } from '@/routes/pages';
 import type { BreadcrumbItem } from '@/types';

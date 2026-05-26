@@ -173,7 +173,7 @@ Route::middleware(['auth:admin'])->group(function (): void {
         ->controller(PayrollController::class)
         ->group(function (): void {
             Route::get('/', 'index')->middleware('can-list-payrolls')->name('index');
-            Route::get('/{payroll}', 'show')->middleware('can-list-payrolls')->name('show');
+            Route::get('/{payroll}', 'show')->middleware('can-view-payroll')->name('show');
             Route::get('/export', 'export')->middleware('can-export-data')->name('export');
         });
 

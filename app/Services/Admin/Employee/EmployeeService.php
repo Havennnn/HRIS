@@ -8,7 +8,6 @@ use App\Models\PerformanceReview;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -47,9 +46,9 @@ class EmployeeService implements ListsRecords, StoresRecords, UpdatesRecords
 
     public function store(string $modelClass, array $payload, ?FormRequest $request = null): Model
     {
-        return DB::transaction(function () use ($modelClass, $request) {
+        return DB::transaction(function () use ($modelClass, $payload) {
             return $modelClass::query()->create(
-                $this->prepareStoreData($request)
+                $this->prepareStoreData($payload)
             );
         });
     }
@@ -65,17 +64,17 @@ class EmployeeService implements ListsRecords, StoresRecords, UpdatesRecords
         });
     }
 
-    protected function prepareStoreData(?FormRequest $request = null): array
+    protected function prepareStoreData(array $data): array
     {
         return [
-            'position_id' => $request?->validated('position_id'),
-            'first_name' => $request?->validated('first_name'),
-            'last_name' => $request?->validated('last_name'),
-            'middle_name' => $request?->validated('middle_name'),
-            'birthdate' => $request?->validated('birthdate'),
-            'mobile_number' => $request?->validated('mobile_number'),
-            'email' => $request?->validated('email'),
-            'type' => $request?->validated('type'),
+            'position_id' => $data['position_id'] ?? null,
+            'first_name' => $data['first_name'] ?? null,
+            'last_name' => $data['last_name'] ?? null,
+            'middle_name' => $data['middle_name'] ?? null,
+            'birthdate' => $data['birthdate'] ?? null,
+            'mobile_number' => $data['mobile_number'] ?? null,
+            'email' => $data['email'] ?? null,
+            'type' => $data['type'] ?? null,
         ];
     }
 

@@ -8,11 +8,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use PiaCore\Models\Concerns\HasActivityLogs;
 use PiaCore\Models\Concerns\HasArchives;
 use PiaCore\Search\SearchConfig;
 
 class Request extends Model
 {
+    use HasActivityLogs;
     use HasArchives;
     use HasFactory;
     use SearchConfig;

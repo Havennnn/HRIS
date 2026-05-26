@@ -93,11 +93,6 @@ class Employee extends Authenticatable
         return $this->hasOne(EmployeeContact::class);
     }
 
-    public function tools(): HasOne
-    {
-        return $this->hasOne(EmployeeTool::class);
-    }
-
     public function device(): HasOne
     {
         return $this->hasOne(EmployeeDevice::class);

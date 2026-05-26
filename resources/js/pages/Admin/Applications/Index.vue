@@ -171,7 +171,7 @@ function handlePageChange(url: string | null): void {
                     <template #actions>
                         <ImportExportDialog />
                     </template>
-                />
+                </DataHeader>
 
                 <CardContent class="space-y-4 -mt-3">
                     <DataTablePanel

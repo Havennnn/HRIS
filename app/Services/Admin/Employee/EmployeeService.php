@@ -8,6 +8,7 @@ use App\Models\PerformanceReview;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -44,16 +45,16 @@ class EmployeeService implements ListsRecords, StoresRecords, UpdatesRecords
             ]);
     }
 
-    public function store(string $modelClass, array $payload, ?FormRequest $request = null): Model
+    public function store(string $modelClass, FormRequest $request): Model
     {
-        return DB::transaction(function () use ($modelClass, $payload) {
+        return DB::transaction(function () use ($modelClass, $request) {
             return $modelClass::query()->create(
-                $this->prepareStoreData($payload)
+                $this->prepareStoreData($request)
             );
         });
     }
 
-    public function update(Model $record, array $payload, ?FormRequest $request = null): Model
+    public function update(Model $record, FormRequest $request): Model
     {
         return DB::transaction(function () use ($record, $request) {
             $record->update(
@@ -64,31 +65,31 @@ class EmployeeService implements ListsRecords, StoresRecords, UpdatesRecords
         });
     }
 
-    protected function prepareStoreData(array $data): array
+    protected function prepareStoreData(FormRequest $request): array
     {
         return [
-            'position_id' => $data['position_id'] ?? null,
-            'first_name' => $data['first_name'] ?? null,
-            'last_name' => $data['last_name'] ?? null,
-            'middle_name' => $data['middle_name'] ?? null,
-            'birthdate' => $data['birthdate'] ?? null,
-            'mobile_number' => $data['mobile_number'] ?? null,
-            'email' => $data['email'] ?? null,
-            'type' => $data['type'] ?? null,
+            'position_id' => $request->validated('position_id'),
+            'first_name' => $request->validated('first_name'),
+            'last_name' => $request->validated('last_name'),
+            'middle_name' => $request->validated('middle_name'),
+            'birthdate' => $request->validated('birthdate'),
+            'mobile_number' => $request->validated('mobile_number'),
+            'email' => $request->validated('email'),
+            'type' => $request->validated('type'),
         ];
     }
 
-    protected function prepareUpdateData(Model $record, ?FormRequest $request = null): array
+    protected function prepareUpdateData(Model $record, FormRequest $request): array
     {
         return [
-            'position_id' => $request?->validated('position_id'),
-            'first_name' => $request?->validated('first_name'),
-            'last_name' => $request?->validated('last_name'),
-            'middle_name' => $request?->validated('middle_name'),
-            'birthdate' => $request?->validated('birthdate'),
-            'mobile_number' => $request?->validated('mobile_number'),
-            'email' => $request?->validated('email'),
-            'type' => $request?->validated('type'),
+            'position_id' => $request->validated('position_id'),
+            'first_name' => $request->validated('first_name'),
+            'last_name' => $request->validated('last_name'),
+            'middle_name' => $request->validated('middle_name'),
+            'birthdate' => $request->validated('birthdate'),
+            'mobile_number' => $request->validated('mobile_number'),
+            'email' => $request->validated('email'),
+            'type' => $request->validated('type'),
         ];
     }
 

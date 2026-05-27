@@ -39,7 +39,7 @@ class PerformanceReviewService implements ListsRecords, StoresRecords, UpdatesRe
             ]);
     }
 
-    public function store(string $modelClass, array $payload, ?FormRequest $request = null): Model
+    public function store(string $modelClass, FormRequest $request): Model
     {
         return DB::transaction(function () use ($modelClass, $request) {
             $record = $modelClass::query()->create(
@@ -53,7 +53,7 @@ class PerformanceReviewService implements ListsRecords, StoresRecords, UpdatesRe
         });
     }
 
-    public function update(Model $record, array $payload, ?FormRequest $request = null): Model
+    public function update(Model $record, FormRequest $request): Model
     {
         return DB::transaction(function () use ($record, $request) {
             $record->update(
@@ -67,29 +67,29 @@ class PerformanceReviewService implements ListsRecords, StoresRecords, UpdatesRe
         });
     }
 
-    protected function prepareStoreData(?FormRequest $request = null): array
+    protected function prepareStoreData(FormRequest $request): array
     {
         return [
-            'employee_id' => $request?->validated('employee_id'),
-            'reviewer_id' => $request?->validated('reviewer_id'),
-            'review_date' => $request?->validated('review_date'),
-            'status' => $request?->validated('status'),
+            'employee_id' => $request->validated('employee_id'),
+            'reviewer_id' => $request->validated('reviewer_id'),
+            'review_date' => $request->validated('review_date'),
+            'status' => $request->validated('status'),
         ];
     }
 
-    protected function prepareUpdateData(Model $record, ?FormRequest $request = null): array
+    protected function prepareUpdateData(Model $record, FormRequest $request): array
     {
         return [
-            'employee_id' => $request?->validated('employee_id'),
-            'reviewer_id' => $request?->validated('reviewer_id'),
-            'review_date' => $request?->validated('review_date'),
-            'status' => $request?->validated('status'),
+            'employee_id' => $request->validated('employee_id'),
+            'reviewer_id' => $request->validated('reviewer_id'),
+            'review_date' => $request->validated('review_date'),
+            'status' => $request->validated('status'),
         ];
     }
 
-    protected function syncScores(Model $record, ?FormRequest $request = null): void
+    protected function syncScores(Model $record, FormRequest $request): void
     {
-        $scores = $request?->validated('scores', []);
+        $scores = $request->validated('scores', []);
 
         $existingIds = collect($scores)->pluck('id')->filter()->all();
         $record->reviewScores()->whereNotIn('id', $existingIds)->delete();
@@ -105,9 +105,9 @@ class PerformanceReviewService implements ListsRecords, StoresRecords, UpdatesRe
         }
     }
 
-    protected function syncFeedback(Model $record, ?FormRequest $request = null): void
+    protected function syncFeedback(Model $record, FormRequest $request): void
     {
-        $feedback = $request?->validated('feedback', []);
+        $feedback = $request->validated('feedback', []);
 
         $existingIds = collect($feedback)->pluck('id')->filter()->all();
         $record->reviewFeedback()->whereNotIn('id', $existingIds)->delete();

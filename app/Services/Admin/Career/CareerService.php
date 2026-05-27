@@ -40,45 +40,47 @@ class CareerService implements ListsRecords, StoresRecords, UpdatesRecords
             ]);
     }
 
-    public function store(string $modelClass, array $payload, ?FormRequest $request = null): Model
+    public function store(string $modelClass, FormRequest $request): Model
     {
         $record = $modelClass::query()->create(
-            $this->extractModelData(new $modelClass, $payload)
+            $this->extractModelData($modelClass, $request)
         );
 
-        $this->syncSeoMeta($record, $payload);
+        $this->syncSeoMeta($record, $request);
 
         return $record;
     }
 
-    public function update(Model $record, array $payload, ?FormRequest $request = null): Model
+    public function update(Model $record, FormRequest $request): Model
     {
         $record->update(
-            $this->extractModelData($record, $payload)
+            $this->extractModelData($record, $request)
         );
 
-        $this->syncSeoMeta($record, $payload);
+        $this->syncSeoMeta($record, $request);
 
         return $record->fresh();
     }
 
-    protected function extractModelData(Model $record, array $data): array
+    protected function extractModelData(Model|string $model, FormRequest $request): array
     {
+        $record = is_string($model) ? new $model : $model;
+
         return [
-            'position_id' => $data['position_id'] ?? $record->position_id,
-            'description' => $data['description'] ?? $record->description,
-            'salary' => $data['salary'] ?? $record->salary,
-            'status' => $data['status'] ?? CareerStatus::PUBLISHED->value,
+            'position_id' => $request->validated('position_id', $record->position_id),
+            'description' => $request->validated('description', $record->description),
+            'salary' => $request->validated('salary', $record->salary),
+            'status' => $request->validated('status', CareerStatus::PUBLISHED->value),
         ];
     }
 
-    protected function syncSeoMeta(Model $record, array $data): void
+    protected function syncSeoMeta(Model $record, FormRequest $request): void
     {
-        $title = $data['meta_title'] ?? null;
-        $description = $data['meta_description'] ?? null;
-        $ogTitle = $data['og_title'] ?? null;
-        $ogDescription = $data['og_description'] ?? null;
-        $ogImage = $data['og_image'] ?? null;
+        $title = $request->validated('meta_title');
+        $description = $request->validated('meta_description');
+        $ogTitle = $request->validated('og_title');
+        $ogDescription = $request->validated('og_description');
+        $ogImage = $request->validated('og_image');
 
         if ($title === null && $description === null && $ogTitle === null && $ogDescription === null && $ogImage === null) {
             return;

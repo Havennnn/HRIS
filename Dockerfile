@@ -1,38 +1,32 @@
-# ─── Stage 1: PHP vendor dependencies ──────────────────────────────────────
-# Installs composer deps so the piacore Vite plugin (vendor JS files) is
-# available for the frontend build stage. Piacore is a VCS repo on GitHub,
-# so composer installs it naturally even when Package/piacore isn't present.
-FROM composer:2 AS vendor
-
-WORKDIR /app
-
-COPY composer.json composer.lock ./
-RUN composer install \
-    --no-dev \
-    --no-interaction \
-    --no-progress \
-    --optimize-autoloader \
-    --no-scripts \
-    --ignore-platform-req=ext-pgsql \
-    --ignore-platform-req=ext-pdo_pgsql
-
-# ─── Stage 2: Build frontend ───────────────────────────────────────────────
+# ─── Stage 1: Build frontend ──────────────────────────────────────────────
 FROM node:22-alpine AS frontend
+
+# Why download piacore JS from GitHub?
+# The vite.config.ts imports ./vendor/latsmarbls/piacore/resources/js/vite-plugin-piacore
+# and many app files import piacore/... components (resolve.alias points to that dir).
+# /vendor is gitignored, so these files aren't in the checkout.
+# Downloading them directly from the piacore release is more reliable than
+# running composer install in a separate stage (avoids PHP platform req issues).
+ARG PIACORE_VERSION=v1.2.1
 
 WORKDIR /build
 
+# Install npm dependencies first for layer caching
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Copy the piacore Vite plugin from the composer stage so Vite can resolve
-# the import in vite.config.ts (./vendor/latsmarbls/piacore/resources/js/...)
-COPY --from=vendor /app/vendor/latsmarbls/piacore/resources/js \
-     ./vendor/latsmarbls/piacore/resources/js
+# Download piacore JS files from GitHub and place them at the expected path
+RUN curl -sL "https://github.com/LatsMarbls/piacore/archive/refs/tags/${PIACORE_VERSION}.tar.gz" \
+    | tar -xz -C /tmp \
+    && mkdir -p vendor/latsmarbls/piacore/resources/js \
+    && cp -r /tmp/piacore-*/resources/js/* vendor/latsmarbls/piacore/resources/js/ \
+    && rm -rf /tmp/piacore-*
 
+# Build the application
 COPY . .
 RUN npm run build
 
-# ─── Stage 3: PHP runtime ──────────────────────────────────────────────────
+# ─── Stage 2: PHP runtime ─────────────────────────────────────────────────
 FROM php:8.2-fpm-alpine AS runtime
 
 RUN apk add --no-cache nginx supervisor bash curl \
@@ -42,13 +36,13 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# Application source + vendor from composer stage
 COPY . .
-COPY --from=vendor /app/vendor ./vendor
 
-RUN composer run-script post-autoload-dump 2>/dev/null || true
+# Install PHP dependencies (composer downloads piacore from GitHub VCS repo)
+RUN composer install --no-dev --no-interaction --no-progress --optimize-autoloader --no-scripts \
+    && composer run-script post-autoload-dump 2>/dev/null || true
 
-# Built frontend assets
+# Copy built frontend assets
 COPY --from=frontend /build/public/build ./public/build
 
 # Permissions

@@ -1,5 +1,6 @@
 # ─── Stage 1: Build frontend ──────────────────────────────────────────────
 FROM node:22-alpine AS frontend
+ARG PIACORE_VERSION
 
 # Why download piacore JS from GitHub?
 # The vite.config.ts imports ./vendor/latsmarbls/piacore/resources/js/vite-plugin-piacore

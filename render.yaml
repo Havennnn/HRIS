@@ -1,0 +1,58 @@
+services:
+  # The main Laravel web service
+  - type: web
+    name: hris
+    runtime: image
+    repo: https://github.com/LatsMarbls/HRIS.git
+    plan: starter
+    region: singapore
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        sync: false  # You'll set this manually
+      - key: APP_URL
+        value: https://hris.onrender.com  # REPLACE with your URL
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: hris-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: hris-db
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: hris-db
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: hris-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: hris-db
+          property: password
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: file
+      - key: APP_SERVICES
+        value: cache,queue,scheduler
+
+  # Postgres database
+  - type: postgres
+    name: hris-db
+    plan: starter
+    region: singapore
+    version: 16
+    ipAllowList: []  # Only allow from Render services

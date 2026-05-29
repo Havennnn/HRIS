@@ -830,7 +830,7 @@
                     "homepage": "https://github.com/Nyholm"
                 },
                 {
-                    "name": "M\u00e1rk S\u00e1gi-Kaz\u00e1r",
+                    "name": "Márk Sági-Kazár",
                     "email": "mark.sagikazar@gmail.com",
                     "homepage": "https://github.com/sagikazarmark"
                 },
@@ -1025,7 +1025,7 @@
                     "homepage": "https://github.com/Nyholm"
                 },
                 {
-                    "name": "M\u00e1rk S\u00e1gi-Kaz\u00e1r",
+                    "name": "Márk Sági-Kazár",
                     "email": "mark.sagikazar@gmail.com",
                     "homepage": "https://github.com/sagikazarmark"
                 },
@@ -1035,7 +1035,7 @@
                     "homepage": "https://github.com/Tobion"
                 },
                 {
-                    "name": "M\u00e1rk S\u00e1gi-Kaz\u00e1r",
+                    "name": "Márk Sági-Kazár",
                     "email": "mark.sagikazar@gmail.com",
                     "homepage": "https://sagikazarmark.hu"
                 }
@@ -1826,29 +1826,29 @@
         },
         {
             "name": "latsmarbls/piacore",
-            "version": "v1.2.0",
+            "version": "v1.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/LatsMarbls/piacore.git",
-                "reference": "29da656a79c5c45ecd765693275f973cadb50efe"
+                "reference": "c7d54a36eac2a77b1f400b0a683b9f027f800dc9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/LatsMarbls/piacore/zipball/29da656a79c5c45ecd765693275f973cadb50efe",
-                "reference": "29da656a79c5c45ecd765693275f973cadb50efe",
+                "url": "https://api.github.com/repos/LatsMarbls/piacore/zipball/c7d54a36eac2a77b1f400b0a683b9f027f800dc9",
+                "reference": "c7d54a36eac2a77b1f400b0a683b9f027f800dc9",
                 "shasum": ""
             },
             "require": {
-                "illuminate/database": "^11.0|^12.0",
-                "illuminate/http": "^11.0|^12.0",
-                "illuminate/support": "^11.0|^12.0",
+                "illuminate/database": "^11.0|^12.0|^13.0",
+                "illuminate/http": "^11.0|^12.0|^13.0",
+                "illuminate/support": "^11.0|^12.0|^13.0",
                 "inertiajs/inertia-laravel": "^2.0",
                 "php": "^8.2",
                 "spatie/laravel-activitylog": "^4.10"
             },
             "require-dev": {
                 "laravel/pint": "^1.0",
-                "phpunit/phpunit": "^11.0"
+                "phpunit/phpunit": "^11.0|^12.0"
             },
             "suggest": {
                 "laravel/scout": "Required for advanced search functionality with Meilisearch or database engine (^10.0)",
@@ -1891,10 +1891,10 @@
             ],
             "description": "Reusable CRUD action core for Laravel + Inertia admin panels.",
             "support": {
-                "source": "https://github.com/LatsMarbls/piacore/tree/v1.2.0",
+                "source": "https://github.com/LatsMarbls/piacore/tree/v1.2.1",
                 "issues": "https://github.com/LatsMarbls/piacore/issues"
             },
-            "time": "2026-05-25T05:55:00+00:00"
+            "time": "2026-05-28T10:21:35+00:00"
         },
         {
             "name": "league/commonmark",
@@ -2718,7 +2718,7 @@
                     "homepage": "https://nette.org/contributors"
                 }
             ],
-            "description": "\ud83d\udcd0 Nette Schema: validating data structures against a given Schema.",
+            "description": "📐 Nette Schema: validating data structures against a given Schema.",
             "homepage": "https://nette.org",
             "keywords": [
                 "config",
@@ -2797,7 +2797,7 @@
                     "homepage": "https://nette.org/contributors"
                 }
             ],
-            "description": "\ud83d\udee0  Nette Utils: lightweight utilities for string & array manipulation, image handling, safe JSON encoding/decoding, validation, slug or strong password generating etc.",
+            "description": "🛠  Nette Utils: lightweight utilities for string & array manipulation, image handling, safe JSON encoding/decoding, validation, slug or strong password generating etc.",
             "homepage": "https://nette.org",
             "keywords": [
                 "array",
@@ -4262,7 +4262,7 @@
                     "email": "fabien@symfony.com"
                 },
                 {
-                    "name": "Jean-Fran\u00e7ois Simon",
+                    "name": "Jean-François Simon",
                     "email": "jeanfrancois.simon@sensiolabs.com"
                 },
                 {
@@ -5837,7 +5837,7 @@
             ],
             "authors": [
                 {
-                    "name": "Gr\u00e9goire Pineau",
+                    "name": "Grégoire Pineau",
                     "email": "lyrixx@lyrixx.info"
                 },
                 {
@@ -6422,7 +6422,7 @@
             ],
             "authors": [
                 {
-                    "name": "Gr\u00e9goire Pineau",
+                    "name": "Grégoire Pineau",
                     "email": "lyrixx@lyrixx.info"
                 },
                 {
@@ -6814,7 +6814,7 @@
             ],
             "authors": [
                 {
-                    "name": "Fran\u00e7ois Zaninotto"
+                    "name": "François Zaninotto"
                 }
             ],
             "description": "Faker is a PHP library that generates fake data for you.",
@@ -7203,7 +7203,7 @@
             ],
             "authors": [
                 {
-                    "name": "P\u00e1draic Brady",
+                    "name": "Pádraic Brady",
                     "email": "padraic.brady@gmail.com",
                     "homepage": "https://github.com/padraic",
                     "role": "Author"

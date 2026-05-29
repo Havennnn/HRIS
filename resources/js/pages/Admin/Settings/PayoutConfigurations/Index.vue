@@ -18,8 +18,8 @@ import {
     TabsList,
     TabsTrigger,
 } from '@/components/ui/tabs';
-import SettingsCard from '@/components/settings/SettingsCard.vue';
-import SettingsCardItem from '@/components/settings/SettingsCardItem.vue';
+import SettingsCard from 'piacore/components/SettingsCard.vue';
+import SettingsCardItem from 'piacore/components/SettingsCardItem.vue';
 import AdminSettingsLayout from '@/layouts/admin/settings/Layout.vue';
 import payoutConfigurations from '@/routes/settings/payout-configurations/index';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
@@ -46,6 +46,7 @@ const activeTab = computed<string>(() => {
     return url.searchParams.get('tab') ?? 'information';
 });
 
+// ─── Reset Defaults ────────────────────────────────
 const resetForm = useForm({});
 
 function resetDefaults(): void {
@@ -54,6 +55,7 @@ function resetDefaults(): void {
     }
 }
 
+// ─── Edit Dialog ───────────────────────────────────
 const editingConfig = ref<PayoutConfiguration | null>(null);
 const editDialogOpen = ref(false);
 
@@ -90,73 +92,53 @@ function closeEditDialog(): void {
 }
 
 function saveEdit(): void {
-    if (!editingConfig.value) {
-        return;
-    }
-
+    if (!editingConfig.value) return;
     editForm.patch(
         payoutConfigurations.update({ payoutConfiguration: editingConfig.value.id }).url,
-        {
-            onSuccess: () => {
-                closeEditDialog();
-            },
-        },
+        { onSuccess: closeEditDialog },
     );
 }
 
-function formatPeriodDescription(config: PayoutConfiguration): string {
-    const start = config.period_start_day;
-    const end = config.period_end_is_last_day
-        ? 'last day'
-        : config.period_end_day;
-    const cutoff = config.cutoff_generation_day;
-    const disburse = config.disburse_is_last_day
-        ? 'last day'
-        : config.cutoff_disburse_day;
-
-    return `Period: ${start}${getDaySuffix(start)} – ${end}. Cutoff on ${cutoff}${getDaySuffix(cutoff)}, disburse on ${disburse}${typeof disburse === 'number' ? getDaySuffix(disburse) : ''}.`;
+function isFormDirty(): boolean {
+    if (!editingConfig.value) return false;
+    const o = editingConfig.value;
+    return (
+        editForm.name !== o.name ||
+        Number(editForm.period_start_day) !== o.period_start_day ||
+        String(editForm.period_end_day) !== String(o.period_end_day ?? '') ||
+        Boolean(editForm.period_end_is_last_day) !== o.period_end_is_last_day ||
+        Number(editForm.cutoff_generation_day) !== o.cutoff_generation_day ||
+        String(editForm.cutoff_disburse_day) !== String(o.cutoff_disburse_day ?? '') ||
+        Boolean(editForm.disburse_is_last_day) !== o.disburse_is_last_day ||
+        Number(editForm.assumed_from_day) !== o.assumed_from_day ||
+        Boolean(editForm.is_active) !== o.is_active
+    );
 }
 
-function getDaySuffix(day: number | string | null | undefined): string {
-    if (day === null || day === undefined || day === '') {
-        return '';
-    }
+function formatPeriod(config: PayoutConfiguration): string {
+    const start = `${config.period_start_day}${ordinal(config.period_start_day)}`;
+    const end = config.period_end_is_last_day
+        ? 'last day'
+        : `${config.period_end_day}${ordinal(config.period_end_day ?? 0)}`;
+    return `${start} – ${end}`;
+}
 
-    const d = Number(day);
-    if (Number.isNaN(d)) {
-        return '';
-    }
+function formatCutoff(config: PayoutConfiguration): string {
+    const cutoff = `${config.cutoff_generation_day}${ordinal(config.cutoff_generation_day)}`;
+    const disburse = config.disburse_is_last_day
+        ? 'last day'
+        : `${config.cutoff_disburse_day}${ordinal(config.cutoff_disburse_day ?? 0)}`;
+    return `Generate ${cutoff}, disburse on ${disburse}`;
+}
 
-    if (d >= 11 && d <= 13) {
-        return 'th';
-    }
-
-    switch (d % 10) {
+function ordinal(n: number): string {
+    if (n >= 11 && n <= 13) return 'th';
+    switch (n % 10) {
         case 1: return 'st';
         case 2: return 'nd';
         case 3: return 'rd';
         default: return 'th';
     }
-}
-
-function isFormDirty(): boolean {
-    if (!editingConfig.value) {
-        return false;
-    }
-
-    const original = editingConfig.value;
-
-    return (
-        editForm.name !== original.name ||
-        Number(editForm.period_start_day) !== original.period_start_day ||
-        String(editForm.period_end_day) !== String(original.period_end_day ?? '') ||
-        Boolean(editForm.period_end_is_last_day) !== original.period_end_is_last_day ||
-        Number(editForm.cutoff_generation_day) !== original.cutoff_generation_day ||
-        String(editForm.cutoff_disburse_day) !== String(original.cutoff_disburse_day ?? '') ||
-        Boolean(editForm.disburse_is_last_day) !== original.disburse_is_last_day ||
-        Number(editForm.assumed_from_day) !== original.assumed_from_day ||
-        Boolean(editForm.is_active) !== original.is_active
-    );
 }
 </script>
 
@@ -206,7 +188,7 @@ function isFormDirty(): boolean {
                             :key="config.id"
                             :icon="Calendar"
                             :label="config.name"
-                            :description="formatPeriodDescription(config)"
+                            :description="`Period: ${formatPeriod(config)} — ${formatCutoff(config)}`"
                             action-label="Edit"
                             @action="openEditDialog(config)"
                         />
@@ -233,123 +215,149 @@ function isFormDirty(): boolean {
                 </DialogDescription>
             </DialogHeader>
 
-            <div class="space-y-6 py-4">
-                <!-- Name -->
-                <div class="space-y-2">
-                    <Label for="edit-name">Name</Label>
-                    <Input
-                        id="edit-name"
-                        v-model="editForm.name"
-                        :disabled="editForm.processing"
-                    />
-                    <p v-if="editForm.errors.name" class="text-destructive text-xs font-medium">
-                        {{ editForm.errors.name }}
+            <div class="space-y-6 py-2">
+                <!-- Period Range Section -->
+                <div>
+                    <h4 class="mb-1 text-sm font-medium">Period Range</h4>
+                    <p class="mb-3 text-xs text-muted-foreground">
+                        Defines the pay period's start and end dates. Used to compute the number of working days.
                     </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <Label for="edit-period-start">Start Day</Label>
+                            <Input
+                                id="edit-period-start"
+                                v-model="editForm.period_start_day"
+                                type="number"
+                                min="1"
+                                max="31"
+                                placeholder="e.g. 1"
+                                :disabled="editForm.processing"
+                            />
+                        </div>
+
+                        <div class="space-y-2">
+                            <Label for="edit-period-end">End Day</Label>
+                            <div class="flex items-start gap-3">
+                                <Input
+                                    id="edit-period-end"
+                                    v-model="editForm.period_end_day"
+                                    type="number"
+                                    min="1"
+                                    max="31"
+                                    placeholder="e.g. 15"
+                                    :disabled="editForm.processing || editForm.period_end_is_last_day"
+                                    class="flex-1"
+                                />
+                                <div class="flex items-center gap-1.5 pt-1.5">
+                                    <Checkbox
+                                        id="edit-period-end-last"
+                                        :checked="editForm.period_end_is_last_day"
+                                        :disabled="editForm.processing"
+                                        @update:checked="editForm.period_end_is_last_day = !!$event"
+                                    />
+                                    <Label for="edit-period-end-last" class="text-xs whitespace-nowrap">
+                                        Last day
+                                    </Label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <Separator />
 
-                <!-- Period Start / End -->
-                <div class="grid grid-cols-3 gap-4">
-                    <div class="space-y-2">
-                        <Label for="edit-period-start">Period Start</Label>
-                        <Input
-                            id="edit-period-start"
-                            v-model="editForm.period_start_day"
-                            type="number"
-                            min="1"
-                            max="31"
-                            :disabled="editForm.processing"
-                        />
-                    </div>
-
-                    <div class="space-y-2">
-                        <Label for="edit-period-end">Period End</Label>
-                        <Input
-                            id="edit-period-end"
-                            v-model="editForm.period_end_day"
-                            type="number"
-                            min="1"
-                            max="31"
-                            :disabled="editForm.processing || editForm.period_end_is_last_day"
-                        />
-                    </div>
-
-                    <div class="flex items-end pb-2">
-                        <div class="flex items-center gap-2">
-                            <Checkbox
-                                id="edit-period-end-last"
-                                :checked="editForm.period_end_is_last_day"
+                <!-- Cutoff & Disbursement Section -->
+                <div>
+                    <h4 class="mb-1 text-sm font-medium">Cutoff &amp; Disbursement</h4>
+                    <p class="mb-3 text-xs text-muted-foreground">
+                        Payroll is generated on the cutoff day and disbursed on the disbursement day.
+                    </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <Label for="edit-cutoff-gen">Cutoff (Generation Day)</Label>
+                            <Input
+                                id="edit-cutoff-gen"
+                                v-model="editForm.cutoff_generation_day"
+                                type="number"
+                                min="1"
+                                max="31"
+                                placeholder="e.g. 10"
                                 :disabled="editForm.processing"
-                                @update:checked="editForm.period_end_is_last_day = !!$event"
                             />
-                            <Label for="edit-period-end-last">Last day</Label>
+                        </div>
+
+                        <div class="space-y-2">
+                            <Label for="edit-cutoff-disburse">Disbursement Day</Label>
+                            <div class="flex items-start gap-3">
+                                <Input
+                                    id="edit-cutoff-disburse"
+                                    v-model="editForm.cutoff_disburse_day"
+                                    type="number"
+                                    min="1"
+                                    max="31"
+                                    placeholder="e.g. 15"
+                                    :disabled="editForm.processing || editForm.disburse_is_last_day"
+                                    class="flex-1"
+                                />
+                                <div class="flex items-center gap-1.5 pt-1.5">
+                                    <Checkbox
+                                        id="edit-disburse-last"
+                                        :checked="editForm.disburse_is_last_day"
+                                        :disabled="editForm.processing"
+                                        @update:checked="editForm.disburse_is_last_day = !!$event"
+                                    />
+                                    <Label for="edit-disburse-last" class="text-xs whitespace-nowrap">
+                                        Last day
+                                    </Label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Cutoff / Disbursement -->
-                <div class="grid grid-cols-3 gap-4">
-                    <div class="space-y-2">
-                        <Label for="edit-cutoff-gen">Cutoff Generation</Label>
-                        <Input
-                            id="edit-cutoff-gen"
-                            v-model="editForm.cutoff_generation_day"
-                            type="number"
-                            min="1"
-                            max="31"
-                            :disabled="editForm.processing"
-                        />
-                    </div>
+                <Separator />
 
-                    <div class="space-y-2">
-                        <Label for="edit-cutoff-disburse">Disbursement</Label>
-                        <Input
-                            id="edit-cutoff-disburse"
-                            v-model="editForm.cutoff_disburse_day"
-                            type="number"
-                            min="1"
-                            max="31"
-                            :disabled="editForm.processing || editForm.disburse_is_last_day"
-                        />
-                    </div>
-
-                    <div class="flex items-end pb-2">
-                        <div class="flex items-center gap-2">
-                            <Checkbox
-                                id="edit-disburse-last"
-                                :checked="editForm.disburse_is_last_day"
+                <!-- Advanced Section -->
+                <div>
+                    <h4 class="mb-1 text-sm font-medium">Advanced</h4>
+                    <p class="mb-3 text-xs text-muted-foreground">
+                        Additional settings for attendance estimation and schedule activation.
+                    </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <Label for="edit-assumed-from">
+                                Assume Attendance From Day
+                                <span class="text-muted-foreground ml-1 text-xs">(optional)</span>
+                            </Label>
+                            <Input
+                                id="edit-assumed-from"
+                                v-model="editForm.assumed_from_day"
+                                type="number"
+                                min="1"
+                                max="31"
+                                placeholder="e.g. 11"
                                 :disabled="editForm.processing"
-                                @update:checked="editForm.disburse_is_last_day = !!$event"
                             />
-                            <Label for="edit-disburse-last">Last day</Label>
+                            <p class="text-xs text-muted-foreground">
+                                Days after this date will use estimated attendance.
+                            </p>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Assumed From / Active -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-2">
-                        <Label for="edit-assumed-from">Assume Attendance From Day</Label>
-                        <Input
-                            id="edit-assumed-from"
-                            v-model="editForm.assumed_from_day"
-                            type="number"
-                            min="1"
-                            max="31"
-                            :disabled="editForm.processing"
-                        />
-                    </div>
-
-                    <div class="flex items-end pb-2">
-                        <div class="flex items-center gap-2">
-                            <Checkbox
-                                id="edit-active"
-                                :checked="editForm.is_active"
-                                :disabled="editForm.processing"
-                                @update:checked="editForm.is_active = !!$event"
-                            />
-                            <Label for="edit-active">Active</Label>
+                        <div class="space-y-2">
+                            <Label>Status</Label>
+                            <div class="flex items-center gap-2 pt-1.5">
+                                <Checkbox
+                                    id="edit-active"
+                                    :checked="editForm.is_active"
+                                    :disabled="editForm.processing"
+                                    @update:checked="editForm.is_active = !!$event"
+                                />
+                                <Label for="edit-active">Active</Label>
+                            </div>
+                            <p class="text-xs text-muted-foreground">
+                                Only active schedules are used for payroll generation.
+                            </p>
                         </div>
                     </div>
                 </div>

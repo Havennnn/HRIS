@@ -20,24 +20,24 @@ class ExportService
     {
         $headers = ['ID', 'First Name', 'Last Name', 'Email', 'Mobile', 'Position', 'Department', 'Status'];
 
-        $employees = Employee::query()
-            ->with(['position', 'position.department'])
-            ->get();
-
         $rows = collect();
 
-        foreach ($employees as $employee) {
-            $rows->push([
-                $employee->id,
-                $employee->first_name,
-                $employee->last_name,
-                $employee->email,
-                $employee->mobile_number ?? '',
-                $employee->position?->name ?? '',
-                $employee->position?->department?->name ?? '',
-                $employee->status?->label() ?? '',
-            ]);
-        }
+        Employee::query()
+            ->with(['position', 'position.department'])
+            ->chunk(200, function ($employees) use (&$rows) {
+                foreach ($employees as $employee) {
+                    $rows->push([
+                        $employee->id,
+                        $employee->first_name,
+                        $employee->last_name,
+                        $employee->email,
+                        $employee->mobile_number ?? '',
+                        $employee->position?->name ?? '',
+                        $employee->position?->department?->name ?? '',
+                        $employee->status?->label() ?? '',
+                    ]);
+                }
+            });
 
         return $this->toCsv($headers, $rows->toArray());
     }
@@ -51,26 +51,26 @@ class ExportService
     {
         $headers = ['Employee', 'Period', 'Gross', 'SSS', 'Pag-IBIG', 'PhilHealth', 'Tax', 'Net'];
 
-        $payrolls = Payroll::query()
+        $rows = collect();
+
+        Payroll::query()
             ->with(['employee'])
             ->whereBetween('pay_period_start', [$startDate, $endDate])
             ->orderBy('pay_period_start')
-            ->get();
-
-        $rows = collect();
-
-        foreach ($payrolls as $payroll) {
-            $rows->push([
-                $payroll->employee?->full_name ?? 'Unknown',
-                $payroll->pay_period_start->format('M d, Y') . ' - ' . $payroll->pay_period_end->format('M d, Y'),
-                number_format((float) $payroll->gross_pay, 2),
-                number_format((float) $payroll->sss, 2),
-                number_format((float) $payroll->pagibig, 2),
-                number_format((float) $payroll->philhealth, 2),
-                number_format((float) $payroll->tax, 2),
-                number_format((float) $payroll->net_pay, 2),
-            ]);
-        }
+            ->chunk(200, function ($payrolls) use (&$rows) {
+                foreach ($payrolls as $payroll) {
+                    $rows->push([
+                        $payroll->employee?->full_name ?? 'Unknown',
+                        $payroll->pay_period_start->format('M d, Y') . ' - ' . $payroll->pay_period_end->format('M d, Y'),
+                        number_format((float) $payroll->gross_pay, 2),
+                        number_format((float) $payroll->sss, 2),
+                        number_format((float) $payroll->pagibig, 2),
+                        number_format((float) $payroll->philhealth, 2),
+                        number_format((float) $payroll->tax, 2),
+                        number_format((float) $payroll->net_pay, 2),
+                    ]);
+                }
+            });
 
         return $this->toCsv($headers, $rows->toArray());
     }
@@ -84,25 +84,25 @@ class ExportService
     {
         $headers = ['Employee', 'Date', 'Time In', 'Time Out', 'Status', 'Late Mins'];
 
-        $attendances = Attendance::query()
+        $rows = collect();
+
+        Attendance::query()
             ->with(['employee'])
             ->whereBetween('date', [$startDate, $endDate])
             ->orderBy('date')
             ->orderBy('employee_id')
-            ->get();
-
-        $rows = collect();
-
-        foreach ($attendances as $attendance) {
-            $rows->push([
-                $attendance->employee?->full_name ?? 'Unknown',
-                $attendance->date->format('Y-m-d'),
-                $attendance->time_in?->format('H:i') ?? '',
-                $attendance->time_out?->format('H:i') ?? '',
-                $attendance->status?->label() ?? '',
-                (string) ($attendance->late_minutes ?? 0),
-            ]);
-        }
+            ->chunk(200, function ($attendances) use (&$rows) {
+                foreach ($attendances as $attendance) {
+                    $rows->push([
+                        $attendance->employee?->full_name ?? 'Unknown',
+                        $attendance->date->format('Y-m-d'),
+                        $attendance->time_in?->format('H:i') ?? '',
+                        $attendance->time_out?->format('H:i') ?? '',
+                        $attendance->status?->label() ?? '',
+                        (string) ($attendance->late_minutes ?? 0),
+                    ]);
+                }
+            });
 
         return $this->toCsv($headers, $rows->toArray());
     }

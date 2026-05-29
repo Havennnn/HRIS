@@ -14,6 +14,8 @@ use PiaCore\Actions\Resource\RestoreAction;
 use PiaCore\Actions\Resource\StoreAction;
 use PiaCore\Actions\Resource\UpdateAction;
 use PiaCore\Http\Controllers\ResourceController;
+use PiaCore\Http\Resources\ActivityLogResource;
+use Spatie\Activitylog\Models\Activity;
 
 final class KpiController extends ResourceController
 {
@@ -27,7 +29,19 @@ final class KpiController extends ResourceController
 
     public function index(Request $request, ListAction $action)
     {
-        return $action($this->listOptions(request: $request));
+        $activityLogs = Activity::query()
+            ->where('subject_type', Kpi::class)
+            ->with('causer')
+            ->orderBy('created_at', 'desc')
+            ->paginate(15)
+            ->withQueryString();
+
+        return $action($this->listOptions(
+            request: $request,
+            additionalProps: [
+                'activity_logs' => ActivityLogResource::collection($activityLogs)->response()->getData(true),
+            ],
+        ));
     }
 
     public function create(Request $request, CreateAction $action)

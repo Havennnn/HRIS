@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { BlockConfig, BlockField, CmsBlock } from '@/Pages/Admin/Pages/index';
-import { upload } from '@/routes/pages';
+const upload = () => ({ url: '/admin/pages/upload', method: 'post' });
 import HeadingBlock from './Blocks/Heading.vue';
 import ImageBlock from './Blocks/Image.vue';
 import ListBlock from './Blocks/List.vue';

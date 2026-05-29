@@ -10,7 +10,6 @@ use App\Http\Controllers\Admin\Employee\EmployeeController;
 use App\Http\Controllers\Admin\Holiday\HolidayController;
 use App\Http\Controllers\Admin\Kpi\KpiController;
 use App\Http\Controllers\Admin\NotificationController;
-use App\Http\Controllers\Admin\Page\PageController;
 use App\Http\Controllers\Admin\Payroll\PayrollController;
 use App\Http\Controllers\Admin\PerformanceReview\PerformanceReviewController;
 use App\Http\Controllers\Admin\Request\RequestController;

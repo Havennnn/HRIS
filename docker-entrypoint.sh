@@ -17,5 +17,5 @@ php artisan route:cache 2>/dev/null || true
 php artisan view:cache 2>/dev/null || true
 php artisan event:cache 2>/dev/null || true
 
-# Start supervisor (manages nginx + php-fpm + queue + ssr + scheduler)
-exec /usr/bin/supervisord -c /etc/supervisor/supervisord.conf
+# Start supervisord
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf

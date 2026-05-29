@@ -1,5 +1,6 @@
 /node_modules
-/vendor
+/vendor/*
+!/vendor/latsmarbls/piacore/resources/js
 /.env
 /storage/framework/cache/data/*
 /storage/framework/sessions/*

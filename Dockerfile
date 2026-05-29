@@ -4,6 +4,12 @@ FROM node:22-alpine AS frontend
 WORKDIR /build
 COPY package.json package-lock.json ./
 RUN npm ci
+
+# The vite config imports the piacore plugin and app code imports piacore/*
+# Copy the full piacore resources so Vite can resolve aliased imports
+COPY vendor/latsmarbls/piacore/resources/js \
+     ./vendor/latsmarbls/piacore/resources/js
+
 COPY . .
 RUN npm run build
 

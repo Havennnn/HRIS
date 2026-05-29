@@ -12,7 +12,6 @@
 .gitignore
 .dockerignore
 Dockerfile
-docker-entrypoint.sh
 render.yaml
 .editorconfig
 .phpunit.result.cache
